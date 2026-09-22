@@ -1,0 +1,22 @@
+{
+  "name": "@jev/server",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=../.env src/index.ts",
+    "start": "tsx --env-file=../.env src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@anthropic-ai/bedrock-sdk": "^0.33.0",
+    "@anthropic-ai/sdk": "^0.127.0",
+    "@hono/node-server": "^2.1.0",
+    "@jev/shared": "*",
+    "@typesafe-ai/sdk": "^0.6.0",
+    "hono": "^4.13.0",
+    "p-limit": "^7.3.0",
+    "zod": "^4.6.0"
+  }
+}
