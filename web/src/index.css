@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f5f1ea;
+  --color-paper-2: #ece6dc;
+  --color-panel: #fffdf9;
+  --color-ink: #1c1a17;
+  --color-ink-2: #55514a;
+  --color-ink-3: #8a857c;
+  --color-rule: #d9d2c5;
+  --color-jev: #1d4fd8;
+  --color-jev-soft: #e3eafc;
+  --color-claude: #c2650f;
+  --color-claude-soft: #fbe9d6;
+  --color-ok: #1f7a4d;
+  --color-warn: #b7791f;
+  --color-bad: #b42318;
+  --font-display: "Fraunces", "Songti SC", "Noto Serif SC", Georgia, serif;
+  --font-body: "IBM Plex Sans", "PingFang SC", "Noto Sans SC", sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
+}
+
+html {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-feature-settings: "tnum" 1, "cv11" 1;
+}
+
+/* graph-paper grid: the lab-notebook motif */
+body {
+  background-image:
+    linear-gradient(to right, rgba(28, 26, 23, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(28, 26, 23, 0.045) 1px, transparent 1px);
+  background-size: 24px 24px;
+  min-height: 100vh;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.hairline {
+  border: 1px solid var(--color-rule);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise {
+  animation: rise 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
