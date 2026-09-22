@@ -72,6 +72,8 @@ export interface ClaudeTrace {
   outputTokens: number;
   cost: { usd: number };
   stopReason: string | null;
+  /** How structured output was obtained on this endpoint (claudeParse only). */
+  structuredMode?: "format" | "tool" | "tool-lax";
 }
 
 export type Trace = JevTrace | ClaudeTrace;

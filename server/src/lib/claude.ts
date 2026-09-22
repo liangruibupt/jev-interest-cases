@@ -1,12 +1,20 @@
 import { AnthropicBedrock } from "@anthropic-ai/bedrock-sdk";
-import type Anthropic from "@anthropic-ai/sdk";
+import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import type { z } from "zod";
+import { z } from "zod";
 import { CLAUDE_TIERS, claudeCostUsd, type ClaudeTierId, type ClaudeTrace, type ScenarioId } from "@jev/shared";
 import { queues, type Queue } from "./queue";
 import { newTraceId } from "./trace";
 
 export type Effort = "low" | "medium" | "high";
+
+/**
+ * How structured output is obtained. Bedrock runtime (InvokeModel) accepts `output_config.format`
+ * for the Claude 4.6 family but rejects it for Sonnet 5 / Opus 5 (400 "Extra inputs are not
+ * permitted"); there we force a strict tool call instead. Fable 5.1 forbids forced tool_choice,
+ * so it always uses `format`.
+ */
+export type StructuredMode = "format" | "tool" | "tool-lax";
 
 export interface ClaudeCallBase {
   scenario: ScenarioId;
@@ -64,8 +72,42 @@ export interface ClaudeClientLike {
   };
 }
 
+const TOOL_NAME = "emit_structured_result";
+
+/** Convert a zod schema to a tool input schema acceptable to strict tool use. */
+export function toolInputSchema(schema: z.ZodType, strict: boolean): Record<string, unknown> {
+  const json = z.toJSONSchema(schema, { target: "draft-7" }) as Record<string, unknown>;
+  return tighten(json, strict) as Record<string, unknown>;
+}
+
+function tighten(node: unknown, strict: boolean): unknown {
+  if (Array.isArray(node)) return node.map((n) => tighten(n, strict));
+  if (!node || typeof node !== "object") return node;
+  const o: Record<string, unknown> = { ...(node as Record<string, unknown>) };
+  delete o.$schema;
+  if (strict) for (const k of ["minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum"]) delete o[k];
+  if (o.properties && typeof o.properties === "object") {
+    const props = o.properties as Record<string, unknown>;
+    o.properties = Object.fromEntries(Object.entries(props).map(([k, v]) => [k, tighten(v, strict)]));
+    o.additionalProperties = false;
+    o.required = Object.keys(props);
+  }
+  for (const k of ["items", "anyOf", "oneOf", "allOf"]) if (k in o) o[k] = tighten(o[k], strict);
+  return o;
+}
+
+function envMode(): StructuredMode | "auto" {
+  const v = process.env.STRUCTURED_OUTPUT_MODE;
+  return v === "format" || v === "tool" || v === "tool-lax" ? v : "auto";
+}
+
+const isFormatRejected = (err: unknown) => err instanceof Anthropic.BadRequestError && /output_config/i.test(err.message);
+const isStrictRejected = (err: unknown) => err instanceof Anthropic.BadRequestError && /strict/i.test(err.message);
+
 export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Queue }) {
   const queue = deps.queue ?? queues.claude;
+  /** Remembered per model id so the fallback costs one failed request per process, not per call. */
+  const modeByModel = new Map<string, StructuredMode>();
 
   function buildParams(call: ClaudeCallBase) {
     const tier = CLAUDE_TIERS[call.tier ?? "standard"];
@@ -124,16 +166,12 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
     return { text, trace };
   }
 
-  async function claudeParse<T>(call: ClaudeParseCall<T>): Promise<{ parsed: T; trace: ClaudeTrace }> {
-    const { tier, params } = buildParams(call);
+  async function viaFormat<T>(call: ClaudeParseCall<T>, params: Anthropic.MessageCreateParamsNonStreaming) {
     const withFormat: Anthropic.MessageCreateParamsNonStreaming = {
       ...params,
       output_config: { ...(params.output_config ?? {}), format: zodOutputFormat(call.schema) },
     };
-    const startedAt = new Date().toISOString();
-    const t0 = performance.now();
     const msg = (await queue.run(() => deps.client().messages.parse(withFormat))) as ParsedLike<T>;
-    const trace = toTrace(call, tier.id, msg, startedAt, Math.round(performance.now() - t0));
     throwIfRefused(msg);
     if (msg.stop_reason === "max_tokens") {
       throw new ClaudeStructuredOutputError("输出被 max_tokens 截断，请提高 maxTokens 或减少问题数量", msg.content);
@@ -141,7 +179,60 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
     if (msg.parsed_output === null || msg.parsed_output === undefined) {
       throw new ClaudeStructuredOutputError("结构化输出解析失败（parsed_output 为空）", msg.content);
     }
-    return { parsed: msg.parsed_output, trace };
+    return { msg, parsed: msg.parsed_output };
+  }
+
+  async function viaTool<T>(call: ClaudeParseCall<T>, params: Anthropic.MessageCreateParamsNonStreaming, strict: boolean) {
+    const tool = {
+      name: TOOL_NAME,
+      description: "Return the result in the required structure. Call this tool exactly once.",
+      input_schema: toolInputSchema(call.schema, strict) as Anthropic.Tool["input_schema"],
+      ...(strict ? { strict: true } : {}),
+    } as Anthropic.Tool;
+    const withTool: Anthropic.MessageCreateParamsNonStreaming = {
+      ...params,
+      tools: [tool],
+      tool_choice: { type: "tool", name: TOOL_NAME },
+    };
+    const msg = await queue.run(() => deps.client().messages.create(withTool));
+    throwIfRefused(msg);
+    if (msg.stop_reason === "max_tokens") {
+      throw new ClaudeStructuredOutputError("输出被 max_tokens 截断，请提高 maxTokens 或减少问题数量", msg.content);
+    }
+    const block = msg.content.find((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
+    if (!block) throw new ClaudeStructuredOutputError("模型没有返回工具调用", msg.content);
+    const checked = call.schema.safeParse(block.input);
+    if (!checked.success) throw new ClaudeStructuredOutputError(`工具输入不符合 schema：${checked.error.message}`, block.input);
+    return { msg, parsed: checked.data };
+  }
+
+  async function claudeParse<T>(call: ClaudeParseCall<T>): Promise<{ parsed: T; trace: ClaudeTrace }> {
+    const { tier, params } = buildParams(call);
+    const forced = envMode();
+    let mode: StructuredMode = forced === "auto" ? (modeByModel.get(tier.modelId) ?? "format") : forced;
+    if (tier.id === "frontier") mode = "format"; // Fable 5.1 rejects forced tool_choice
+    const startedAt = new Date().toISOString();
+    const t0 = performance.now();
+    for (;;) {
+      try {
+        const { msg, parsed } =
+          mode === "format" ? await viaFormat(call, params) : await viaTool(call, params, mode === "tool");
+        modeByModel.set(tier.modelId, mode);
+        const trace = toTrace(call, tier.id, msg, startedAt, Math.round(performance.now() - t0));
+        trace.structuredMode = mode;
+        return { parsed, trace };
+      } catch (err) {
+        if (mode === "format" && tier.id !== "frontier" && isFormatRejected(err)) {
+          mode = "tool";
+          continue;
+        }
+        if (mode === "tool" && isStrictRejected(err)) {
+          mode = "tool-lax";
+          continue;
+        }
+        throw err;
+      }
+    }
   }
 
   return { claudeText, claudeParse };

@@ -49,7 +49,7 @@ async function probeClaude(): Promise<void> {
         messages: [{ role: "user", content: "Is the sky blue on a clear day? Answer in the required structure." }],
         schema: z.object({ ok: z.boolean() }),
       });
-      rows.push({ probe: `${tier.label} parse`, ok: true, model: trace.model, latencyMs: trace.latencyMs, usd: trace.cost.usd, note: `structured output OK (${JSON.stringify(parsed)})` });
+      rows.push({ probe: `${tier.label} parse`, ok: true, model: trace.model, latencyMs: trace.latencyMs, usd: trace.cost.usd, note: `structured output OK via ${trace.structuredMode} (${JSON.stringify(parsed)})` });
     } catch (err) {
       rows.push({ probe: `${tier.label} parse`, ok: false, model: tier.modelId, latencyMs: null, usd: null, note: `结构化输出不可用: ${(err as Error).message.slice(0, 100)}` });
     }

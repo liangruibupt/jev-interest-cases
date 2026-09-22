@@ -1,3 +1,4 @@
+import Anthropic from "@anthropic-ai/sdk";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { ClaudeRefusalError, ClaudeStructuredOutputError, ClaudeTierError, createClaude, type ClaudeClientLike } from "./claude";
@@ -77,5 +78,48 @@ describe("claudeParse", () => {
     const truncated = fakeClient(message({ stop_reason: "max_tokens", parsed_output: { ok: true } }));
     const c2 = createClaude({ client: () => truncated.client, queue: createQueue(1) });
     await expect(c2.claudeParse({ scenario: "p0", purpose: "t", messages: [{ role: "user", content: "hi" }], schema })).rejects.toThrow(/max_tokens|maxTokens/);
+  });
+});
+
+describe("claudeParse fallback on Bedrock runtime", () => {
+  const schema = z.object({ ok: z.boolean() });
+  const formatRejected = () =>
+    new Anthropic.BadRequestError(400, { message: "output_config.format: Extra inputs are not permitted" }, "400 output_config.format: Extra inputs are not permitted", new Headers());
+  const toolMessage = () =>
+    message({ stop_reason: "tool_use", content: [{ type: "tool_use", id: "tu_1", name: "emit_structured_result", input: { ok: true } }] });
+
+  it("falls back to a forced strict tool call, validates the input, and remembers the mode per model", async () => {
+    const parse = vi.fn(async (_p: unknown) => {
+      throw formatRejected();
+    });
+    const create = vi.fn(async (_p: unknown) => toolMessage());
+    const client = { messages: { create, parse } } as unknown as ClaudeClientLike;
+    const { claudeParse } = createClaude({ client: () => client, queue: createQueue(1) });
+
+    const first = await claudeParse({ scenario: "p0", purpose: "t", messages: [{ role: "user", content: "hi" }], schema });
+    expect(first.parsed).toEqual({ ok: true });
+    expect(first.trace.structuredMode).toBe("tool");
+    expect(parse).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledTimes(1);
+    const params = create.mock.calls[0]?.[0] as { tools: Array<{ name: string; strict?: boolean; input_schema: { additionalProperties?: boolean; required?: string[] } }>; tool_choice: unknown };
+    expect(params.tool_choice).toEqual({ type: "tool", name: "emit_structured_result" });
+    expect(params.tools[0]?.strict).toBe(true);
+    expect(params.tools[0]?.input_schema.additionalProperties).toBe(false);
+    expect(params.tools[0]?.input_schema.required).toEqual(["ok"]);
+
+    const second = await claudeParse({ scenario: "p0", purpose: "t", messages: [{ role: "user", content: "hi" }], schema });
+    expect(second.parsed).toEqual({ ok: true });
+    expect(parse).toHaveBeenCalledTimes(1); // mode remembered: no second attempt at output_config.format
+    expect(create).toHaveBeenCalledTimes(2);
+  });
+
+  it("rejects tool input that fails schema validation", async () => {
+    const parse = vi.fn(async (_p: unknown) => {
+      throw formatRejected();
+    });
+    const create = vi.fn(async (_p: unknown) => message({ stop_reason: "tool_use", content: [{ type: "tool_use", id: "tu", name: "emit_structured_result", input: { ok: "yes" } }] }));
+    const client = { messages: { create, parse } } as unknown as ClaudeClientLike;
+    const { claudeParse } = createClaude({ client: () => client, queue: createQueue(1) });
+    await expect(claudeParse({ scenario: "p0", purpose: "t", messages: [{ role: "user", content: "hi" }], schema })).rejects.toBeInstanceOf(ClaudeStructuredOutputError);
   });
 });
