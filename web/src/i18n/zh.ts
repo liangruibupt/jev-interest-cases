@@ -2,7 +2,7 @@ export const zh = {
   app: { title: "Jev Lab", subtitle: "学习 TypeSafe Jev：给代码用的判断" },
   nav: { learningPath: "学习路径", home: "总览" },
   status: { planned: "规划中", available: "可用" },
-  group: { pure: "纯 Jev", hybrid: "Jev + Claude" },
+  group: { pure: "纯 Jev", hybrid: "Jev + Claude", industry: "行业判断" },
   cost: {
     title: "本会话费用",
     jev: "Jev 实际",

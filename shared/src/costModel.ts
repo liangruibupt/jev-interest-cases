@@ -24,6 +24,10 @@ export const BASELINE_ASSUMPTIONS: Record<ScenarioId, BaselineAssumption> = {
   b2: { title_zh: "同一 LLM 逐条核验引用", outputTokensPerCall: 60, note_zh: "只算核验步骤；生成步骤两边相同" },
   b3: { title_zh: "LLM 逐段判定 4 项", outputTokensPerCall: 80, note_zh: "只算守门步骤；端到端还节省了生成阶段的输入 tokens" },
   b4: { title_zh: "LLM function calling 一次", outputTokensPerCall: 120, note_zh: "纯设备指令；复合/闲聊指令另加一次 Sonnet 5" },
+  c1: { title_zh: "LLM 按细则评分并输出 JSON", outputTokensPerCall: 250, note_zh: "只算评分步骤；反馈生成两边都要 LLM" },
+  c2: { title_zh: "LLM 分诊分类 10 个字段", outputTokensPerCall: 200, note_zh: "只算分诊步骤；数值比较在代码里两边都免费" },
+  c3: { title_zh: "LLM 判定公告 8 个字段", outputTokensPerCall: 200, note_zh: "只算判定步骤" },
+  c4: { title_zh: "LLM 逐站点判定通知适用性", outputTokensPerCall: 150, note_zh: "每对通知 × 站点一次；kW 与时间窗在代码里比较" },
 };
 
 export function estimateLlmBaseline(
