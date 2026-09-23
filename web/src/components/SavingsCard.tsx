@@ -22,7 +22,7 @@ export function SavingsCard({ scenario, jevTraces, defaultTier = "standard" }: {
       <div className="mt-3 grid grid-cols-3 gap-3 text-center">
         <Figure value={fmtUsd(est.llmUsd)} label={zh.savings.baseline} tone="text-claude" />
         <Figure value={fmtUsd(est.jevUsd)} label={zh.savings.actual} tone="text-jev" />
-        <Figure value={est.calls ? `${fmtPct(est.savingsPct)} · ${fmtRatio(est.ratio)}` : zh.savings.empty} label={zh.savings.savings} tone="text-ok" />
+        <Figure value={est.calls ? fmtPct(est.savingsPct) : zh.savings.empty} sub={est.calls ? fmtRatio(est.ratio) : undefined} label={zh.savings.savings} tone="text-ok" />
       </div>
       <button type="button" className="mt-3 text-xs text-ink-3 underline decoration-rule underline-offset-2 hover:text-ink" onClick={() => setShowAssumptions(!showAssumptions)}>
         {showAssumptions ? zh.savings.hideAssumptions : zh.savings.assumptions}
@@ -49,10 +49,13 @@ export function SavingsCard({ scenario, jevTraces, defaultTier = "standard" }: {
   );
 }
 
-function Figure({ value, label, tone }: { value: string; label: string; tone: string }) {
+function Figure({ value, sub, label, tone }: { value: string; sub?: string; label: string; tone: string }) {
   return (
-    <div>
-      <div className={`num text-lg ${tone}`}>{value}</div>
+    <div className="min-w-0">
+      <div className={`num break-words text-lg leading-tight ${tone}`}>
+        {value}
+        {sub && <span className="ml-1 text-xs">{sub}</span>}
+      </div>
       <div className="text-[11px] text-ink-3">{label}</div>
     </div>
   );
