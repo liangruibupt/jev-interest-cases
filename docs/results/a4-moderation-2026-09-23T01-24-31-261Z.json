@@ -1,0 +1,238 @@
+{
+  "caseId": "moderation",
+  "runs": 3,
+  "arms": [
+    "opus5"
+  ],
+  "nonce": false,
+  "startedAt": "2026-09-23T01:24:31.261Z",
+  "finishedAt": "2026-09-23T01:25:14.755Z",
+  "records": [
+    {
+      "arm": "opus5",
+      "run": 1,
+      "answers": {
+        "category": {
+          "type": "choice",
+          "choice": "harassment",
+          "probabilities": {
+            "none": 0.02,
+            "harassment": 0.72,
+            "hate": 0.01,
+            "violence": 0.01,
+            "spam": 0.23,
+            "sexual": 0.01
+          },
+          "confidence": null
+        },
+        "primary_risk": {
+          "type": "choice",
+          "choice": "harassment",
+          "probabilities": {
+            "harassment": 0.6,
+            "violence": 0.01,
+            "link_abuse": 0.2,
+            "account_history": 0.15,
+            "low_risk": 0.04
+          },
+          "confidence": null
+        },
+        "target": {
+          "type": "choice",
+          "choice": "individual",
+          "probabilities": {
+            "individual": 0.9,
+            "group": 0.04,
+            "platform": 0.04,
+            "none": 0.02
+          },
+          "confidence": null
+        },
+        "action": {
+          "type": "choice",
+          "choice": "strike",
+          "probabilities": {
+            "allow": 0.02,
+            "warn": 0.1,
+            "remove": 0.24,
+            "strike": 0.55,
+            "escalate": 0.09
+          },
+          "confidence": null
+        },
+        "queue": {
+          "type": "choice",
+          "choice": "standard",
+          "probabilities": {
+            "none": 0.03,
+            "standard": 0.6,
+            "priority": 0.35,
+            "legal": 0.02
+          },
+          "confidence": null
+        },
+        "link_handling": {
+          "type": "choice",
+          "choice": "remove_link",
+          "probabilities": {
+            "keep": 0.05,
+            "remove_link": 0.6,
+            "warn_user": 0.1,
+            "treat_as_brigading": 0.25
+          },
+          "confidence": null
+        },
+        "review_path": {
+          "type": "choice",
+          "choice": "human_reviewer",
+          "probabilities": {
+            "automated": 0.12,
+            "human_reviewer": 0.72,
+            "senior_reviewer": 0.16
+          },
+          "confidence": null
+        },
+        "severity": {
+          "type": "choice",
+          "choice": "medium",
+          "probabilities": {
+            "none": 0.020000000000000004,
+            "low": 0.16000000000000003,
+            "medium": 0.7000000000000001,
+            "high": 0.12000000000000001
+          },
+          "confidence": null
+        }
+      },
+      "latencyMs": 6298,
+      "costUsd": 0.035210000000000005,
+      "inputTokens": 4087,
+      "outputTokens": 591,
+      "traceId": "e014d15f-96fa-40b7-8338-706a3397b61e",
+      "degenerate": [],
+      "normalizationDelta": {
+        "category": 0,
+        "primary_risk": 0,
+        "target": 0,
+        "action": 0,
+        "queue": 0,
+        "link_handling": 0,
+        "review_path": 0,
+        "severity": 1.1102230246251565e-16
+      }
+    },
+    {
+      "arm": "opus5",
+      "run": 3,
+      "answers": {
+        "category": {
+          "type": "choice",
+          "choice": "harassment",
+          "probabilities": {
+            "none": 0.02,
+            "harassment": 0.72,
+            "hate": 0.01,
+            "violence": 0.01,
+            "spam": 0.23,
+            "sexual": 0.01
+          },
+          "confidence": null
+        },
+        "primary_risk": {
+          "type": "choice",
+          "choice": "harassment",
+          "probabilities": {
+            "harassment": 0.55,
+            "violence": 0.02,
+            "link_abuse": 0.2,
+            "account_history": 0.2,
+            "low_risk": 0.03
+          },
+          "confidence": null
+        },
+        "target": {
+          "type": "choice",
+          "choice": "individual",
+          "probabilities": {
+            "individual": 0.9,
+            "group": 0.05,
+            "platform": 0.03,
+            "none": 0.02
+          },
+          "confidence": null
+        },
+        "action": {
+          "type": "choice",
+          "choice": "strike",
+          "probabilities": {
+            "allow": 0.02,
+            "warn": 0.08,
+            "remove": 0.25,
+            "strike": 0.58,
+            "escalate": 0.07
+          },
+          "confidence": null
+        },
+        "queue": {
+          "type": "choice",
+          "choice": "standard",
+          "probabilities": {
+            "none": 0.03,
+            "standard": 0.6,
+            "priority": 0.35,
+            "legal": 0.02
+          },
+          "confidence": null
+        },
+        "link_handling": {
+          "type": "choice",
+          "choice": "remove_link",
+          "probabilities": {
+            "keep": 0.04,
+            "remove_link": 0.62,
+            "warn_user": 0.12,
+            "treat_as_brigading": 0.22
+          },
+          "confidence": null
+        },
+        "review_path": {
+          "type": "choice",
+          "choice": "human_reviewer",
+          "probabilities": {
+            "automated": 0.12,
+            "human_reviewer": 0.72,
+            "senior_reviewer": 0.16
+          },
+          "confidence": null
+        },
+        "severity": {
+          "type": "choice",
+          "choice": "medium",
+          "probabilities": {
+            "none": 0.020000000000000004,
+            "low": 0.15000000000000002,
+            "medium": 0.7300000000000001,
+            "high": 0.10000000000000002
+          },
+          "confidence": null
+        }
+      },
+      "latencyMs": 6719,
+      "costUsd": 0.034824999999999995,
+      "inputTokens": 3890,
+      "outputTokens": 615,
+      "traceId": "c201dd34-0937-4dab-a857-b8737df29015",
+      "degenerate": [],
+      "normalizationDelta": {
+        "category": 0,
+        "primary_risk": 0,
+        "target": 0,
+        "action": 0,
+        "queue": 0,
+        "link_handling": 0,
+        "review_path": 0,
+        "severity": 1.1102230246251565e-16
+      }
+    }
+  ]
+}
