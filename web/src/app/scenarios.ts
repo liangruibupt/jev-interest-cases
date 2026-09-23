@@ -14,7 +14,7 @@ export interface ScenarioMeta {
 export const SCENARIOS: ScenarioMeta[] = [
   { id: "a1", path: "/a1", title: "A1 原语实验室", subtitle: "Choice / Score / Noul 实时可视化", proves: "三种原语的返回形状；~100ms 可嵌入 UI", group: "pure", status: "available" },
   { id: "a2", path: "/a2", title: "A2 工单分流看板", subtitle: "一次请求 10 题，阈值滑杆零推理重排", proves: "speculative fan-out 与置信度路由", group: "pure", status: "available" },
-  { id: "a4", path: "/a4", title: "A4 一致性与校准对比", subtitle: "Jev vs Claude 重复 15 轮", proves: "稳定性、延迟、成本的实测数字", group: "pure", status: "planned" },
+  { id: "a4", path: "/a4", title: "A4 一致性与校准对比", subtitle: "Jev vs Claude 重复 15 轮", proves: "稳定性、延迟、成本的实测数字", group: "pure", status: "available" },
   { id: "b1", path: "/b1", title: "B1 护栏 + 模型路由", subtitle: "Jev 在 Claude 前分流", proves: "1% 成本的前置分类器", group: "hybrid", status: "planned" },
   { id: "b2", path: "/b2", title: "B2 引用核验", subtitle: "Claude 写，Jev 查", proves: "通用验证", group: "hybrid", status: "planned" },
   { id: "a3", path: "/a3", title: "A3 文档逐行语义搜索", subtitle: "218 行 Choice + 存在性 Noul", proves: "无 embedding 的检索与 Choice 的陷阱", group: "pure", status: "planned" },
