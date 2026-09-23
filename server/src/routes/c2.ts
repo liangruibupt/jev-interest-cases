@@ -5,8 +5,8 @@ import { askJev as defaultAskJev } from "../lib/jev";
 import { usage } from "../lib/usage";
 
 interface TriageBody {
-  ids?: string[];
-  live?: boolean;
+  ids?: unknown;
+  live?: unknown;
 }
 
 /**
@@ -19,20 +19,30 @@ export function createC2Routes(deps: { askJev: typeof defaultAskJev }) {
 
   app.post("/triage", async (c) => {
     const body = ((await c.req.json().catch(() => ({}))) ?? {}) as TriageBody;
-    const wanted = body.ids ?? PATIENT_MESSAGES.map((m) => m.id);
+    if (body.ids !== undefined && !(Array.isArray(body.ids) && body.ids.every((s) => typeof s === "string"))) throw new BadRequestError("ids 必须是字符串数组");
+    const wanted = (body.ids as string[] | undefined) ?? PATIENT_MESSAGES.map((m) => m.id);
     const unknown = wanted.filter((id) => !PATIENT_MESSAGES.some((m) => m.id === id));
     if (unknown.length) throw new BadRequestError(`未知的留言 ID：${unknown.join(", ")}`, { unknown });
     const messages = PATIENT_MESSAGES.filter((m) => wanted.includes(m.id));
-    const cache = body.live ? "off" : "read-write";
-    const outcomes = await Promise.all(messages.map((m) => deps.askJev({ scenario: "c2", state: buildPatientState(m), questions: C2_QUESTIONS }, { cache })));
-    const results: Record<string, { answers: Answers; traceId: string }> = {};
+    const cache = body.live === true ? "off" : "read-write";
+    // Record each completed call as it lands so one failure never discards the others.
     const traces: JevTrace[] = [];
-    outcomes.forEach((o, i) => {
-      results[messages[i]!.id] = { answers: o.result.answers as unknown as Answers, traceId: o.trace.id };
-      traces.push(o.trace);
-      usage.record(o.trace);
+    const settled = await Promise.allSettled(
+      messages.map(async (m) => {
+        const o = await deps.askJev({ scenario: "c2", state: buildPatientState(m), questions: C2_QUESTIONS }, { cache });
+        usage.record(o.trace);
+        traces.push(o.trace);
+        return o;
+      }),
+    );
+    const results: Record<string, { answers: Answers; traceId: string }> = {};
+    const errors: Record<string, string> = {};
+    settled.forEach((s, i) => {
+      const id = messages[i]!.id;
+      if (s.status === "fulfilled") results[id] = { answers: s.value.result.answers as unknown as Answers, traceId: s.value.trace.id };
+      else errors[id] = s.reason instanceof Error ? s.reason.message : String(s.reason);
     });
-    return c.json({ results, traces, model: outcomes[0]?.trace.model ?? null });
+    return c.json({ results, errors, traces, model: traces[0]?.model ?? null });
   });
 
   return app;

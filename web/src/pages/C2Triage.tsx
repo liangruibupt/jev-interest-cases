@@ -1,4 +1,4 @@
-import { C2_NOT_ASKED, C2_THRESHOLDS, LANE_PRIORITY, PATIENT_MESSAGES, TRIAGE_LANE_LABELS_ZH, VITAL_LABELS_ZH, triage, type Answers, type C2Thresholds, type JevTrace, type Trace, type TriageDecision, type TriageLane } from "@jev/shared";
+import { C2_NOT_ASKED, C2_THRESHOLDS, LANE_PRIORITY, PATIENT_MESSAGES, TRIAGE_LANE_LABELS_ZH, VITAL_LABELS_ZH, triage, type Answers, type C2Thresholds, type JevTrace, type RedFlagId, type Trace, type TriageDecision, type TriageLane } from "@jev/shared";
 import { useMemo, useState } from "react";
 import { ConfidenceRing } from "../components/ConfidenceRing";
 import { LearningCard } from "../components/LearningCard";
@@ -13,6 +13,7 @@ import { useSession } from "../store/session";
 
 interface TriageResponse {
   results: Record<string, { answers: Answers; traceId: string }>;
+  errors: Record<string, string>;
   traces: JevTrace[];
 }
 
@@ -26,7 +27,7 @@ const LANE_TONE: Record<TriageLane, string> = {
   scheduling: "bg-ok/10 text-ok border-ok/30",
   billing: "bg-ok/10 text-ok border-ok/30",
 };
-const RED_FLAG_ZH: Record<string, string> = { red_flag_chest_pain: "胸痛", red_flag_breathing: "呼吸困难 / 口唇发紫", red_flag_self_harm: "自伤念头", red_flag_stroke_or_bleeding: "卒中征象 / 大出血" };
+const RED_FLAG_ZH: Record<RedFlagId, string> = { red_flag_chest_pain: "胸痛", red_flag_breathing: "呼吸困难 / 口唇发紫", red_flag_self_harm: "自伤念头", red_flag_stroke_or_bleeding: "卒中征象 / 大出血" };
 const URGENCY_LEGEND: Record<string, string> = { "0": "行政 / 预约，无症状", "1": "可等几天的临床问题", "2": "需当天临床关注", "3": "可能的急症" };
 const LANES = (Object.keys(LANE_PRIORITY) as TriageLane[]).sort((a, b) => LANE_PRIORITY[a] - LANE_PRIORITY[b]);
 
@@ -38,8 +39,8 @@ const LEARNING = {
   ],
   tryThis: [
     "把\"红旗 ≥\"从 0.7 拉到 0.9：三条急诊留言的红旗都在 0.96–0.99，仍是急诊；说明信号很干净。",
-    "看 P05：Jev 的 urgency 只有 2.2，是代码从 \"103.5 F\" 算出高热才把它送到护士当天。",
-    "看 P08：科室 nursing 只有 0.51，但 urgency 2.05 —— 拿不准时交临床人员，不交行政人工。",
+    "看 P05：Jev 的 urgency 约 2.2，是代码从 \"103.5 F\" 算出高热才把它送到护士当天。",
+    "看 P08：科室 nursing 只有约 0.5（与 physician 分票），但 urgency ≈ 2 —— 拿不准时交临床人员，不交行政人工。",
   ],
   pitfalls: [
     "这是演示数据；真实系统必须先用本院标注集量准确率，并保留人工兜底，Jev 不是医疗器械。",
@@ -102,6 +103,7 @@ export function C2Triage() {
       setResults(res.results);
       setHistory((h) => [...h, ...res.traces]);
       addTraces(res.traces);
+      if (Object.keys(res.errors).length) setError(Object.entries(res.errors).map(([id, e]) => `${id}: ${e}`).join("；"));
       if (!selected) setSelected("P01");
     } catch (e) {
       setError(e instanceof ApiError ? e.message : zh.errors.generic);
@@ -130,9 +132,9 @@ export function C2Triage() {
         </label>
         <span className="ml-2 text-[11px] uppercase tracking-wider text-ink-3">{zh.c2.thresholds}</span>
         <div className="flex flex-wrap gap-4">
-          <ThresholdSlider label={zh.c2.act} value={t.act} min={0.5} max={0.95} step={0.05} onChange={(v) => setT({ ...t, act: v })} />
-          <ThresholdSlider label={zh.c2.sameDay} value={t.urgencySameDay} min={1.5} max={3} step={0.1} onChange={(v) => setT({ ...t, urgencySameDay: v })} />
-          <ThresholdSlider label={zh.c2.deptMin} value={t.departmentMin} min={0.3} max={0.9} step={0.05} onChange={(v) => setT({ ...t, departmentMin: v })} />
+          <ThresholdSlider label={zh.c2.act} value={t.act} min={0.5} max={0.95} step={0.05} onChange={(v) => setT((p) => ({ ...p, act: v }))} />
+          <ThresholdSlider label={zh.c2.sameDay} value={t.urgencySameDay} min={1.5} max={3} step={0.1} onChange={(v) => setT((p) => ({ ...p, urgencySameDay: v }))} />
+          <ThresholdSlider label={zh.c2.deptMin} value={t.departmentMin} min={0.3} max={0.9} step={0.05} onChange={(v) => setT((p) => ({ ...p, departmentMin: v }))} />
         </div>
         {error && <div className="w-full rounded-sm bg-bad/10 px-3 py-2 text-sm text-bad">{error}</div>}
       </section>
@@ -226,7 +228,7 @@ export function C2Triage() {
                 <div className="mt-4 text-[11px] uppercase tracking-wider text-ink-3">{zh.c2.redFlags}</div>
                 <div className="mt-1 space-y-1">
                   {selD.redFlags.map((f) => (
-                    <MiniNoul key={f.id} label={RED_FLAG_ZH[f.id] ?? f.id} value={f.value} act={t.act} review={t.review} />
+                    <MiniNoul key={f.id} label={RED_FLAG_ZH[f.id]} value={f.value} act={t.act} review={t.review} />
                   ))}
                 </div>
 
@@ -246,6 +248,7 @@ export function C2Triage() {
                   <span>{zh.c2.child} <span className="text-ink">{selD.aboutChild.toFixed(2)}</span></span>
                   <span>{zh.c2.human} <span className="text-ink">{selD.wantsHuman.toFixed(2)}</span></span>
                   <span>{zh.c2.distress} <span className="text-ink">{selD.distress.toFixed(2)} / 2</span></span>
+                  <span>mentions_measurement <span className="text-ink">{selD.mentionsMeasurement.toFixed(2)}</span></span>
                 </div>
               </section>
             ) : (
@@ -256,7 +259,7 @@ export function C2Triage() {
               <div className="text-[11px] uppercase tracking-wider text-ink-3">{zh.c2.hardRules}</div>
               <ol className="mt-1 list-decimal space-y-0.5 pl-5 text-ink-2">
                 {zh.c2.hardRuleList.map((r) => (
-                  <li key={r}>{r}</li>
+                  <li key={r}>{r.replace("{act}", t.act.toFixed(2)).replace("{review}", t.review.toFixed(2)).replace("{urgencyEmergency}", t.urgencyEmergency.toFixed(2))}</li>
                 ))}
               </ol>
               <div className="mt-4 text-[11px] uppercase tracking-wider text-bad">{zh.c2.notAsked}</div>

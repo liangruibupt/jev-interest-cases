@@ -4,6 +4,8 @@ export const C2_THRESHOLDS = {
   /** Red flag in [review, act) → a clinician looks the same day. */
   review: 0.35,
   urgencySameDay: 2.5,
+  /** urgency at or above this without any red flag → emergency anyway (situations the four red flags do not name). */
+  urgencyEmergency: 2.85,
   /** nursing department: at or above → nurse same day, below → physician queue. */
   urgencyPhysician: 1.5,
   departmentMin: 0.6,

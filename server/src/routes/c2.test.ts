@@ -7,10 +7,11 @@ const answers = {
   department: { type: "choice", choice: "scheduling", probabilities: { scheduling: 0.9, billing: 0.1 }, confidence: 0.85 },
 };
 
-function build() {
+function build(opts: { failId?: string } = {}) {
   let n = 0;
   const askJev = vi.fn(async (input: { state: { message: string; channel: string } }, _opts: unknown) => {
     n += 1;
+    if (opts.failId && input.state.message.startsWith(opts.failId)) throw new Error("Jev 限流（模拟）");
     const trace: JevTrace = { kind: "jev", id: `t${n}`, scenario: "c2", startedAt: "", latencyMs: 300, cached: false, model: "jev-1.13.0", request: { state: input.state as never, questions: {}, model: "jev-latest" }, response: { answers: answers as never, usage: { input_tokens: 800, output_tokens: 11 } }, cost: { usd: 0.0000336 } };
     return { result: { model: "jev-1.13.0", answers, usage: trace.response.usage }, trace };
   });
@@ -40,6 +41,14 @@ describe("POST /api/c2/triage", () => {
     expect(Object.keys(body.results).sort()).toEqual(["P06", "P16"]);
     expect(askJev.mock.calls[0]?.[1]).toEqual({ cache: "off" });
     expect((await post(app, { ids: ["P99"] })).status).toBe(400);
+    expect((await post(app, { ids: "P01" })).status).toBe(400);
     expect((await post(app, null)).status).toBe(200);
+  });
+  it("keeps the other messages when one Jev call fails", async () => {
+    const { app } = build({ failId: "Hi, I'm down to my last" });
+    const body = (await (await post(app, {})).json()) as { results: Record<string, unknown>; errors: Record<string, string>; traces: unknown[] };
+    expect(Object.keys(body.results)).toHaveLength(15);
+    expect(body.errors.P02).toMatch(/模拟/);
+    expect(body.traces).toHaveLength(15);
   });
 });

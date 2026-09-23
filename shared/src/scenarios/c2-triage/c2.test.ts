@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { PATIENT_MESSAGES } from "../../datasets/patientMessages";
 import type { Answers } from "../../types";
 import { validateQuestions } from "../../validate";
-import { C2_NOT_ASKED, C2_QUESTIONS, C2_QUESTION_IDS, C2_THRESHOLDS, DEPARTMENTS, buildPatientState, extractVitals, triage } from "./index";
+import { C2_NOT_ASKED, C2_QUESTIONS, C2_QUESTION_IDS, C2_THRESHOLDS, DEPARTMENTS, LANE_PRIORITY, buildPatientState, extractVitals, triage } from "./index";
 
 type Over = Partial<{ urgency: number; urgencyConf: number; dep: string; depConf: number; chest: number; breath: number; selfHarm: number; stroke: number; measurement: number; advice: number; child: number; distress: number; human: number }>;
 function answers(o: Over = {}): Answers {
@@ -49,6 +49,24 @@ describe("C2 vitals parsed in code", () => {
     expect(extractVitals("my LDL cholesterol came back at 160")).toEqual([]);
     expect(extractVitals("appointment on the 3rd at 10")).toEqual([]);
     expect(extractVitals("BP 120/80 and sugar 110, all fine")).toEqual([]);
+    // Negatives that used to escalate: drug strengths, durations, ages, dates, mmol, CO2, keyword substrings.
+    expect(extractVitals("Please refill my Augmentin 875/125")).toEqual([]);
+    expect(extractVitals("Percocet 10/325 and Bactrim 800/160 as before")).toEqual([]);
+    expect(extractVitals("I cut out sugar for 30 days, can I book a follow-up?")).toEqual([]);
+    expect(extractVitals("my glucose was 22 mmol/L this morning")).toEqual([]);
+    expect(extractVitals("he has had a fever, he is 45")).toEqual([]);
+    expect(extractVitals("my BP appointment was on 9/23")).toEqual([]);
+    expect(extractVitals("CO2 levels 40 in the room, temporary headache")).toEqual([]);
+    expect(extractVitals("very satisfied, sugar-free diet, 200 mg ibuprofen")).toEqual([]);
+    expect(extractVitals("bp 180/80")).toEqual([{ kind: "hypertensive_crisis", value: "180/80", severity: "emergency" }]); // plausible, systolic at the threshold
+    expect(extractVitals("bp 120/120")).toEqual([]); // implausible (systolic must exceed diastolic)
+  });
+  it("accepts common variants and takes the worst of several temperatures", () => {
+    expect(extractVitals("temp 38.2 C but tonight it hit 104 F")).toEqual([{ kind: "high_fever", value: "104 °F", severity: "same_day" }]);
+    expect(extractVitals("BP was 185 over 95 tonight")).toEqual([{ kind: "hypertensive_crisis", value: "185/95", severity: "emergency" }]);
+    expect(extractVitals("O2 sat 88 on the finger monitor")).toEqual([{ kind: "low_oxygen", value: "88%", severity: "emergency" }]);
+    expect(extractVitals("oxygen level 88 percent")).toEqual([{ kind: "low_oxygen", value: "88%", severity: "emergency" }]);
+    expect(extractVitals("her temperature was 39.1 this morning")).toEqual([]); // unit-less Celsius-range number is not trusted
   });
 });
 
@@ -71,14 +89,34 @@ describe("C2 triage rules", () => {
     expect(triage(answers({ urgency: 2.5, dep: "physician" }), "x", t)).toMatchObject({ lane: "nurse_same_day", ruleId: "urgency" });
     expect(triage(answers({ urgency: 2.49, dep: "physician" }), "x", t).lane).toBe("physician");
     expect(triage(answers({ human: 0.8 }), "x", t)).toMatchObject({ lane: "human_review", ruleId: "wants_human" });
+    const nurseCallback = triage(answers({ dep: "nursing", urgency: 2.0, human: 0.9 }), "x", t); // clinical concern keeps its clinical route
+    expect(nurseCallback).toMatchObject({ lane: "nurse_same_day", ruleId: "nursing_same_day" });
+    expect(nurseCallback.reasons).toContain("同时要求回电");
+    expect(triage(answers({ dep: "physician", urgency: 2.4, human: 0.9 }), "x", t).lane).toBe("physician"); // callback noted, clinical route kept
+    expect(triage(answers({ urgency: 2.85, dep: "physician" }), "x", t)).toMatchObject({ lane: "emergency", ruleId: "urgency_emergency" });
+    expect(triage(answers({ urgency: 2.84, dep: "physician" }), "x", t).lane).toBe("nurse_same_day");
     expect(triage(answers({ dep: "other" }), "x", t)).toMatchObject({ lane: "human_review", ruleId: "department_other" });
     expect(triage(answers({ dep: "billing", depConf: 0.59 }), "x", t)).toMatchObject({ lane: "human_review", ruleId: "department_uncertain" });
     expect(triage(answers({ dep: "nursing", depConf: 0.51, urgency: 2.05 }), "x", t)).toMatchObject({ lane: "nurse_same_day", ruleId: "clinical_uncertain_department" });
-    expect(triage(answers({ dep: "nursing", depConf: 0.51, urgency: 1.49 }), "x", t)).toMatchObject({ lane: "human_review" });
+    const split = answers({ dep: "physician", depConf: 0.55, urgency: 1.2 });
+    (split.department as { probabilities: Record<string, number> }).probabilities = { physician: 0.55, nursing: 0.4, billing: 0.05 };
+    expect(triage(split, "x", t)).toMatchObject({ lane: "physician", ruleId: "clinical_split" });
+    const adminSplit = answers({ dep: "billing", depConf: 0.55, urgency: 0.2 });
+    (adminSplit.department as { probabilities: Record<string, number> }).probabilities = { billing: 0.55, scheduling: 0.45 };
+    expect(triage(adminSplit, "x", t)).toMatchObject({ lane: "human_review", ruleId: "department_uncertain" });
+    expect(triage(answers({ dep: "nursing", depConf: 0.51, urgency: 1.49 }), "x", t)).toMatchObject({ lane: "physician", ruleId: "clinical_split" }); // fixture puts all mass on nursing
     expect(triage(answers({ dep: "pharmacy_refill", advice: 0.7 }), "x", t)).toMatchObject({ lane: "physician", ruleId: "advice_to_clinician" });
     expect(triage(answers({ dep: "pharmacy_refill", advice: 0.69 }), "x", t).lane).toBe("pharmacy");
     expect(triage(answers({ dep: "nursing", urgency: 1.5 }), "x", t).lane).toBe("nurse_same_day");
     expect(triage(answers({ dep: "nursing", urgency: 1.49 }), "x", t).lane).toBe("physician");
     expect(triage(answers({ dep: "behavioral_health" }), "x", t).lane).toBe("behavioral_health");
+  });
+  it("fails closed on incomplete answers and uses mentions_measurement as the fallback for regex misses", () => {
+    const partial = answers();
+    delete partial.red_flag_self_harm;
+    expect(triage(partial, "x", t)).toMatchObject({ lane: "human_review", ruleId: "incomplete_answers" });
+    expect(triage(answers({ measurement: 0.9, dep: "scheduling", urgency: 1.6 }), "my reading was way off", t)).toMatchObject({ lane: "nurse_same_day", ruleId: "unparsed_measurement" });
+    expect(triage(answers({ measurement: 0.9, dep: "scheduling", urgency: 0.3 }), "my reading was way off", t).lane).toBe("scheduling");
+    expect(Object.keys(LANE_PRIORITY).sort()).toEqual(["behavioral_health", "billing", "emergency", "human_review", "nurse_same_day", "pharmacy", "physician", "scheduling"]);
   });
 });
