@@ -1,0 +1,168 @@
+{
+  "kind": "jev",
+  "id": "edac0189-9338-466a-9c13-42ce37c47c22",
+  "scenario": "c3",
+  "startedAt": "2026-09-23T14:47:03.892Z",
+  "latencyMs": 1389,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "company": "Meridian Freight",
+      "source": "press_release",
+      "headline": "Meridian Freight reports third-quarter results and provides liquidity update",
+      "text": "Meridian Freight reported a third-quarter net loss of $41 million. As of quarter end the company had $62 million of cash and was not in compliance with the minimum liquidity covenant under its revolving credit facility; it has obtained a limited waiver through December 15. Management stated that, absent additional financing or an amendment to the facility, there is substantial doubt about the company's ability to continue as a going concern."
+    },
+    "questions": {
+      "event_type": {
+        "type": "choice",
+        "instructions": {
+          "question": "What kind of event does `text` announce?",
+          "focus": "Pick the single main event."
+        },
+        "criteria": {
+          "guidance_change": "Raises, lowers, or withdraws financial guidance or outlook",
+          "executive_change": "A CEO, CFO, director, or other key executive departs, is appointed, or is replaced",
+          "restatement_or_accounting": "Restatement, non-reliance on prior financials, auditor change, or internal-control weakness",
+          "going_concern_or_liquidity": "Going-concern doubt, covenant breach, default, or a liquidity shortfall",
+          "m_and_a": "Acquisition, merger, divestiture, or sale of the company",
+          "major_customer_or_contract": "Gain or loss of a major customer, supplier, or contract",
+          "litigation_or_regulatory": "Lawsuit outcome, regulatory action, fine, or investigation",
+          "cyber_incident": "Cybersecurity breach or unauthorized access",
+          "capital_return": "Dividend or share repurchase",
+          "product_or_operations": "Product launch, facility, or ordinary operational news",
+          "insider_transaction": "Purchase or sale of shares by an insider",
+          "routine_housekeeping": "Meeting results, filings calendar, or other administrative notices",
+          "other": "None of the above"
+        }
+      },
+      "materiality": {
+        "type": "score",
+        "instructions": {
+          "question": "How significant is the event in `text` for the company's business?",
+          "focus": "Judge the event as described, not how the market might react."
+        },
+        "criteria": [
+          "Routine housekeeping with no effect on results or operations",
+          "Noteworthy but expected, or small relative to the size of the business",
+          "Significant to results, operations, leadership, or a major product or customer",
+          "Could change how the business is valued or whether it continues as a going concern"
+        ]
+      },
+      "direction": {
+        "type": "choice",
+        "instructions": "As described in `text`, is the news good or bad for the company's shareholders?",
+        "criteria": {
+          "negative": null,
+          "neutral": "No clear effect either way",
+          "positive": null,
+          "mixed": "Clearly good and bad elements together"
+        }
+      },
+      "is_forward_looking": {
+        "type": "noul",
+        "instructions": "Does `text` mainly announce expectations, plans, or intentions rather than events that have already happened?"
+      },
+      "hedged_language": {
+        "type": "noul",
+        "instructions": "Does `text` use vague, evasive, or unusually hedged wording about causes, amounts, or reasons where specifics would normally be given (for example 'certain matters', 'in due course', 'other opportunities' with no detail)?",
+        "criteria": {
+          "true": "Key facts are described vaguely where a reader would expect specifics",
+          "false": "The wording is specific, or the vagueness is ordinary legal boilerplate"
+        }
+      },
+      "accounting_or_controls": {
+        "type": "noul",
+        "instructions": "Does `text` involve financial reporting errors, a restatement, an auditor change, or internal-control weaknesses?"
+      },
+      "key_person": {
+        "type": "noul",
+        "instructions": "Does `text` involve the departure, arrival, conduct, or transactions of a CEO, CFO, board member, or other named key person?"
+      },
+      "boilerplate": {
+        "type": "noul",
+        "instructions": "Is `text` mostly standard boilerplate (safe-harbor language, routine notices, formulaic statements) rather than substantive news?"
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "event_type": {
+        "type": "choice",
+        "choice": "going_concern_or_liquidity",
+        "confidence": 1,
+        "probabilities": {
+          "capital_return": 0,
+          "executive_change": 0,
+          "m_and_a": 0,
+          "routine_housekeeping": 0,
+          "litigation_or_regulatory": 0,
+          "insider_transaction": 0,
+          "going_concern_or_liquidity": 1,
+          "other": 0,
+          "guidance_change": 0,
+          "major_customer_or_contract": 0,
+          "restatement_or_accounting": 0,
+          "cyber_incident": 0,
+          "product_or_operations": 0
+        }
+      },
+      "materiality": {
+        "type": "score",
+        "score": 3,
+        "confidence": 1,
+        "legend": {
+          "0": "Routine housekeeping with no effect on results or operations",
+          "1": "Noteworthy but expected, or small relative to the size of the business",
+          "2": "Significant to results, operations, leadership, or a major product or customer",
+          "3": "Could change how the business is valued or whether it continues as a going concern"
+        },
+        "probabilities": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 1
+        }
+      },
+      "direction": {
+        "type": "choice",
+        "choice": "negative",
+        "confidence": 1,
+        "probabilities": {
+          "neutral": 0,
+          "positive": 0,
+          "mixed": 0,
+          "negative": 1
+        }
+      },
+      "is_forward_looking": {
+        "type": "noul",
+        "noul": 0.11
+      },
+      "hedged_language": {
+        "type": "noul",
+        "noul": 0.1
+      },
+      "accounting_or_controls": {
+        "type": "noul",
+        "noul": 0.04
+      },
+      "key_person": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "boilerplate": {
+        "type": "noul",
+        "noul": 0.11
+      }
+    },
+    "usage": {
+      "input_tokens": 1216,
+      "output_tokens": 306
+    }
+  },
+  "cost": {
+    "usd": 0.00005107200000000001
+  }
+}

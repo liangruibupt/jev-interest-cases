@@ -1,5 +1,5 @@
 /** `npm run warm-cache` — evaluates every demo input once in normal mode so server/.cache/jev can be committed and replayed without a key. */
-import { A1_PRESETS, A2_QUESTIONS, A3_PRESET_QUERIES, B1_QUESTIONS, B2_QUESTIONS, B3_PRESET_QUERIES, B3_QUESTIONS, C1_QUESTIONS, C2_QUESTIONS, CORPUS, ESSAYS, EXAMPLE_REQUESTS, INITIAL_HOME, PATIENT_MESSAGES, ROOMS, CANNED_CITATIONS, GUARDRAIL_MESSAGES, RFC_SECTIONS, TICKETS, buildClaimState, buildDocumentState, buildFindQuestions, bm25Search, buildB4Questions, buildEssayState, buildIndex, buildMessageState, buildPassageState, buildPatientState, buildRequestState, buildTicketState, passageById, stringStage } from "../shared/src/index";
+import { A1_PRESETS, A2_QUESTIONS, A3_PRESET_QUERIES, B1_QUESTIONS, B2_QUESTIONS, B3_PRESET_QUERIES, B3_QUESTIONS, C1_QUESTIONS, C2_QUESTIONS, C3_QUESTIONS, CORPUS, ESSAYS, EXAMPLE_REQUESTS, FILINGS, INITIAL_HOME, PATIENT_MESSAGES, ROOMS, CANNED_CITATIONS, GUARDRAIL_MESSAGES, RFC_SECTIONS, TICKETS, buildClaimState, buildDocumentState, buildFindQuestions, bm25Search, buildB4Questions, buildEssayState, buildFilingState, buildIndex, buildMessageState, buildPassageState, buildPatientState, buildRequestState, buildTicketState, passageById, stringStage } from "../shared/src/index";
 import { askJev } from "../server/src/lib/jev";
 
 let calls = 0;
@@ -39,5 +39,7 @@ const c1 = await Promise.all(ESSAYS.map((e) => askJev({ scenario: "c1", state: b
 c1.forEach((o, i) => note(`c1/${ESSAYS[i]!.id}`, o.trace));
 const c2 = await Promise.all(PATIENT_MESSAGES.map((m) => askJev({ scenario: "c2", state: buildPatientState(m), questions: C2_QUESTIONS }, { cache: "read-write" })));
 c2.forEach((o, i) => note(`c2/${PATIENT_MESSAGES[i]!.id}`, o.trace));
+const c3 = await Promise.all(FILINGS.map((f) => askJev({ scenario: "c3", state: buildFilingState(f), questions: C3_QUESTIONS }, { cache: "read-write" })));
+c3.forEach((o, i) => note(`c3/${FILINGS[i]!.id}`, o.trace));
 
 console.log(`\n${calls} inputs, ${cached} already cached, ${calls - cached} fetched, spent $${usd.toFixed(6)}`);
