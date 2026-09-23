@@ -95,3 +95,12 @@ describe("GET /api/a4/run (SSE)", () => {
     expect(events.at(-1)?.event).toBe("done");
   });
 });
+
+describe("GET /api/a4/results", () => {
+  it("returns an empty list when export is disabled and rejects bad file names", async () => {
+    const { app } = build();
+    const list = (await (await app.request("/results")).json()) as { files: string[] };
+    expect(list.files).toEqual([]);
+    expect((await app.request("/results/..%2Fsecret.json")).status).toBe(400);
+  });
+});

@@ -17,6 +17,7 @@ import { Heatmap, Legend } from "../components/Heatmap";
 import { LearningCard } from "../components/LearningCard";
 import { SavingsCard } from "../components/SavingsCard";
 import { zh } from "../i18n/zh";
+import { api } from "../lib/api";
 import { fmtMs, fmtRatio, fmtUsd } from "../lib/format";
 import { labelColorMap } from "../lib/palette";
 import { openSse } from "../lib/sse";
@@ -54,6 +55,25 @@ export function A4Consistency() {
   const [errors, setErrors] = useState<string[]>([]);
   const [savedTo, setSavedTo] = useState<string | null>(null);
   const closeRef = useRef<(() => void) | null>(null);
+  const [savedFiles, setSavedFiles] = useState<string[]>([]);
+
+  useEffect(() => {
+    void api.get<{ files: string[] }>("/api/a4/results").then((r) => setSavedFiles(r.files)).catch(() => setSavedFiles([]));
+  }, [phase]);
+
+  async function loadSaved(file: string) {
+    if (!file) return;
+    closeRef.current?.();
+    const data = await api.get<{ caseId: A4CaseId; runs: number; arms: ArmId[]; nonce: boolean; records: RunRecord[] }>(`/api/a4/results/${file}`);
+    setCaseId(data.caseId);
+    setRuns(data.runs);
+    setArms(data.arms);
+    setNonce(data.nonce);
+    setRecords(data.records);
+    setErrors([]);
+    setSavedTo(`docs/results/${file}（已加载）`);
+    setPhase("done");
+  }
 
   const a4case = A4_CASES.find((c) => c.id === caseId)!;
   const estimate = useMemo(() => estimateRunCost(caseId, arms, runs), [caseId, arms, runs]);
@@ -109,15 +129,12 @@ export function A4Consistency() {
 
   const metrics = useMemo(() => arms.map((arm) => computeArmMetrics(arm, records, a4case.questions)).filter((m) => m.runs > 0), [arms, records, a4case]);
   const ratios = useMemo(() => ratiosVsJev(metrics), [metrics]);
-  const colorsByQuestion = useMemo(() => {
-    const out: Record<string, Record<string, string>> = {};
-    for (const qid of Object.keys(a4case.questions)) {
-      const labels = metrics.flatMap((m) => m.questions.find((q) => q.questionId === qid)?.labelsPerRun ?? []);
-      out[qid] = labelColorMap(labels);
-    }
-    return out;
+  /** One global label→colour map in first-appearance order (question order, then arm order) so identical labels share a colour everywhere. */
+  const allColors = useMemo(() => {
+    const labels: string[] = [];
+    for (const qid of Object.keys(a4case.questions)) for (const m of metrics) labels.push(...(m.questions.find((q) => q.questionId === qid)?.labelsPerRun ?? []));
+    return labelColorMap(labels);
   }, [metrics, a4case]);
-  const allColors = useMemo(() => Object.assign({}, ...Object.values(colorsByQuestion)) as Record<string, string>, [colorsByQuestion]);
   const jevTraces = useMemo<JevTrace[]>(
     () =>
       records
@@ -214,6 +231,16 @@ export function A4Consistency() {
               {arms.length} 臂 × {runs} 轮
             </div>
           </div>
+          {savedFiles.length > 0 && phase !== "running" && (
+            <select className="hairline num max-w-64 rounded-sm bg-paper px-2 py-1 text-xs" defaultValue="" onChange={(e) => void loadSaved(e.target.value)}>
+              <option value="">{zh.a4.loadSaved}</option>
+              {savedFiles.map((f) => (
+                <option key={f} value={f}>
+                  {f}
+                </option>
+              ))}
+            </select>
+          )}
           {phase === "running" ? (
             <button type="button" onClick={stop} className="hairline rounded-md bg-paper px-4 py-2 text-sm">
               {zh.a4.stop}
@@ -263,13 +290,7 @@ export function A4Consistency() {
                     </span>
                   </div>
                   <div className="mt-2">
-                    <Heatmap
-                      questions={m.questions}
-                      runs={runs}
-                      colors={Object.assign({}, ...Object.values(colorsByQuestion)) as Record<string, string>}
-                      uncertainBelow={A4_LIMITS.uncertainBelow}
-                      typeById={questionTypes}
-                    />
+                    <Heatmap questions={m.questions} runs={runs} colors={allColors} uncertainBelow={A4_LIMITS.uncertainBelow} typeById={questionTypes} />
                   </div>
                   <dl className="num mt-3 grid grid-cols-3 gap-x-3 gap-y-1 text-[11px] text-ink-2">
                     <dt className="text-ink-3">{zh.a4.raw}</dt>

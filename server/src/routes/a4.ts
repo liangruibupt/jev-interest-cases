@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { A4_ARMS, A4_CASES, A4_LIMITS, estimateRunCost, type A4CaseId, type Answers, type ArmId, type EntryType, type RunRecord } from "@jev/shared";
 import { Hono } from "hono";
@@ -97,6 +97,20 @@ export function createA4Routes(deps: Deps) {
       }
       await send("done", { savedTo, totalUsd: records.reduce((s, r) => s + r.costUsd, 0), records: records.length });
     });
+  });
+
+  /** Saved experiments (docs/results/a4-*.json) so the page can replay without spending. */
+  app.get("/results", async (c) => {
+    if (!resultsDir) return c.json({ files: [] });
+    const files = (await readdir(resultsDir).catch(() => [] as string[])).filter((f) => /^a4-.*\.json$/.test(f)).sort().reverse();
+    return c.json({ files });
+  });
+  app.get("/results/:file", async (c) => {
+    const file = c.req.param("file");
+    if (!resultsDir || !/^a4-[A-Za-z0-9-]+\.json$/.test(file)) throw new BadRequestError("无效的结果文件名");
+    const text = await readFile(`${resultsDir}${file}`, "utf8").catch(() => null);
+    if (text === null) throw new BadRequestError("结果文件不存在");
+    return c.body(text, 200, { "content-type": "application/json" });
   });
 
   return app;
