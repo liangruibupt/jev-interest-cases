@@ -76,10 +76,10 @@ describe("decide", () => {
   it("escalates complex complaints to a human and complex requests to Opus", () => {
     expect(decide(answers({ intent: "complaint", complexity: 1.0 }), strict).route).toBe("human");
     expect(decide(answers({ intent: "complaint", complexity: 0.5 }), strict).route).toBe("sonnet");
-    const d = decide(answers({ intent: "technical_help", complexity: 1.5 }), strict);
+    const d = decide(answers({ intent: "technical_help", complexity: 1.3 }), strict);
     expect(d.route).toBe("opus");
     expect(d.tier).toBe("strong");
-    expect(decide(answers({ intent: "technical_help", complexity: 1.4 }), strict).route).toBe("sonnet");
+    expect(decide(answers({ intent: "technical_help", complexity: 1.29 }), strict).route).toBe("sonnet");
   });
   it("explains itself", () => {
     const d = decide(answers({ intent: "chit_chat" }), strict);
