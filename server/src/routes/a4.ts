@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { A4_ARMS, A4_CASES, A4_LIMITS, estimateRunCost, type A4CaseId, type Answers, type ArmId, type EntryType, type RunRecord } from "@jev/shared";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
-import { BadRequestError, toHttpError } from "../lib/errors";
+import { BadRequestError, apiErrorHandler, toHttpError } from "../lib/errors";
 import { askJev as defaultAskJev } from "../lib/jev";
 import { askLlmSystemOne as defaultAskLlmSystemOne } from "../lib/llmSystemOne";
 import { usage } from "../lib/usage";
@@ -24,10 +24,7 @@ interface Deps {
 export function createA4Routes(deps: Deps) {
   const resultsDir = deps.resultsDir === undefined ? DEFAULT_RESULTS_DIR : deps.resultsDir;
   const app = new Hono();
-  app.onError((err, c) => {
-    const e = toHttpError(err);
-    return c.json({ error: e }, e.status as 500);
-  });
+  app.onError(apiErrorHandler);
 
   app.get("/run", (c) => {
     const caseId = c.req.query("caseId") as A4CaseId | undefined;
@@ -64,10 +61,12 @@ export function createA4Routes(deps: Deps) {
         scenario: "a4", state, questions: a4case.questions, tier: arm.tier!,
         ...(arm.temperature !== undefined ? { temperature: arm.temperature } : {}),
       });
-      usage.record(out.trace);
+      for (const t of out.traces) usage.record(t); // failed attempts are billed too
       return {
-        arm: armId, run, answers: out.answers, latencyMs: out.trace.latencyMs, costUsd: out.trace.cost.usd,
-        inputTokens: out.trace.inputTokens, outputTokens: out.trace.outputTokens, traceId: out.trace.id,
+        arm: armId, run, answers: out.answers, latencyMs: out.trace.latencyMs,
+        costUsd: out.traces.reduce((s, t) => s + t.cost.usd, 0),
+        inputTokens: out.traces.reduce((s, t) => s + t.inputTokens, 0), outputTokens: out.traces.reduce((s, t) => s + t.outputTokens, 0),
+        traceId: out.trace.id, attempts: out.traces.length,
         degenerate: out.debug.degenerate, normalizationDelta: out.debug.normalizationDelta,
       };
     };
@@ -83,6 +82,7 @@ export function createA4Routes(deps: Deps) {
               records.push(record);
               await send("run", record);
             } catch (err) {
+              for (const t of (err as { traces?: import("@jev/shared").ClaudeTrace[] }).traces ?? []) usage.record(t);
               const e = toHttpError(err);
               console.warn(`[a4] ${armId} run ${run} failed: ${e.message}`, e.detail !== undefined ? JSON.stringify(e.detail).slice(0, 400) : "");
               await send("arm_error", { arm: armId, run, message: e.message, detail: e.detail });

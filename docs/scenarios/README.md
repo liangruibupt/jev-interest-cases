@@ -19,7 +19,7 @@
 
 | 日期 | Jev | Sonnet 5 text/parse | Opus 5 text/parse | Sonnet 4.6 text/parse | 备注 |
 |---|---|---|---|---|---|
-| 2026-09-23 | ✔ jev-1.13.0，首次 3.1s，稳定 0.54–0.76s | ✔ 1.2–4.6s / ✔ `tool-lax` 3.1s | ✔ 1.5s / ✔ `tool-lax` 2.8s | ✔ 1.2s / ✔ `format` 1.2s | 见下方说明 |
+| 2026-09-23 | ✔ jev-1.13.0，首次 3.1s，稳定 0.54–0.76s；218 选项 Choice ✔（11,971 tokens，684ms）；LLM 适配器 ✔（Σp=1.000） | ✔ 1.2–4.6s / ✔ `tool-lax` 3.1s | ✔ 1.5s / ✔ `tool-lax` 2.8s | ✔ 1.2s / ✔ `format` 1.2s | 见下方说明 |
 
 ### Bedrock runtime 上的结构化输出
 
@@ -27,6 +27,8 @@
 - Sonnet 5 / Opus 5：`output_config.format` 返回 400 "Extra inputs are not permitted"；`strict: true` 的工具也被拒；**非 strict 的强制工具调用**（`tool_choice: {type:"tool"}`）可用，服务端用 zod 校验工具输入。
 - `server/src/lib/claude.ts` 的 `claudeParse` 按 `format → tool → tool-lax` 自动回退并按模型记住可用模式；可用 `STRUCTURED_OUTPUT_MODE=format|tool|tool-lax` 强制。
 - 首次调用 Sonnet 5 有约 4–5s 的冷启动，之后 1–2s。
+- `output_config.effort: "low"` 在 Sonnet 4.6 / Sonnet 5 / Opus 5 上均可用。
+- 完整探测：`npm run check-env` 共 9 项（Jev、218 选项 Choice、三层级 text+parse、LLM 适配器），任一失败退出码非 0。
 
 ### 本地网络下的 Jev 延迟（2026-09-23，`npm run latency`）
 

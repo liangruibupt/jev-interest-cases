@@ -33,6 +33,10 @@ export function validateQuestions(questions: Questions): ValidationIssue[] {
       issues.push({ questionId: id, message: "缺少 type 字段" });
       continue;
     }
+    const instr = (q as { instructions?: unknown }).instructions;
+    if (instr === undefined || instr === null || (typeof instr === "string" && !instr.trim())) {
+      issues.push({ questionId: id, message: "instructions 不能为空（问题 ID 不会发给模型）" });
+    }
     switch (q.type) {
       case "choice": {
         const n = Object.keys(q.criteria ?? {}).length;

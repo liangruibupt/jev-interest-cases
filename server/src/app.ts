@@ -1,8 +1,9 @@
+import { fileURLToPath } from "node:url";
 import { serveStatic } from "@hono/node-server/serve-static";
-import type { Trace } from "@jev/shared";
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { resolveCacheMode } from "./lib/cache";
-import { toHttpError } from "./lib/errors";
+import { apiErrorHandler } from "./lib/errors";
 import { queues } from "./lib/queue";
 import { usage } from "./lib/usage";
 import { a1Routes } from "./routes/a1";
@@ -13,11 +14,9 @@ export const app = new Hono();
 
 // No CORS: the browser reaches /api through the same-origin Vite proxy (dev) or the static server (prod).
 
-app.onError((err, c) => {
-  const e = toHttpError(err);
-  if (e.status >= 500) console.error(`[api] ${c.req.method} ${c.req.path} ->`, err);
-  return c.json({ error: e }, e.status as 500);
-});
+app.onError(apiErrorHandler);
+// Reject oversized bodies before parsing (A1 state limit is 12k chars; 256 KB leaves room for JSON questions).
+app.use("/api/*", bodyLimit({ maxSize: 256 * 1024 }));
 
 app.get("/api/health", (c) =>
   c.json({
@@ -37,20 +36,19 @@ app.post("/api/usage/reset", (c) => {
   return c.json({ ok: true });
 });
 
-// Test hook for the error middleware; harmless in production.
-app.get("/api/_boom", () => {
-  throw new Error("boom");
-});
+// Test hook for the error middleware; only registered when tests ask for it.
+if (process.env.JEV_TEST_HOOKS === "1") {
+  app.get("/api/_boom", () => {
+    throw new Error("boom");
+  });
+}
 
 // Scenario routes.
 app.route("/api/a1", a1Routes);
 app.route("/api/a2", a2Routes);
 app.route("/api/a4", a4Routes);
 
-// Production: serve the built web app (run `npm run build` first). Dev uses Vite's proxy instead.
-app.use("/*", serveStatic({ root: "../web/dist" }));
-
-/** Record traces into the usage accumulator; routes call this before responding. */
-export function recordTraces(traces: readonly Trace[]): void {
-  for (const t of traces) usage.record(t);
-}
+// Production: serve the built web app (run `npm run build` first) with an SPA fallback. Dev uses Vite's proxy instead.
+const webDist = fileURLToPath(new URL("../../web/dist/", import.meta.url));
+app.use("/*", serveStatic({ root: webDist }));
+app.get("/*", serveStatic({ root: webDist, path: "index.html" }));

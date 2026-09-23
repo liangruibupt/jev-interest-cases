@@ -12,7 +12,7 @@
     "build": "npm run build -w @jev/web",
     "test": "vitest run",
     "test:watch": "vitest",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present && tsc -p tsconfig.scripts.json",
     "check-env": "tsx --env-file=.env scripts/check-env.ts",
     "smoke": "tsx --env-file=.env scripts/smoke.ts",
     "vendor": "tsx scripts/vendor-datasets.ts",

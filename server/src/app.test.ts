@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { app } from "./app";
+process.env.JEV_TEST_HOOKS = "1";
+const { app } = await import("./app");
 
 describe("app", () => {
   it("reports health with env presence and queue stats", async () => {

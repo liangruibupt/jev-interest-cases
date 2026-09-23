@@ -11,8 +11,9 @@ export type Effort = "low" | "medium" | "high";
 /**
  * How structured output is obtained. Bedrock runtime (InvokeModel) accepts `output_config.format`
  * for the Claude 4.6 family but rejects it for Sonnet 5 / Opus 5 (400 "Extra inputs are not
- * permitted"); there we force a strict tool call instead. Fable 5.1 forbids forced tool_choice,
- * so it always uses `format`.
+ * permitted"); strict tools are rejected there too, so those models end up on `tool-lax`: a forced
+ * non-strict tool call whose input is validated client-side with zod. Fable 5.1 forbids forced
+ * tool_choice, so it always uses `format`.
  */
 export type StructuredMode = "format" | "tool" | "tool-lax";
 
@@ -39,16 +40,26 @@ export class ClaudeRefusalError extends Error {
   constructor(
     readonly category: string | null,
     readonly explanation: string | null,
+    /** The billed call that produced the refusal, so callers can still record its cost. */
+    readonly trace?: ClaudeTrace,
   ) {
     super(`Claude refused the request${category ? ` (${category})` : ""}${explanation ? `: ${explanation}` : ""}`);
     this.name = "ClaudeRefusalError";
   }
 }
 
+export type StructuredFailure = "truncated" | "missing" | "invalid";
+
 export class ClaudeStructuredOutputError extends Error {
   constructor(
     message: string,
     readonly raw: unknown,
+    /** truncated = hit max_tokens (re-asking cannot fix it; raise maxTokens); missing/invalid = re-ask with a correction. */
+    readonly reason: StructuredFailure = "invalid",
+    /** The billed call, so callers can record its cost even though it failed. */
+    readonly trace?: ClaudeTrace,
+    /** The assistant turn that failed, so a corrective retry can include it in the conversation. */
+    readonly assistantContent?: Anthropic.ContentBlock[],
   ) {
     super(message);
     this.name = "ClaudeStructuredOutputError";
@@ -145,10 +156,10 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
     };
   }
 
-  function throwIfRefused(msg: Anthropic.Message): void {
+  function throwIfRefused(msg: Anthropic.Message, trace: ClaudeTrace): void {
     if (msg.stop_reason === "refusal") {
       const details = (msg as { stop_details?: { category?: string | null; explanation?: string | null } | null }).stop_details;
-      throw new ClaudeRefusalError(details?.category ?? null, details?.explanation ?? null);
+      throw new ClaudeRefusalError(details?.category ?? null, details?.explanation ?? null, trace);
     }
   }
 
@@ -166,7 +177,7 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
     const { tier, params } = buildParams(call);
     const { value: msg, startedAt, latencyMs } = await timed(() => deps.client().messages.create(params));
     const trace = toTrace(call, tier.id, msg, startedAt, latencyMs);
-    throwIfRefused(msg);
+    throwIfRefused(msg, trace);
     const text = msg.content
       .filter((b): b is Anthropic.TextBlock => b.type === "text")
       .map((b) => b.text)
@@ -174,24 +185,25 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
     return { text, trace };
   }
 
-  async function viaFormat<T>(call: ClaudeParseCall<T>, params: Anthropic.MessageCreateParamsNonStreaming) {
+  async function viaFormat<T>(call: ClaudeParseCall<T>, tierId: ClaudeTierId, params: Anthropic.MessageCreateParamsNonStreaming) {
     const withFormat: Anthropic.MessageCreateParamsNonStreaming = {
       ...params,
       output_config: { ...(params.output_config ?? {}), format: zodOutputFormat(call.schema) },
     };
     const { value, startedAt, latencyMs } = await timed(() => deps.client().messages.parse(withFormat));
     const msg = value as ParsedLike<T>;
-    throwIfRefused(msg);
+    const trace = toTrace(call, tierId, msg, startedAt, latencyMs);
+    throwIfRefused(msg, trace);
     if (msg.stop_reason === "max_tokens") {
-      throw new ClaudeStructuredOutputError("输出被 max_tokens 截断，请提高 maxTokens 或减少问题数量", msg.content);
+      throw new ClaudeStructuredOutputError("输出被 max_tokens 截断，请提高 maxTokens 或减少问题数量", msg.content, "truncated", trace, msg.content);
     }
     if (msg.parsed_output === null || msg.parsed_output === undefined) {
-      throw new ClaudeStructuredOutputError("结构化输出解析失败（parsed_output 为空）", msg.content);
+      throw new ClaudeStructuredOutputError("结构化输出解析失败（parsed_output 为空）", msg.content, "missing", trace, msg.content);
     }
-    return { msg, parsed: msg.parsed_output, startedAt, latencyMs };
+    return { msg, parsed: msg.parsed_output, trace };
   }
 
-  async function viaTool<T>(call: ClaudeParseCall<T>, params: Anthropic.MessageCreateParamsNonStreaming, strict: boolean) {
+  async function viaTool<T>(call: ClaudeParseCall<T>, tierId: ClaudeTierId, params: Anthropic.MessageCreateParamsNonStreaming, strict: boolean) {
     const tool = {
       name: TOOL_NAME,
       description: "Return the result in the required structure. Call this tool exactly once.",
@@ -204,15 +216,16 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
       tool_choice: { type: "tool", name: TOOL_NAME },
     };
     const { value: msg, startedAt, latencyMs } = await timed(() => deps.client().messages.create(withTool));
-    throwIfRefused(msg);
+    const trace = toTrace(call, tierId, msg, startedAt, latencyMs);
+    throwIfRefused(msg, trace);
     if (msg.stop_reason === "max_tokens") {
-      throw new ClaudeStructuredOutputError("输出被 max_tokens 截断，请提高 maxTokens 或减少问题数量", msg.content);
+      throw new ClaudeStructuredOutputError("输出被 max_tokens 截断，请提高 maxTokens 或减少问题数量", msg.content, "truncated", trace, msg.content);
     }
     const block = msg.content.find((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
-    if (!block) throw new ClaudeStructuredOutputError("模型没有返回工具调用", msg.content);
+    if (!block) throw new ClaudeStructuredOutputError("模型没有返回工具调用", msg.content, "missing", trace, msg.content);
     const checked = call.schema.safeParse(block.input);
-    if (!checked.success) throw new ClaudeStructuredOutputError(`工具输入不符合 schema：${checked.error.message}`, block.input);
-    return { msg, parsed: checked.data, startedAt, latencyMs };
+    if (!checked.success) throw new ClaudeStructuredOutputError(`工具输入不符合 schema：${checked.error.message}`, block.input, "invalid", trace, msg.content);
+    return { msg, parsed: checked.data, trace };
   }
 
   async function claudeParse<T>(call: ClaudeParseCall<T>): Promise<{ parsed: T; trace: ClaudeTrace }> {
@@ -222,11 +235,9 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
     if (tier.id === "frontier") mode = "format"; // Fable 5.1 rejects forced tool_choice
     for (;;) {
       try {
-        const { msg, parsed, startedAt, latencyMs } =
-          mode === "format" ? await viaFormat(call, params) : await viaTool(call, params, mode === "tool");
+        const { parsed, trace } = mode === "format" ? await viaFormat(call, tier.id, params) : await viaTool(call, tier.id, params, mode === "tool");
         modeByModel.set(tier.modelId, mode);
         // latencyMs covers the successful attempt only; a failed probe attempt is remembered per model so it happens once.
-        const trace = toTrace(call, tier.id, msg, startedAt, latencyMs);
         trace.structuredMode = mode;
         return { parsed, trace };
       } catch (err) {

@@ -18,7 +18,7 @@ const post = (app: ReturnType<typeof build>["app"], body: unknown) =>
   app.request("/evaluate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
 
 describe("POST /api/a1/evaluate", () => {
-  it("evaluates and returns answers plus traces; normal mode uses read-write cache", async () => {
+  it("evaluates and returns answers plus traces; normal mode reads the cache but never writes it", async () => {
     const { app, askJev } = build();
     const res = await post(app, { state: "s", questions: { q: { type: "noul", instructions: "?" } } });
     expect(res.status).toBe(200);
@@ -26,7 +26,7 @@ describe("POST /api/a1/evaluate", () => {
     expect(body.answers.q.noul).toBe(0.9);
     expect(body.traces).toHaveLength(1);
     expect(body.model).toBe("jev-1.13.0");
-    expect(askJev.mock.calls[0]?.[1]).toEqual({ cache: "read-write" });
+    expect(askJev.mock.calls[0]?.[1]).toEqual({ cache: "read-only" });
   });
 
   it("live mode bypasses the cache", async () => {

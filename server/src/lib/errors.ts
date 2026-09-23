@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import type { ErrorHandler } from "hono";
 import { QuestionValidationError } from "@jev/shared";
 import { APIConnectionError, APIError as JevAPIError, AuthenticationError, RateLimitError, UnprocessableEntityError } from "@typesafe-ai/sdk";
 import { ClaudeRefusalError, ClaudeStructuredOutputError, ClaudeTierError } from "./claude";
@@ -64,3 +65,10 @@ export function toHttpError(err: unknown): HttpErrorBody {
   }
   return { status: 500, code: "internal", message: err instanceof Error ? err.message : String(err) };
 }
+
+/** Shared Hono error handler: maps to HTTP, logs 5xx once. Used by the root app and every sub-app. */
+export const apiErrorHandler: ErrorHandler = (err, c) => {
+  const e = toHttpError(err);
+  if (e.status >= 500) console.error(`[api] ${c.req.method} ${c.req.path} ->`, err);
+  return c.json({ error: e }, e.status as 500);
+};

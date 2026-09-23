@@ -10,6 +10,8 @@ export interface RunRecord {
   inputTokens: number;
   outputTokens: number;
   traceId: string;
+  /** Billed attempts behind this record (LLM arms may need corrective retries). */
+  attempts?: number;
   /** LLM adapter diagnostics. */
   degenerate?: string[];
   normalizationDelta?: Record<string, number>;

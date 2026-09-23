@@ -1,6 +1,6 @@
 import { A2_QUESTIONS, TICKETS, buildTicketState, type Answers, type JevTrace } from "@jev/shared";
 import { Hono } from "hono";
-import { BadRequestError, toHttpError } from "../lib/errors";
+import { BadRequestError, apiErrorHandler, toHttpError } from "../lib/errors";
 import { askJev as defaultAskJev } from "../lib/jev";
 import { usage } from "../lib/usage";
 
@@ -15,10 +15,7 @@ interface EvaluateBody {
  */
 export function createA2Routes(deps: { askJev: typeof defaultAskJev }) {
   const app = new Hono();
-  app.onError((err, c) => {
-    const e = toHttpError(err);
-    return c.json({ error: e }, e.status as 500);
-  });
+  app.onError(apiErrorHandler);
 
   app.post("/evaluate", async (c) => {
     const body = (await c.req.json().catch(() => ({}))) as EvaluateBody;

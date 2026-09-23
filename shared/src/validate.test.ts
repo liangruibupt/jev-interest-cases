@@ -40,6 +40,13 @@ describe("validateQuestions", () => {
     expect(issues.map((i) => i.message).join(" ")).toMatch(/type/);
   });
 
+  it("requires non-empty instructions because ids are not sent to the model", () => {
+    const blank = { q: { type: "noul", instructions: "  " } } as unknown as Questions;
+    expect(validateQuestions(blank)[0]?.message).toMatch(/instructions/);
+    const missing = { q: { type: "choice", criteria: { a: null, b: null } } } as unknown as Questions;
+    expect(validateQuestions(missing)[0]?.message).toMatch(/instructions/);
+  });
+
   it("assertValidQuestions throws a typed error listing issues", () => {
     expect(() => assertValidQuestions({})).toThrow(QuestionValidationError);
     try {

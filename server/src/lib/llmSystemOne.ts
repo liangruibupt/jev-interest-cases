@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { CLAUDE_TIERS, type Answers, type ClaudeTierId, type ClaudeTrace, type EntryType, type Question, type Questions, type ScenarioId } from "@jev/shared";
-import { ClaudeStructuredOutputError, claudeParse as defaultParse, type ClaudeParseCall } from "./claude";
+import { ClaudeRefusalError, ClaudeStructuredOutputError, claudeParse as defaultParse, type ClaudeParseCall } from "./claude";
 
 /**
  * TypeScript port of the idea behind TypeSafe's `system-one-adapter`: ask an LLM the same
@@ -104,7 +104,10 @@ export interface AskLlmSystemOneInput {
 
 export interface AskLlmSystemOneOutput {
   answers: Answers;
+  /** The successful call. */
   trace: ClaudeTrace;
+  /** Every billed attempt, failed ones included, so callers can record the true spend. */
+  traces: ClaudeTrace[];
   debug: NormalizeDebug & { retried: number };
 }
 
@@ -132,23 +135,43 @@ export function createLlmSystemOne(deps: { parse: ParseFn }) {
     let retried = 0;
     let result: { parsed: z.infer<typeof schema>; trace: ClaudeTrace } | undefined;
     let lastError: unknown;
-    const messages = [...base.messages];
+    const traces: ClaudeTrace[] = [];
+    let messages = [...base.messages];
+    let maxTokens = base.maxTokens ?? 2048;
     for (let attempt = 0; attempt <= MAX_CORRECTIVE_RETRIES && !result; attempt++) {
       try {
-        result = await deps.parse({ ...base, messages });
+        result = await deps.parse({ ...base, messages, maxTokens });
+        traces.push(result.trace);
       } catch (err) {
-        if (!(err instanceof ClaudeStructuredOutputError)) throw err;
+        if (!(err instanceof ClaudeStructuredOutputError)) {
+          if (err instanceof ClaudeRefusalError && err.trace) traces.push(err.trace);
+          (err as { traces?: ClaudeTrace[] }).traces = traces;
+          throw err;
+        }
+        if (err.trace) traces.push(err.trace);
         lastError = err;
         retried = attempt + 1;
-        messages.push({
-          role: "user",
-          content: `Your previous reply did not match the required structure (${err.message.slice(0, 300)}). Return only the structured object: for each question id a value of the form {"probabilities": {...}} (choice/score) or {"p_yes": number} (noul), with a probability for every listed option.`,
-        });
+        if (err.reason === "truncated") {
+          maxTokens *= 2; // re-asking cannot fix a truncated answer; give it room instead
+          continue;
+        }
+        messages = [
+          ...messages,
+          ...(err.assistantContent?.length ? [{ role: "assistant" as const, content: err.assistantContent }] : []),
+          {
+            role: "user" as const,
+            content: `Your previous reply did not match the required structure (${err.message.slice(0, 300)}). Return only the structured object: for each question id a value of the form {"probabilities": {...}} (choice/score) or {"p_yes": number} (noul), with a probability for every listed option.`,
+          },
+        ];
       }
     }
-    if (!result) throw lastError instanceof Error ? lastError : new Error(String(lastError));
+    if (!result) {
+      const e = lastError instanceof Error ? lastError : new Error(String(lastError));
+      (e as { traces?: ClaudeTrace[] }).traces = traces;
+      throw e;
+    }
     const { answers, debug } = normalizeAnswers(result.parsed as Record<string, unknown>, input.questions);
-    return { answers, trace: result.trace, debug: { ...debug, retried } };
+    return { answers, trace: result.trace, traces, debug: { ...debug, retried } };
   };
 }
 

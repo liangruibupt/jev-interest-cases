@@ -22,11 +22,10 @@ function build() {
     };
     return { result: { model: "jev-1.13.0", answers, usage: trace.response.usage }, trace };
   });
-  const askLlmSystemOne = vi.fn(async (_input: unknown) => ({
-    answers,
-    trace: { kind: "claude" as const, id: `c${++n}`, scenario: "a4" as const, purpose: "llmSystemOne", startedAt: "", latencyMs: 900, tier: "standard" as const, model: "m", inputTokens: 1400, outputTokens: 300, cost: { usd: 0.0058 }, stopReason: "end_turn" },
-    debug: { normalizationDelta: { department: 0.02 }, degenerate: [], retried: false },
-  }));
+  const askLlmSystemOne = vi.fn(async (_input: unknown) => {
+    const trace = { kind: "claude" as const, id: `c${++n}`, scenario: "a4" as const, purpose: "llmSystemOne", startedAt: "", latencyMs: 900, tier: "standard" as const, model: "m", inputTokens: 1400, outputTokens: 300, cost: { usd: 0.0058 }, stopReason: "end_turn" };
+    return { answers, trace, traces: [trace], debug: { normalizationDelta: { department: 0.02 }, degenerate: [], retried: 0 } };
+  });
   return { app: createA4Routes({ askJev: askJev as never, askLlmSystemOne: askLlmSystemOne as never, resultsDir: null }), askJev, askLlmSystemOne };
 }
 
@@ -53,7 +52,7 @@ describe("GET /api/a4/run (SSE)", () => {
     const runs = events.filter((e) => e.event === "run");
     expect(runs).toHaveLength(6);
     expect(runs.filter((r) => r.data.arm === "jev")).toHaveLength(3);
-    expect(runs.find((r) => r.data.arm === "sonnet5")?.data).toMatchObject({ latencyMs: 900, costUsd: 0.0058, normalizationDelta: { department: 0.02 } });
+    expect(runs.find((r) => r.data.arm === "sonnet5")?.data).toMatchObject({ latencyMs: 900, costUsd: 0.0058, attempts: 1, normalizationDelta: { department: 0.02 } });
     expect(events.at(-1)?.event).toBe("done");
     expect(askJev).toHaveBeenCalledTimes(3);
     expect(askJev.mock.calls[0]?.[1]).toEqual({ cache: "off" });

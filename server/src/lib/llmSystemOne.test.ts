@@ -90,14 +90,49 @@ describe("llmSystemOne corrective retries", () => {
     let calls = 0;
     const parse = vi.fn(async (call: { messages: unknown[] }) => {
       calls += 1;
-      if (calls <= 2) throw new ClaudeStructuredOutputError("工具输入不符合 schema：review_path expected object, received string", null);
-      expect(call.messages).toHaveLength(3); // original + two corrections
+      if (calls <= 2) throw new ClaudeStructuredOutputError("工具输入不符合 schema：review_path expected object, received string", null, "invalid");
+      expect(call.messages).toHaveLength(3); // original + two corrections (no assistant content available)
       return { parsed: good, trace };
     });
     const ask = createLlmSystemOne({ parse: parse as never });
     const out = await ask({ scenario: "a4", state: "s", questions, tier: "strong" });
     expect(out.debug.retried).toBe(2);
     expect(parse).toHaveBeenCalledTimes(3);
+  });
+
+  it("raises maxTokens instead of re-asking when the answer was truncated, and keeps every billed trace", async () => {
+    const good = { dept: { probabilities: { billing: 1, tech: 0, sales: 0 } }, sev: { probabilities: { "0": 1, "1": 0, "2": 0 } }, urgent: { p_yes: 0.2 } };
+    const mk = (id: string) => ({ kind: "claude" as const, id, scenario: "a4" as const, purpose: "llmSystemOne", startedAt: "", latencyMs: 1, tier: "strong" as const, model: "m", inputTokens: 100, outputTokens: 50, cost: { usd: 0.001 }, stopReason: "max_tokens" });
+    let calls = 0;
+    const parse = vi.fn(async (call: { maxTokens?: number; messages: unknown[] }) => {
+      calls += 1;
+      if (calls === 1) {
+        expect(call.maxTokens).toBe(256 + 16 * 7);
+        throw new ClaudeStructuredOutputError("truncated", null, "truncated", mk("t1"));
+      }
+      expect(call.maxTokens).toBe((256 + 16 * 7) * 2);
+      expect(call.messages).toHaveLength(1); // no corrective turn for truncation
+      return { parsed: good, trace: mk("t2") };
+    });
+    const ask = createLlmSystemOne({ parse: parse as never });
+    const out = await ask({ scenario: "a4", state: "s", questions, tier: "strong" });
+    expect(out.traces.map((t) => t.id)).toEqual(["t1", "t2"]);
+    expect(out.debug.retried).toBe(1);
+  });
+
+  it("includes the failed assistant turn before the correction", async () => {
+    const good = { dept: { probabilities: { billing: 1, tech: 0, sales: 0 } }, sev: { probabilities: { "0": 1, "1": 0, "2": 0 } }, urgent: { p_yes: 0.2 } };
+    const trace = { kind: "claude" as const, id: "c", scenario: "a4" as const, purpose: "llmSystemOne", startedAt: "", latencyMs: 1, tier: "strong" as const, model: "m", inputTokens: 1, outputTokens: 1, cost: { usd: 0 }, stopReason: "tool_use" };
+    let calls = 0;
+    const parse = vi.fn(async (call: { messages: { role: string }[] }) => {
+      calls += 1;
+      if (calls === 1) throw new ClaudeStructuredOutputError("invalid", null, "invalid", trace, [{ type: "text", text: "oops", citations: null }] as never);
+      expect(call.messages.map((m) => m.role)).toEqual(["user", "assistant", "user"]);
+      return { parsed: good, trace };
+    });
+    const ask = createLlmSystemOne({ parse: parse as never });
+    await ask({ scenario: "a4", state: "s", questions, tier: "strong" });
+    expect(parse).toHaveBeenCalledTimes(2);
   });
 
   it("gives up after the retries are exhausted", async () => {

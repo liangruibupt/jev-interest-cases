@@ -53,6 +53,8 @@ function parseState(text: string): { value: EntryType; isJson: boolean } {
 export function A1Playground() {
   const { addTraces } = useSession();
   const [presetId, setPresetId] = useState(A1_PRESETS[0]!.id);
+  /** Bumped on every preset selection so re-clicking the same preset also resets the editor rows. */
+  const [editorVersion, setEditorVersion] = useState(0);
   const preset = useMemo(() => A1_PRESETS.find((p) => p.id === presetId) ?? A1_PRESETS[0]!, [presetId]);
   const [stateText, setStateText] = useState(() => (typeof preset.state === "string" ? preset.state : JSON.stringify(preset.state, null, 2)));
   const [questions, setQuestions] = useState<Questions | null>(preset.questions);
@@ -76,6 +78,7 @@ export function A1Playground() {
     const p = A1_PRESETS.find((x) => x.id === id);
     if (!p) return;
     setPresetId(id);
+    setEditorVersion((v) => v + 1);
     setStateText(typeof p.state === "string" ? p.state : JSON.stringify(p.state, null, 2));
     setQuestions(p.questions);
     setEditorErrors([]);
@@ -108,7 +111,7 @@ export function A1Playground() {
   );
 
   useEffect(() => {
-    if (!live) return;
+    if (!live || !canRun) return;
     if (liveTimer.current) window.clearTimeout(liveTimer.current);
     liveTimer.current = window.setTimeout(() => void run({ live: true }), 400);
     return () => {
@@ -166,7 +169,7 @@ export function A1Playground() {
           <section>
             <div className="mb-1 text-[11px] font-medium uppercase tracking-wider text-ink-3">{zh.a1.questions}</div>
             <QuestionEditor
-              key={presetId}
+              key={`${presetId}-${editorVersion}`}
               initial={preset.questions}
               onChange={(q, errs) => {
                 setQuestions(q);
