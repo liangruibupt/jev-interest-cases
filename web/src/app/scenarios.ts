@@ -22,6 +22,6 @@ export const SCENARIOS: ScenarioMeta[] = [
   { id: "b4", path: "/b4", title: "B4 智能家居助手", subtitle: "14 个 speculative 问题驱动 UI", proves: "带概率的 function calling", group: "hybrid", status: "available" },
   { id: "c1", path: "/c1", title: "C1 作业按细则评分", subtitle: "教育：细则 Noul + 情境 Score，低置信度交老师", proves: "行业判断：评分是文字判断，句数与算术留给代码", group: "industry", status: "available" },
   { id: "c2", path: "/c2", title: "C2 患者留言分诊", subtitle: "医疗：紧急度 + 红旗 + 科室，数值由代码比较", proves: "行业判断：分诊可以，诊断不行", group: "industry", status: "available" },
-  { id: "c3", path: "/c3", title: "C3 公告重大性判断", subtitle: "金融：事件类型 + 重大性 Score，批量成待阅列表", proves: "行业判断：判断文字，不判断价格", group: "industry", status: "planned" },
+  { id: "c3", path: "/c3", title: "C3 公告重大性判断", subtitle: "金融：事件类型 + 重大性 Score，批量成待阅列表", proves: "行业判断：判断文字，不判断价格", group: "industry", status: "available" },
   { id: "c4", path: "/c4", title: "C4 VPP 调度通知与告警", subtitle: "能源：通知是否适用于本站点、告警属于哪类", proves: "行业判断：文本适用性交 Jev，kW 与时间窗交代码", group: "industry", status: "planned" },
 ];
