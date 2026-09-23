@@ -1,0 +1,249 @@
+{
+  "kind": "jev",
+  "id": "317e12ea-3215-4847-b099-d05540e29f52",
+  "scenario": "a2",
+  "startedAt": "2026-09-23T00:44:56.848Z",
+  "latencyMs": 1860,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "ticket": {
+        "subject": "Urgent: claim your employee bonus",
+        "message": "Congratulations! You have been selected for a $1,000 employee bonus. To receive it, confirm your payroll password today using the link below. This offer expires in 24 hours.",
+        "sender": {
+          "display_name": "Acme Payroll",
+          "email": "rewards@claim-bonus.example"
+        },
+        "links": [
+          {
+            "text": "Claim bonus",
+            "url": "http://claim-bonus.example/acme"
+          }
+        ]
+      },
+      "customer": {
+        "plan": "free",
+        "open_orders": []
+      },
+      "policy": {
+        "sensitive_credentials": [
+          "password",
+          "security code",
+          "API key",
+          "one-time code"
+        ]
+      }
+    },
+    "questions": {
+      "department": {
+        "type": "choice",
+        "instructions": {
+          "question": "Which team should handle `ticket.message`?",
+          "focus": "Classify the customer's primary request, not every topic mentioned."
+        },
+        "criteria": {
+          "billing": {
+            "what": "Charges, invoices, refunds, subscriptions, prices",
+            "not_for": "Order tracking or signing in",
+            "examples": [
+              "I was charged twice",
+              "Where is my refund?",
+              "Can I get an invoice?"
+            ]
+          },
+          "orders": {
+            "what": "Order status, delivery, cancellation, returns, exchanges",
+            "not_for": "Charges or signing in",
+            "examples": [
+              "Where is my package?",
+              "Cancel my order",
+              "The item arrived damaged"
+            ]
+          },
+          "account": {
+            "what": "Signing in, passwords, 2FA, email changes, permissions, deleting the account",
+            "not_for": "Charges or delivery",
+            "examples": [
+              "I can't sign in",
+              "Change my email",
+              "Add my teammate"
+            ]
+          },
+          "technical": {
+            "what": "Bugs, errors, outages, crashes, API or integration failures",
+            "not_for": "Billing or delivery",
+            "examples": [
+              "The export button crashes",
+              "Our API calls return 500"
+            ]
+          },
+          "other": "None of the above"
+        }
+      },
+      "requested_resolution": {
+        "type": "choice",
+        "instructions": "What does the customer want to happen?",
+        "criteria": {
+          "refund": "Money back",
+          "exchange": "Swap for a different item or size",
+          "replacement": "The same item sent again",
+          "fix": "A bug, outage, or access problem repaired",
+          "information": "Just an answer or a document, no action needed",
+          "other": "Something else"
+        }
+      },
+      "bug_severity": {
+        "type": "score",
+        "instructions": "If `ticket.message` reports a defect or outage, how severe is it?",
+        "criteria": [
+          "Cosmetic; no impact to functionality",
+          "Broken or degraded feature, but a workaround exists",
+          "Blocking issue; no workaround exists"
+        ]
+      },
+      "has_repro_steps": {
+        "type": "noul",
+        "instructions": "Does `ticket.message` describe specific steps to reproduce a problem, or name the environment (browser, device, version)?"
+      },
+      "refund_requested": {
+        "type": "noul",
+        "instructions": "Does `ticket.message` explicitly ask for money back or an account credit?",
+        "criteria": {
+          "true": "Directly asks for a refund, credit, or money back",
+          "false": {
+            "what": "Does not ask for money back",
+            "not_for": "A billing complaint or question without a requested remedy"
+          }
+        }
+      },
+      "requests_credentials": {
+        "type": "noul",
+        "instructions": {
+          "question": "Does `ticket.message` ask the recipient to disclose a credential listed in `policy.sensitive_credentials`?",
+          "focus": "A request to send the credential itself, not an instruction to reset or change it."
+        },
+        "criteria": {
+          "true": "Asks the recipient to reply with, type, or send a password, security code, API key, or one-time code",
+          "false": "No credential is requested"
+        }
+      },
+      "sender_identity_mismatch": {
+        "type": "noul",
+        "instructions": "Does the organization named in `ticket.sender.display_name` conflict with the domain of `ticket.sender.email`?",
+        "criteria": {
+          "true": "Claims an organization unrelated to the email domain",
+          "false": "The name and domain agree or make no organizational claim"
+        }
+      },
+      "unexpected_reward": {
+        "type": "noul",
+        "instructions": "Does `ticket.message` announce an unrequested prize, bonus, or payment for the recipient?"
+      },
+      "mentions_open_order": {
+        "type": "noul",
+        "instructions": "Does `ticket.message` refer to one of `customer.open_orders` by id or identifying details?"
+      },
+      "frustration": {
+        "type": "score",
+        "instructions": "How frustrated does the customer appear in `ticket.message`?",
+        "criteria": [
+          "Calm and matter-of-fact",
+          "Frustrated but civil",
+          "Very angry, hostile, or threatening to leave"
+        ]
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "department": {
+        "type": "choice",
+        "choice": "other",
+        "confidence": 0.58,
+        "probabilities": {
+          "billing": 0,
+          "other": 0.67,
+          "technical": 0,
+          "account": 0.33,
+          "orders": 0
+        }
+      },
+      "requested_resolution": {
+        "type": "choice",
+        "choice": "other",
+        "confidence": 0.88,
+        "probabilities": {
+          "exchange": 0,
+          "refund": 0,
+          "information": 0.09,
+          "other": 0.91,
+          "replacement": 0,
+          "fix": 0
+        }
+      },
+      "bug_severity": {
+        "type": "score",
+        "score": 0.1,
+        "confidence": 0.85,
+        "legend": {
+          "0": "Cosmetic; no impact to functionality",
+          "1": "Broken or degraded feature, but a workaround exists",
+          "2": "Blocking issue; no workaround exists"
+        },
+        "probabilities": {
+          "0": 0.95,
+          "1": 0.01,
+          "2": 0.04
+        }
+      },
+      "has_repro_steps": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "refund_requested": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "requests_credentials": {
+        "type": "noul",
+        "noul": 0.84
+      },
+      "sender_identity_mismatch": {
+        "type": "noul",
+        "noul": 0.72
+      },
+      "unexpected_reward": {
+        "type": "noul",
+        "noul": 0.99
+      },
+      "mentions_open_order": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "frustration": {
+        "type": "score",
+        "score": 0,
+        "confidence": 1,
+        "legend": {
+          "0": "Calm and matter-of-fact",
+          "1": "Frustrated but civil",
+          "2": "Very angry, hostile, or threatening to leave"
+        },
+        "probabilities": {
+          "0": 1,
+          "1": 0,
+          "2": 0
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 1376,
+      "output_tokens": 250
+    }
+  },
+  "cost": {
+    "usd": 0.000057792000000000005
+  }
+}

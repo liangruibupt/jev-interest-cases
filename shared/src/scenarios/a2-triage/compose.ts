@@ -65,7 +65,11 @@ export function compose(answers: Answers, thresholds: A2Thresholds = A2_THRESHOL
   const deptProbs = dept && dept.type === "choice" ? dept.probabilities : {};
 
   let lane: Lane;
-  if (spamRisk >= thresholds.spamBlock) {
+  const credentials = noul(answers, "requests_credentials");
+  if (credentials >= thresholds.credentialsBlock) {
+    lane = "quarantine";
+    reasons.push(`硬规则：索要凭证 ${credentials.toFixed(2)} ≥ ${thresholds.credentialsBlock}（不依赖加权和）`);
+  } else if (spamRisk >= thresholds.spamBlock) {
     lane = "quarantine";
     reasons.push(`垃圾风险 ${spamRisk.toFixed(2)} ≥ 隔离线 ${thresholds.spamBlock}`);
   } else if (spamRisk > thresholds.spamReviewLow) {

@@ -44,15 +44,23 @@ describe("compose", () => {
   });
 
   it("quarantines when weighted spam risk reaches the block threshold", () => {
-    // 0.45*0.9 + 0.3*0.6 + 0.25*0.2 = 0.635
-    const d = compose(answers({ nouls: { requests_credentials: 0.9, sender_identity_mismatch: 0.6, unexpected_reward: 0.2 } }));
-    expect(d.spamRisk).toBeCloseTo(0.635, 3);
+    // 0.45*0.8 + 0.3*0.8 + 0.25*0.2 = 0.65 (credentials below the hard rule, weighted sum does the work)
+    const d = compose(answers({ nouls: { requests_credentials: 0.8, sender_identity_mismatch: 0.8, unexpected_reward: 0.2 } }));
+    expect(d.spamRisk).toBeCloseTo(0.65, 3);
     expect(d.lane).toBe("quarantine");
   });
 
+  it("quarantines on the credential hard rule even when the weighted sum is in the grey band", () => {
+    // 0.45*0.95 + 0.3*0.1 + 0.25*0 = 0.4575 → grey band by weights, but credentials ≥ 0.9
+    const d = compose(answers({ nouls: { requests_credentials: 0.95, sender_identity_mismatch: 0.1, unexpected_reward: 0 } }));
+    expect(d.lane).toBe("quarantine");
+    expect(d.reasons.join(" ")).toMatch(/硬规则/);
+    expect(compose(answers({ nouls: { requests_credentials: 0.95, sender_identity_mismatch: 0.1, unexpected_reward: 0 } }), { ...A2_THRESHOLDS, credentialsBlock: 0.99 }).lane).toBe("review");
+  });
+
   it("sends the spam grey band to review", () => {
-    // 0.45*0.9 + 0.3*0.2 + 0.25*0 = 0.465
-    const d = compose(answers({ nouls: { requests_credentials: 0.9, sender_identity_mismatch: 0.2, unexpected_reward: 0 } }));
+    // 0.45*0.8 + 0.3*0.35 + 0.25*0 = 0.465 (credentials below the 0.9 hard rule)
+    const d = compose(answers({ nouls: { requests_credentials: 0.8, sender_identity_mismatch: 0.35, unexpected_reward: 0 } }));
     expect(d.spamRisk).toBeCloseTo(0.465, 3);
     expect(d.lane).toBe("review");
   });

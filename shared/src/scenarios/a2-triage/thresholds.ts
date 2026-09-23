@@ -6,6 +6,11 @@ export interface A2Thresholds {
   spamReviewLow: number;
   /** Spam risk at or above this → quarantine. */
   spamBlock: number;
+  /**
+   * Hard rule: a request to disclose a credential at or above this probability quarantines the ticket
+   * regardless of the weighted sum. "Any serious violation" rules need their own condition.
+   */
+  credentialsBlock: number;
   refundYes: number;
   /** A second department with at least this probability gets a cc. */
   secondTeamMinProb: number;
@@ -19,6 +24,7 @@ export const A2_THRESHOLDS: A2Thresholds = {
   deptMinConfidence: 0.6,
   spamReviewLow: 0.4,
   spamBlock: 0.6,
+  credentialsBlock: 0.9,
   refundYes: 0.7,
   secondTeamMinProb: 0.25,
   severityHigh: 1.5,
@@ -34,6 +40,7 @@ export const A2_SLIDERS: { key: keyof A2Thresholds; label_zh: string; min: numbe
   { key: "deptMinConfidence", label_zh: "部门置信度门限（低于 → 人工复核）", min: 0, max: 1, step: 0.05 },
   { key: "spamReviewLow", label_zh: "垃圾风险灰区下限", min: 0, max: 1, step: 0.05 },
   { key: "spamBlock", label_zh: "垃圾风险隔离线", min: 0, max: 1, step: 0.05 },
+  { key: "credentialsBlock", label_zh: "硬规则：索要凭证 Noul ≥ 此值直接隔离", min: 0, max: 1, step: 0.05 },
   { key: "secondTeamMinProb", label_zh: "抄送第二部门的概率门限", min: 0, max: 1, step: 0.05 },
   { key: "refundYes", label_zh: "退款请求 Noul 门限", min: 0, max: 1, step: 0.05 },
   { key: "frustrationHigh", label_zh: "愤怒徽章的 Score 门限", min: 0, max: 2, step: 0.1 },
