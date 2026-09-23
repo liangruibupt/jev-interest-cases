@@ -86,7 +86,7 @@ export function createB3Routes(deps: { askJev: typeof defaultAskJev; claudeText:
       tier,
       retrieved,
       prompt,
-      promptChars: { gated: gatedPrompt.length, raw: rawPrompt.length },
+      promptChars: { gated: gatekeeper ? gatedPrompt.length : null, raw: rawPrompt.length },
       answer: cached.text,
       answerCached: wasCached,
       traces,

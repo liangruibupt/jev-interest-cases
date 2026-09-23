@@ -21,7 +21,7 @@ interface AskResponse {
   tier: ClaudeTierId;
   retrieved: Retrieved[];
   prompt: string;
-  promptChars: { gated: number; raw: number };
+  promptChars: { gated: number | null; raw: number };
   answer: string;
   answerCached: boolean;
   traces: Trace[];
@@ -251,7 +251,7 @@ export function B3Rag() {
               </div>
               <div className="mt-2 flex flex-wrap gap-3">
                 <span>
-                  {zh.b3.promptChars}：{zh.b3.gated} <span className="num text-ink">{data.promptChars.gated.toLocaleString()}</span> · {zh.b3.raw}{" "}
+                  {zh.b3.promptChars}：{zh.b3.gated} <span className="num text-ink">{data.promptChars.gated === null ? "—" : data.promptChars.gated.toLocaleString()}</span> · {zh.b3.raw}{" "}
                   <span className="num text-ink">{data.promptChars.raw.toLocaleString()}</span>
                 </span>
               </div>

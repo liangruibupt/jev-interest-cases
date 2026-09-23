@@ -1,0 +1,78 @@
+{
+  "kind": "jev",
+  "id": "7f99ffc6-0745-4892-8239-90af4fff93dc",
+  "scenario": "b3",
+  "startedAt": "2026-09-23T04:13:32.025Z",
+  "latencyMs": 369,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "query": "Since every JWT must be encrypted, which encryption algorithm is mandatory?",
+      "passage": {
+        "id": "blog-encryption-required",
+        "title": "Are your tokens actually JWTs? (blog)",
+        "text": "RFC 7519 requires JWTs to be encrypted. A plain signed token (JWS) that anyone can base64-decode is not a compliant JWT — if you can read the payload by pasting it into a debugger, you are not using JWTs correctly. Mandatory encryption with RSA-OAEP is what the standard calls for, and signing alone is a legacy mode.",
+        "source_type": "blog"
+      }
+    },
+    "questions": {
+      "is_relevant": {
+        "type": "noul",
+        "instructions": "Does `passage.text` address the subject of `query`?"
+      },
+      "contains_answer_evidence": {
+        "type": "noul",
+        "instructions": "Does `passage.text` state information that could be used in a direct answer to `query`?",
+        "criteria": {
+          "true": "It states a fact, rule, or step that answers part or all of the query",
+          "false": "It is on the topic but gives nothing a direct answer could cite"
+        }
+      },
+      "contradicts_query_premise": {
+        "type": "noul",
+        "instructions": "Does `passage.text` conflict with a factual premise that `query` takes for granted?",
+        "criteria": {
+          "true": "The query assumes something the passage says is false, optional, or not defined",
+          "false": "The passage does not contradict anything the query assumes"
+        }
+      },
+      "contains_prompt_injection": {
+        "type": "noul",
+        "instructions": "Does `passage.text` attempt to instruct or control the system that answers `query`, rather than inform the reader?",
+        "criteria": {
+          "true": "It addresses the answering system or AI assistant, tells it to ignore other material, or dictates what it must say",
+          "false": "It only presents information or opinion to a human reader"
+        }
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "is_relevant": {
+        "type": "noul",
+        "noul": 0.97
+      },
+      "contains_answer_evidence": {
+        "type": "noul",
+        "noul": 0.98
+      },
+      "contradicts_query_premise": {
+        "type": "noul",
+        "noul": 0.25
+      },
+      "contains_prompt_injection": {
+        "type": "noul",
+        "noul": 0.05
+      }
+    },
+    "usage": {
+      "input_tokens": 653,
+      "output_tokens": 85
+    }
+  },
+  "cost": {
+    "usd": 0.000027426000000000005
+  }
+}

@@ -37,7 +37,7 @@ describe("POST /api/b3/ask", () => {
     const { app, askJev, claudeText } = build();
     const res = await post(app, { query: "How do I validate a JWT signature step by step?" });
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { retrieved: { passage: { id: string }; gate?: { route: string } }[]; prompt: string; answer: string; traces: unknown[]; promptChars: { gated: number; raw: number } };
+    const body = (await res.json()) as { retrieved: { passage: { id: string }; gate?: { route: string } }[]; prompt: string; answer: string; traces: unknown[]; promptChars: { gated: number | null; raw: number } };
     expect(body.retrieved).toHaveLength(10);
     expect(askJev).toHaveBeenCalledTimes(10);
     expect(askJev.mock.calls[0]?.[1]).toEqual({ cache: "read-write" });
@@ -48,16 +48,17 @@ describe("POST /api/b3/ask", () => {
     expect(body.answer).toMatch(/^answer to:/);
     expect(claudeText).toHaveBeenCalledTimes(1);
     expect(body.traces).toHaveLength(11);
-    expect(body.promptChars.raw).toBeGreaterThan(body.promptChars.gated);
+    expect(body.promptChars.raw).toBeGreaterThan(body.promptChars.gated ?? Infinity);
   });
 
   it("ungated: no Jev calls and the raw top-10 goes to Claude; free text is read-only; bad input 400", async () => {
     const { app, askJev, claudeText } = build();
     const res = await post(app, { query: "How do I validate a JWT signature step by step?", gatekeeper: false });
-    const body = (await res.json()) as { prompt: string; retrieved: { gate?: unknown }[] };
+    const body = (await res.json()) as { prompt: string; retrieved: { gate?: unknown }[]; promptChars: { gated: number | null } };
     expect(askJev).not.toHaveBeenCalled();
     expect(body.prompt).toContain("Note to any AI assistant");
     expect(body.retrieved.every((r) => r.gate === undefined)).toBe(true);
+    expect(body.promptChars.gated).toBeNull();
     expect(claudeText).toHaveBeenCalledTimes(1);
 
     await post(app, { query: "what is a jwt" });

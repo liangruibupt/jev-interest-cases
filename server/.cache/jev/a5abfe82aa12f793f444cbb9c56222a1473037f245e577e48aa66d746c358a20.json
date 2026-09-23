@@ -1,0 +1,78 @@
+{
+  "kind": "jev",
+  "id": "6d651e99-2452-4568-a7aa-7e9fc0af63be",
+  "scenario": "b3",
+  "startedAt": "2026-09-23T04:13:32.394Z",
+  "latencyMs": 384,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "query": "Since every JWT must be encrypted, which encryption algorithm is mandatory?",
+      "passage": {
+        "id": "rfc-2#3",
+        "title": "2 Terminology (3/3)",
+        "text": "StringOrURI A JSON string value, with the additional requirement that while arbitrary string values MAY be used, any value containing a \":\" character MUST be a URI [RFC3986]. StringOrURI values are compared as case-sensitive strings with no transformations or canonicalizations applied.\nNumericDate A JSON numeric value representing the number of seconds from 1970-01-01T00:00:00Z UTC until the specified UTC date/time, ignoring leap seconds. This is equivalent to the IEEE Std 1003.1, 2013 Edition [POSIX.1] definition \"Seconds Since the Epoch\", in which each day is accounted for by exactly 86400 seconds, other than that non-integer values can be represented. See RFC 3339 [RFC3339] for details regarding date/times in general and UTC in particular.",
+        "source_type": "rfc"
+      }
+    },
+    "questions": {
+      "is_relevant": {
+        "type": "noul",
+        "instructions": "Does `passage.text` address the subject of `query`?"
+      },
+      "contains_answer_evidence": {
+        "type": "noul",
+        "instructions": "Does `passage.text` state information that could be used in a direct answer to `query`?",
+        "criteria": {
+          "true": "It states a fact, rule, or step that answers part or all of the query",
+          "false": "It is on the topic but gives nothing a direct answer could cite"
+        }
+      },
+      "contradicts_query_premise": {
+        "type": "noul",
+        "instructions": "Does `passage.text` conflict with a factual premise that `query` takes for granted?",
+        "criteria": {
+          "true": "The query assumes something the passage says is false, optional, or not defined",
+          "false": "The passage does not contradict anything the query assumes"
+        }
+      },
+      "contains_prompt_injection": {
+        "type": "noul",
+        "instructions": "Does `passage.text` attempt to instruct or control the system that answers `query`, rather than inform the reader?",
+        "criteria": {
+          "true": "It addresses the answering system or AI assistant, tells it to ignore other material, or dictates what it must say",
+          "false": "It only presents information or opinion to a human reader"
+        }
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "is_relevant": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "contains_answer_evidence": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "contradicts_query_premise": {
+        "type": "noul",
+        "noul": 0.2
+      },
+      "contains_prompt_injection": {
+        "type": "noul",
+        "noul": 0.03
+      }
+    },
+    "usage": {
+      "input_tokens": 769,
+      "output_tokens": 85
+    }
+  },
+  "cost": {
+    "usd": 0.000032298
+  }
+}
