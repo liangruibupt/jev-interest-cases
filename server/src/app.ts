@@ -9,6 +9,7 @@ import { usage } from "./lib/usage";
 import { a1Routes } from "./routes/a1";
 import { a2Routes } from "./routes/a2";
 import { a4Routes } from "./routes/a4";
+import { b1Routes } from "./routes/b1";
 
 export const app = new Hono();
 
@@ -47,6 +48,7 @@ if (process.env.JEV_TEST_HOOKS === "1") {
 app.route("/api/a1", a1Routes);
 app.route("/api/a2", a2Routes);
 app.route("/api/a4", a4Routes);
+app.route("/api/b1", b1Routes);
 
 // Production: serve the built web app (run `npm run build` first) with an SPA fallback. Dev uses Vite's proxy instead.
 const webDist = fileURLToPath(new URL("../../web/dist/", import.meta.url));
