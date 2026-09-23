@@ -10,6 +10,7 @@ import { a1Routes } from "./routes/a1";
 import { a2Routes } from "./routes/a2";
 import { a4Routes } from "./routes/a4";
 import { b1Routes } from "./routes/b1";
+import { b2Routes } from "./routes/b2";
 
 export const app = new Hono();
 
@@ -49,6 +50,7 @@ app.route("/api/a1", a1Routes);
 app.route("/api/a2", a2Routes);
 app.route("/api/a4", a4Routes);
 app.route("/api/b1", b1Routes);
+app.route("/api/b2", b2Routes);
 
 // Production: serve the built web app (run `npm run build` first) with an SPA fallback. Dev uses Vite's proxy instead.
 const webDist = fileURLToPath(new URL("../../web/dist/", import.meta.url));
