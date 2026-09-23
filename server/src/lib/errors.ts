@@ -3,6 +3,17 @@ import { QuestionValidationError } from "@jev/shared";
 import { APIConnectionError, APIError as JevAPIError, AuthenticationError, RateLimitError, UnprocessableEntityError } from "@typesafe-ai/sdk";
 import { ClaudeRefusalError, ClaudeStructuredOutputError, ClaudeTierError } from "./claude";
 
+/** Generic 400 for malformed client input (unknown ids, missing fields). */
+export class BadRequestError extends Error {
+  constructor(
+    message: string,
+    readonly detail?: unknown,
+  ) {
+    super(message);
+    this.name = "BadRequestError";
+  }
+}
+
 export interface HttpErrorBody {
   status: number;
   code: string;
@@ -16,6 +27,7 @@ export function toHttpError(err: unknown): HttpErrorBody {
   if (err instanceof QuestionValidationError) {
     return { status: 400, code: "invalid_questions", message: "问题定义不合法", detail: err.issues };
   }
+  if (err instanceof BadRequestError) return { status: 400, code: "bad_request", message: err.message, detail: err.detail };
   if (err instanceof ClaudeTierError) return { status: 400, code: "claude_tier", message: err.message };
   if (err instanceof AuthenticationError) {
     return { status: 401, code: "jev_auth", message: "TYPESAFE_API_KEY 无效或缺失" };
