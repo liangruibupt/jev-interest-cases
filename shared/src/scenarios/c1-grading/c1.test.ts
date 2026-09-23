@@ -46,7 +46,11 @@ describe("C1 sentence counting (code, not Jev)", () => {
     expect(countSentences("")).toBe(0);
     expect(countSentences("Because of scattering of blue light.")).toBe(1);
     expect(countSentences(ESSAYS[0]!.text)).toBeGreaterThanOrEqual(4);
-    expect(countSentences(ESSAYS[7]!.text)).toBeGreaterThan(6);
+    expect(countSentences(ESSAYS[4]!.text)).toBe(3);
+    expect(countSentences(ESSAYS[7]!.text)).toBe(9);
+    expect(countSentences("Red, orange, etc. The sunset is red. It is pretty.")).toBe(3);
+    expect(countSentences('He said "It is blue." Then he left.')).toBe(2);
+    expect(countSentences("天空是蓝的。因为散射。")).toBe(0);
   });
 });
 
@@ -68,24 +72,39 @@ describe("C1 grade composition", () => {
     expect(g.flags).toEqual([]);
     expect(g.needsTeacher).toBe(false);
   });
-  it("off-topic zeroes the points; sentence flags come from code", () => {
+  it("off-topic zeroes the points and goes to the teacher; sentence flags come from code", () => {
     const off = gradeFromAnswers(answers({ onTopic: 0.2, overall: 0 }), text4, t);
     expect(off.points).toBe(0);
     expect(off.flags).toContain("off_topic");
+    expect(off.needsTeacher).toBe(true);
+    expect(off.flags.some((f) => f.startsWith("misconception:"))).toBe(false);
     expect(gradeFromAnswers(answers(), "Short.", t).flags).toContain("too_short");
     expect(gradeFromAnswers(answers(), Array(8).fill("A sentence.").join(" "), t).flags).toContain("too_long");
   });
-  it("flags misconceptions at 0.6 and routes the 0.4–0.6 band to the teacher", () => {
+  it("judges misconceptions on the non-none probability mass: flag at 0.6, teacher in 0.4–0.6, nothing below", () => {
     expect(gradeFromAnswers(answers({ mis: "reflects_ocean", misConf: 0.6, overall: 1 }), text4, t).flags).toContain("misconception:reflects_ocean");
-    const unsure = gradeFromAnswers(answers({ mis: "air_is_blue", misConf: 0.5 }), text4, t);
-    expect(unsure.flags).not.toContain("misconception:air_is_blue");
+    const split = answers();
+    (split.misconception as { probabilities: Record<string, number>; choice: string; confidence: number }).probabilities = { none: 0.45, other_misconception: 0.28, reflects_ocean: 0.27, air_is_blue: 0, refraction_not_scattering: 0 };
+    const unsure = gradeFromAnswers(split, text4, t); // argmax is none, but 0.55 of the mass is on misconceptions
+    expect(unsure.flags.some((f) => f.startsWith("misconception:"))).toBe(false);
     expect(unsure.needsTeacher).toBe(true);
+    expect(unsure.reasons.join(" ")).toMatch(/错误概念概率质量 0.55/);
+    const low = answers();
+    (low.misconception as { probabilities: Record<string, number> }).probabilities = { none: 0.65, other_misconception: 0.35, reflects_ocean: 0, air_is_blue: 0, refraction_not_scattering: 0 };
+    expect(gradeFromAnswers(low, text4, t).needsTeacher).toBe(false);
+    const nullConf = answers({ mis: "air_is_blue", overall: 0 });
+    (nullConf.misconception as { confidence: number | null }).confidence = null;
+    expect(gradeFromAnswers(nullConf, text4, t).flags).toContain("misconception:air_is_blue");
   });
   it("routes low overall confidence and rubric/holistic disagreement to the teacher", () => {
     expect(gradeFromAnswers(answers({ overallConf: 0.59 }), text4, t).needsTeacher).toBe(true);
     const disagree = gradeFromAnswers(answers({ overall: 1 }), text4, t); // 4/4 criteria met but holistic level 1
     expect(disagree.needsTeacher).toBe(true);
     expect(disagree.reasons.join(" ")).toMatch(/相差/);
+    expect(gradeFromAnswers(answers({ overall: 1.5 }), text4, t).reasons.join(" ")).toMatch(/相差/); // exactly 1.5 apart
+    expect(gradeFromAnswers(answers({ overall: 1.6 }), text4, t).needsTeacher).toBe(false);
+    const offTopicHigh = gradeFromAnswers(answers({ onTopic: 0.1, overall: 3 }), text4, t); // off-topic skips the disagreement rule
+    expect(offTopicHigh.reasons.some((r) => r.includes("相差"))).toBe(false);
   });
   it("builds the feedback verification state from the grade", () => {
     const g = gradeFromAnswers(answers({ c3: 0.1 }), text4, t);

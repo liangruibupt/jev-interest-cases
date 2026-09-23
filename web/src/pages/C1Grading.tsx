@@ -35,10 +35,10 @@ const LEARNING = {
   proves: [
     "评分是文字判断：每条细则一个 Noul、整体水平一个情境化 Score，一次请求 8 题；错误概念用 Choice 直接点名。",
     "内容与表达分开打分：E12 语法有误但科学完整，水平 3 而清晰度 1；这是 LLM 一个总分做不到的。",
-    "置信度路由：灰区、低置信度、细则与整体不一致的作业交老师，其余自动出分。",
+    "置信度路由：灰区、低置信度、细则与整体不一致、离题计零的作业交老师，其余自动出分。",
   ],
   tryThis: [
-    "把\"达到\"门限从 0.7 拉到 0.9，看 E07（cause_scattering 0.48）以外还有谁被送去老师。",
+    "把\"达到\"门限从 0.7 拉到 0.9，看 E07（cause_scattering 落在灰区）以外还有谁被送去老师。",
     "选 E02（没写 Rayleigh）点\"生成反馈\"，看 Claude 是否只夸做到的、只提没做到的，再看 Jev 三个核验值。",
     "选 E03：术语拼成 Raleigh，Jev 按题目说明照样判为达到（0.99）——题目里怎么写，它就怎么判。",
   ],
@@ -68,7 +68,7 @@ export function C1Grading() {
   const [selected, setSelected] = useState<string | null>(null);
   const [t, setT] = useState<C1Thresholds>({ ...C1_THRESHOLDS });
   const [feedback, setFeedback] = useState<Record<string, FeedbackResponse>>({});
-  const [fbBusy, setFbBusy] = useState(false);
+  const [fbBusy, setFbBusy] = useState<string | null>(null);
 
   const grades = useMemo(() => {
     if (!results) return {};
@@ -80,7 +80,8 @@ export function C1Grading() {
     return out;
   }, [results, t]);
 
-  const jevTraces = useMemo(() => history.filter((x): x is JevTrace => x.kind === "jev"), [history]);
+  // The c1 baseline is "LLM grades the essay"; verification calls have their own (much smaller) shape and are excluded.
+  const jevTraces = useMemo(() => history.filter((x): x is JevTrace => x.kind === "jev" && "overall" in x.request.questions), [history]);
   const teacherCount = Object.values(grades).filter((g) => g.needsTeacher).length;
   const gradedCount = Object.keys(grades).length;
 
@@ -101,10 +102,10 @@ export function C1Grading() {
   }
 
   async function makeFeedback(id: string) {
-    setFbBusy(true);
+    setFbBusy(id);
     setError(null);
     try {
-      const res = await api.post<FeedbackResponse>("/api/c1/feedback", { essayId: id });
+      const res = await api.post<FeedbackResponse>("/api/c1/feedback", { essayId: id, thresholds: t, live });
       setFeedback((f) => ({ ...f, [id]: res }));
       if (res.traces.length) {
         setHistory((h) => [...h, ...res.traces]);
@@ -113,7 +114,7 @@ export function C1Grading() {
     } catch (e) {
       setError(e instanceof ApiError ? e.message : zh.errors.generic);
     } finally {
-      setFbBusy(false);
+      setFbBusy(null);
     }
   }
 
@@ -166,9 +167,9 @@ export function C1Grading() {
         </label>
         <span className="ml-2 text-[11px] uppercase tracking-wider text-ink-3">{zh.c1.thresholds}</span>
         <div className="flex flex-wrap gap-4">
-          <ThresholdSlider label={zh.c1.yes} value={t.yes} min={0.5} max={0.95} step={0.05} onChange={(v) => setT({ ...t, yes: v })} />
-          <ThresholdSlider label={zh.c1.no} value={t.no} min={0.05} max={0.5} step={0.05} onChange={(v) => setT({ ...t, no: v })} />
-          <ThresholdSlider label={zh.c1.teacherConf} value={t.teacherConfidence} min={0.3} max={0.9} step={0.05} onChange={(v) => setT({ ...t, teacherConfidence: v })} />
+          <ThresholdSlider label={zh.c1.yes} value={t.yes} min={0.5} max={0.95} step={0.05} onChange={(v) => setT((prev) => ({ ...prev, yes: v }))} />
+          <ThresholdSlider label={zh.c1.no} value={t.no} min={0.05} max={0.5} step={0.05} onChange={(v) => setT((prev) => ({ ...prev, no: v }))} />
+          <ThresholdSlider label={zh.c1.teacherConf} value={t.teacherConfidence} min={0.3} max={0.9} step={0.05} onChange={(v) => setT((prev) => ({ ...prev, teacherConfidence: v }))} />
         </div>
         {gradedCount > 0 && (
           <span className="ml-auto flex items-center gap-2 text-xs">
@@ -256,7 +257,7 @@ export function C1Grading() {
                     {selGrade.criteria.map((c, i) => (
                       <li key={c.id} className="flex items-center gap-2">
                         <span className="w-44 shrink-0 text-ink-2">
-                          {i + 1}. {ASSIGNMENT.rubric[i]!.title_zh}
+                          {i + 1}. {ASSIGNMENT.rubric.find((r) => r.id === c.id)?.title_zh ?? c.id}
                         </span>
                         <div className="relative h-1.5 flex-1 rounded-[3px] bg-paper-2">
                           <div className={`absolute inset-y-0 left-0 rounded-[3px] ${c.status === "met" ? "bg-ok" : c.status === "uncertain" ? "bg-warn" : "bg-rule"}`} style={{ width: `${c.value * 100}%` }} />
@@ -305,8 +306,8 @@ export function C1Grading() {
                 <section className="hairline rounded-md bg-panel p-4 text-xs">
                   <div className="flex items-center justify-between">
                     <div className="text-[11px] uppercase tracking-wider text-ink-3">{zh.c1.feedbackTitle}</div>
-                    <button type="button" disabled={fbBusy} onClick={() => void makeFeedback(sel.id)} className="rounded-md bg-claude px-3 py-1.5 text-xs text-white disabled:opacity-40">
-                      {fbBusy ? zh.c1.feedbackWorking : zh.c1.feedback}
+                    <button type="button" disabled={fbBusy !== null} onClick={() => void makeFeedback(sel.id)} className="rounded-md bg-claude px-3 py-1.5 text-xs text-white disabled:opacity-40">
+                      {fbBusy === sel.id ? zh.c1.feedbackWorking : zh.c1.feedback}
                     </button>
                   </div>
                   {selFeedback && (

@@ -43,7 +43,7 @@ export async function c1(): Promise<void> {
   console.log(`level hits ${levelHits}/12 · teacher review ${teacher}/12 · tokens ${traces.reduce((s, t) => s + t.response.usage.input_tokens, 0)} · cost $${usd.toFixed(6)} · p50 ${sorted[6]}ms · max ${sorted[11]}ms`);
   const est = estimateLlmBaseline("c1", traces, "standard");
   console.log(`grading baseline ${est.tierLabel}: $${est.llmUsd.toFixed(4)} vs Jev $${est.jevUsd.toFixed(6)} → ${est.savingsPct.toFixed(2)}% (${est.ratio?.toFixed(0)}×)`);
-  if (problems.length) console.log(`notes:\n${problems.join("\n")}`);
-  if (levelHits < 10) throw new Error(`C1 smoke: only ${levelHits}/12 levels within 0.75 of a label`);
-  if (problems.filter((p) => /E01|off_topic|too_/.test(p)).length) throw new Error(`C1 smoke:\n${problems.join("\n")}`);
+  if (teacher > 3) problems.push(`teacher review ${teacher}/12 > 3`);
+  if (levelHits < 10) problems.push(`only ${levelHits}/12 levels within 0.75 of a label`);
+  if (problems.length) throw new Error(`C1 smoke:\n${problems.join("\n")}`);
 }

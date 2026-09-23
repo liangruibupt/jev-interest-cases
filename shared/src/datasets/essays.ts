@@ -48,7 +48,7 @@ export const ESSAYS: Essay[] = [
   {
     id: "E05", student: "Emma L.",
     text: "Air is made mostly of nitrogen and oxygen, and those gases are naturally a very light blue color, so when there is a lot of air above you it looks blue, the same way a thin piece of blue glass looks darker when you stack many pieces. At sunset the light comes in sideways through the pollution and dust near the ground, which makes it look orange. For example the sunsets in big cities are more orange than in the countryside.",
-    expected: { levels: [0, 1], misconception: "air_is_blue" }, note_zh: "错误概念：气体本身是蓝色的",
+    expected: { levels: [0, 1], misconception: "air_is_blue", lengthFlag: "too_short" }, note_zh: "错误概念：气体本身是蓝色的；只有三句",
   },
   {
     id: "E06", student: "Farah S.",
@@ -63,7 +63,7 @@ export const ESSAYS: Essay[] = [
   {
     id: "E08", student: "Hana T.",
     text: "So first of all I want to say that this is a really interesting question and I have wondered about it since I was little. My grandmother used to tell me the sky was blue because it was happy but I know now that is not the scientific reason. The real reason is that sunlight is made of all the colors and when it passes through the air the small molecules scatter the blue light more than the other colors because blue has a shorter wavelength. Scientists call this Rayleigh scattering after a scientist named Lord Rayleigh. Then at sunset the Sun is low and the light goes through a lot more air, and the blue gets scattered away before it gets to us so we see red and orange. I also read that this is why the Sun looks a bit yellow instead of white in the middle of the day. Also astronauts say that from space the sky is black because there is no air to scatter the light. So that is my answer and I think it is very cool that light can do this. Thank you for reading.",
-    expected: { levels: [3, 2], lengthFlag: "too_long" }, note_zh: "内容完整但十句以上：内容与篇幅分开判",
+    expected: { levels: [3, 2], lengthFlag: "too_long" }, note_zh: "内容完整但有九句：内容与篇幅分开判",
   },
   {
     id: "E09", student: "Isaac P.",

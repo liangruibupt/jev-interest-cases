@@ -50,11 +50,14 @@ export function gradeFromAnswers(answers: Answers, text: string, t: C1Thresholds
   if (uncertain.length) reasons.push(`${uncertain.length} 条细则落在 ${t.no}–${t.yes} 的灰区：${uncertain.map((c) => c.id).join("、")}`);
 
   const onTopic = noul("on_topic");
-  let points = criteria.filter((c) => c.status === "met").length;
-  if (onTopic < t.onTopicMin) {
+  const pointsFor = (id: RubricId): number => ASSIGNMENT.rubric.find((r) => r.id === id)?.points ?? 1;
+  let points = criteria.filter((c) => c.status === "met").reduce((s, c) => s + pointsFor(c.id), 0);
+  const offTopic = onTopic < t.onTopicMin;
+  if (offTopic) {
     flags.push("off_topic");
     points = 0;
-    reasons.push(`on_topic ${onTopic.toFixed(2)} < ${t.onTopicMin} → 计 0 分`);
+    // A zero is consequential: the teacher confirms every off-topic verdict.
+    reasons.push(`on_topic ${onTopic.toFixed(2)} < ${t.onTopicMin} → 计 0 分，交老师确认`);
   }
 
   const sentences = countSentences(text);
@@ -66,25 +69,31 @@ export function gradeFromAnswers(answers: Answers, text: string, t: C1Thresholds
   const levelConfidence = overall && overall.type === "score" ? overall.confidence : null;
   const levelProbabilities = overall && overall.type === "score" ? overall.probabilities : {};
   if (levelConfidence !== null && levelConfidence < t.teacherConfidence) reasons.push(`overall 置信度 ${levelConfidence.toFixed(2)} < ${t.teacherConfidence}`);
-  const impliedLevel = (points / ASSIGNMENT.rubric.length) * 3;
-  if (!flags.includes("off_topic") && Math.abs(impliedLevel - level) >= t.disagreement) reasons.push(`细则得分折算 ${impliedLevel.toFixed(1)} 与整体水平 ${level.toFixed(1)} 相差 ≥ ${t.disagreement}`);
+  const maxPoints = ASSIGNMENT.rubric.reduce((s, r) => s + r.points, 0);
+  const impliedLevel = (points / maxPoints) * 3;
+  if (!offTopic && Math.abs(impliedLevel - level) >= t.disagreement) reasons.push(`细则得分折算 ${impliedLevel.toFixed(1)} 与整体水平 ${level.toFixed(1)} 相差 ≥ ${t.disagreement}`);
 
+  // Misconceptions are judged on the probability mass of every non-`none` option, not on the argmax alone:
+  // "none 0.45 / other 0.27 / reflects_ocean 0.27" is 0.55 of doubt even though none wins.
   const m = answers.misconception;
   let misconception: Grade["misconception"] = null;
   if (m && m.type === "choice" && MISCONCEPTIONS.includes(m.choice as MisconceptionId)) {
-    misconception = { choice: m.choice as MisconceptionId, confidence: m.confidence ?? 0, probabilities: m.probabilities };
-    if (m.choice !== "none") {
-      if (misconception.confidence >= t.misconceptionMin) flags.push(`misconception:${m.choice}`);
-      else if (misconception.confidence > 0.4) reasons.push(`错误概念 ${m.choice} 置信度 ${misconception.confidence.toFixed(2)} 不确定`);
+    misconception = { choice: m.choice as MisconceptionId, confidence: m.confidence ?? m.probabilities[m.choice] ?? 0, probabilities: m.probabilities };
+    const mass = 1 - (m.probabilities.none ?? 0);
+    const topNonNone = Object.entries(m.probabilities).filter(([k]) => k !== "none").sort((a, b) => b[1] - a[1])[0]?.[0] as MisconceptionId | undefined;
+    if (!offTopic && topNonNone) {
+      if (mass >= t.misconceptionMin) flags.push(`misconception:${topNonNone}`);
+      else if (mass > 0.4) reasons.push(`错误概念概率质量 ${mass.toFixed(2)}（最可能 ${topNonNone}）落在 0.4–${t.misconceptionMin} 之间`);
     }
   }
 
+  void MISCONCEPTION_ZH;
   const c = answers.clarity;
   const clarity = c && c.type === "score" ? c.score : null;
 
   return {
     points,
-    maxPoints: ASSIGNMENT.rubric.length,
+    maxPoints,
     level,
     levelConfidence,
     levelProbabilities,
@@ -102,7 +111,7 @@ export function gradeFromAnswers(answers: Answers, text: string, t: C1Thresholds
 export const C1_FEEDBACK_QUESTIONS = {
   feedback_consistent: {
     type: "noul",
-    instructions: "Does `feedback` agree with `rubric_results`: it does not praise a criterion marked missed, and does not fault a criterion marked met?",
+    instructions: "Does `feedback` agree with `rubric_results`: it does not praise a criterion marked missed, does not fault a criterion marked met, and neither praises nor faults a criterion marked uncertain?",
   },
   feedback_specific: {
     type: "noul",

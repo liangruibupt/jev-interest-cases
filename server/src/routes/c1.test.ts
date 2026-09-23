@@ -15,12 +15,15 @@ function gradeAnswers(text: string): Answers {
     clarity: { type: "score", score: 2, probabilities: { "0": 0, "1": 0, "2": 1 }, legend: { "0": "a", "1": "b", "2": "c" }, confidence: 0.9 },
   };
 }
+import { ESSAYS } from "@jev/shared";
+const gradeTextFor = (id: string): string => ESSAYS.find((e) => e.id === id)?.text.slice(0, 40) ?? "\u0000";
 const verifyAnswers: Answers = { feedback_consistent: { type: "noul", noul: 0.93 }, feedback_specific: { type: "noul", noul: 0.88 }, feedback_kind: { type: "noul", noul: 0.97 } };
 
-function build() {
+function build(opts: { failId?: string } = {}) {
   let n = 0;
   const askJev = vi.fn(async (input: { state: { answer?: string; feedback?: string } }, _opts: unknown) => {
     n += 1;
+    if (opts.failId && input.state.answer !== undefined && input.state.answer.startsWith(gradeTextFor(opts.failId))) throw new Error(`Jev 限流（模拟）`);
     const answers = input.state.feedback !== undefined ? verifyAnswers : gradeAnswers(input.state.answer ?? "");
     const trace: JevTrace = { kind: "jev", id: `j${n}`, scenario: "c1", startedAt: "", latencyMs: 400, cached: false, model: "jev-1.13.0", request: { state: input.state as never, questions: {}, model: "jev-latest" }, response: { answers, usage: { input_tokens: 600, output_tokens: 8 } }, cost: { usd: 0.0000252 } };
     return { result: { model: "jev-1.13.0", answers, usage: trace.response.usage }, trace };
@@ -47,7 +50,16 @@ describe("C1 routes", () => {
     await post(app, "/grade", { essayIds: ["E02"], live: true });
     expect(askJev.mock.calls[12]?.[1]).toEqual({ cache: "off" });
     expect((await post(app, "/grade", { essayIds: ["E99"] })).status).toBe(400);
+    expect((await post(app, "/grade", { essayIds: "E01" })).status).toBe(400);
     expect((await post(app, "/grade", null)).status).toBe(200);
+  });
+
+  it("keeps the other essays when one Jev call fails", async () => {
+    const { app } = build({ failId: "E05" });
+    const body = (await (await post(app, "/grade", {})).json()) as { results: Record<string, unknown>; errors: Record<string, string>; traces: unknown[] };
+    expect(Object.keys(body.results)).toHaveLength(11);
+    expect(body.errors.E05).toMatch(/模拟/);
+    expect(body.traces).toHaveLength(11);
   });
 
   it("feedback: Jev grade → Claude writes → Jev verifies (read-only); second call is served from cache", async () => {
@@ -65,11 +77,18 @@ describe("C1 routes", () => {
     expect(askJev.mock.calls[1]?.[1]).toEqual({ cache: "read-only" });
     const prompt = (claudeText.mock.calls[0]?.[0] as { messages: { content: string }[] }).messages[0]!.content;
     expect(prompt).toContain('"names_rayleigh":"missed"');
+    expect(prompt).toContain("Rayleigh scattering as the process"); // English rubric question, no Chinese labels
+    expect(prompt).not.toMatch(/[\u4e00-\u9fff]/);
 
     const second = (await (await post(app, "/feedback", { essayId: "E02" })).json()) as { cached: boolean; traces: unknown[] };
     expect(second.cached).toBe(true);
     expect(second.traces).toHaveLength(0);
     expect(claudeText).toHaveBeenCalledTimes(1);
+    // Different thresholds → different grade → a fresh Claude call, graded with those thresholds.
+    const strict = (await (await post(app, "/feedback", { essayId: "E02", thresholds: { yes: 0.99 } })).json()) as { cached: boolean; grade: { criteria: { status: string }[] } };
+    expect(strict.cached).toBe(false);
+    expect(strict.grade.criteria.map((c) => c.status)).toEqual(["uncertain", "uncertain", "missed", "uncertain"]);
+    expect(claudeText).toHaveBeenCalledTimes(2);
     expect((await post(app, "/feedback", { essayId: "nope" })).status).toBe(400);
   });
 });

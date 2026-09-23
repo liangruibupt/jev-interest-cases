@@ -44,7 +44,7 @@ claude plugin install typesafe@typesafe-ai
 
 ## 截图
 
-`docs/screenshots/`：`home.png` 总览 · `a1-quickstart.png` / `a1-counting.png` · `a2-board.png` / `a2-sliders.png` · `a4-heatmap.png` · `b1-router.png` · `b2-citations.png` · `a3-find.png` / `a3-absent.png` · `b3-gatekeeper.png` / `b3-ungated.png` / `b3-false-premise.png` · `b4-home.png`。
+`docs/screenshots/`：`home.png` 总览 · `a1-quickstart.png` / `a1-counting.png` · `a2-board.png` / `a2-sliders.png` · `a4-heatmap.png` · `b1-router.png` · `b2-citations.png` · `a3-find.png` / `a3-absent.png` · `b3-gatekeeper.png` / `b3-ungated.png` / `b3-false-premise.png` · `b4-home.png` · `c1-grading.png`。
 
 ## 文档
 
