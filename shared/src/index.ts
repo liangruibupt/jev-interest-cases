@@ -13,3 +13,4 @@ export * from "./scenarios/b1-router/index";
 export * from "./scenarios/b2-citations/index";
 export * from "./scenarios/a3-semantic-find/index";
 export * from "./scenarios/b3-rag/index";
+export * from "./scenarios/b4-smart-home/index";
