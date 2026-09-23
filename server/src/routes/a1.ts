@@ -1,5 +1,6 @@
 import { A1_LIMITS, QuestionValidationError, type EntryType, type Questions } from "@jev/shared";
 import { Hono } from "hono";
+import { toHttpError } from "../lib/errors";
 import { askJev as defaultAskJev } from "../lib/jev";
 import { usage } from "../lib/usage";
 
@@ -12,6 +13,10 @@ interface EvaluateBody {
 /** A1 is the only endpoint that accepts client-defined questions, so it enforces size limits. */
 export function createA1Routes(deps: { askJev: typeof defaultAskJev }) {
   const app = new Hono();
+  app.onError((err, c) => {
+    const e = toHttpError(err);
+    return c.json({ error: e }, e.status as 500);
+  });
 
   app.post("/evaluate", async (c) => {
     const body = (await c.req.json()) as EvaluateBody;
