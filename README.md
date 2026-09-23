@@ -38,13 +38,13 @@ claude plugin install typesafe@typesafe-ai
 | 9 | **C1 作业按细则评分**（教育） ✔ | 行业判断：细则 Noul + 情境 Score，内容与表达分开，低置信度交老师；Claude 反馈由 Jev 核验 | 评分步骤实测 99×（99.0%）；含反馈端到端 ≈ 66% |
 | 10 | **C2 患者留言分诊**（医疗） ✔ | 行业判断：分诊可以，诊断不行；红旗硬规则，化验值由代码比较，明示不问 Jev 的问题 | 分诊步骤实测 94×（98.9%）；16/16 泳道命中 |
 | 11 | **C3 公告重大性判断**（金融） ✔ | 行业判断：判断文字不判断价格；事件类型 + 重大性 Score 排成待阅列表，明示不问买卖 | 判定步骤实测 87×（98.9%）；15/15 泳道、15/15 事件类型 |
-| 12 | **C4 VPP 调度通知与告警**（能源） | 行业判断：通知是否适用于本站点交 Jev，kW 与时间窗交代码 | 规划中 |
+| 12 | **C4 VPP 调度通知与告警**（能源） ✔ | 行业判断：通知 × 站点逐对判断适用性、是否要求行动、是否测试、告警类别；kW / 百分比 / 时间窗由代码解析比较 | 判定步骤实测 82×（98.8%）；36/36 路由 |
 
 成本估算方法与完整实测表见 `docs/05-成本模型.md`：判断步骤实测 50–635×，含生成的端到端 29–87%。哪些行业判断能交给 Jev、哪些不能，见 `docs/06-行业场景适用性.md`。
 
 ## 截图
 
-`docs/screenshots/`：`home.png` 总览 · `a1-quickstart.png` / `a1-counting.png` · `a2-board.png` / `a2-sliders.png` · `a4-heatmap.png` · `b1-router.png` · `b2-citations.png` · `a3-find.png` / `a3-absent.png` · `b3-gatekeeper.png` / `b3-ungated.png` / `b3-false-premise.png` · `b4-home.png` · `c1-grading.png` · `c2-triage.png` · `c3-filings.png`。
+`docs/screenshots/`：`home.png` 总览 · `a1-quickstart.png` / `a1-counting.png` · `a2-board.png` / `a2-sliders.png` · `a4-heatmap.png` · `b1-router.png` · `b2-citations.png` · `a3-find.png` / `a3-absent.png` · `b3-gatekeeper.png` / `b3-ungated.png` / `b3-false-premise.png` · `b4-home.png` · `c1-grading.png` · `c2-triage.png` · `c3-filings.png` · `c4-vpp.png`。
 
 ## 文档
 
