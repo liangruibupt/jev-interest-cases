@@ -1,0 +1,161 @@
+{
+  "kind": "jev",
+  "id": "0247ee8d-5907-4de6-a2ed-74ad62262767",
+  "scenario": "c1",
+  "startedAt": "2026-09-23T13:44:36.604Z",
+  "latencyMs": 485,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "assignment": {
+        "prompt": "Why does the sky look blue during the day but orange or red at sunset? Write 4 to 6 sentences. Name the process responsible and give one piece of evidence or an example that supports your explanation.",
+        "grade": "8th grade science"
+      },
+      "answer": "So first of all I want to say that this is a really interesting question and I have wondered about it since I was little. My grandmother used to tell me the sky was blue because it was happy but I know now that is not the scientific reason. The real reason is that sunlight is made of all the colors and when it passes through the air the small molecules scatter the blue light more than the other colors because blue has a shorter wavelength. Scientists call this Rayleigh scattering after a scientist named Lord Rayleigh. Then at sunset the Sun is low and the light goes through a lot more air, and the blue gets scattered away before it gets to us so we see red and orange. I also read that this is why the Sun looks a bit yellow instead of white in the middle of the day. Also astronauts say that from space the sky is black because there is no air to scatter the light. So that is my answer and I think it is very cool that light can do this. Thank you for reading."
+    },
+    "questions": {
+      "cause_scattering": {
+        "type": "noul",
+        "instructions": "Does `answer` state that the sky is blue because the atmosphere (air molecules) scatters the shorter, blue wavelengths of sunlight more than the longer ones?",
+        "criteria": {
+          "true": "It attributes the blue sky to scattering of shorter or blue light by the air",
+          "false": "It gives no cause, or a different cause such as reflection, refraction, or the color of the gases"
+        }
+      },
+      "sunset_path": {
+        "type": "noul",
+        "instructions": "Does `answer` explain that at sunset the light travels a longer path through the atmosphere, so the blue is scattered away and the longer red or orange wavelengths remain?",
+        "criteria": {
+          "true": "It links the sunset colors to a longer path through air and blue light being removed",
+          "false": "It does not explain the sunset, or explains it with a different mechanism"
+        }
+      },
+      "names_rayleigh": {
+        "type": "noul",
+        "instructions": "Does `answer` name Rayleigh scattering as the process (an obvious misspelling such as 'Raleigh scattering' still counts)?"
+      },
+      "evidence_or_example": {
+        "type": "noul",
+        "instructions": "Does `answer` give at least one piece of evidence, observation, or example that supports its explanation of the sky's color?",
+        "criteria": {
+          "true": "It offers a supporting observation or example, e.g. the Sun looks yellowish, the sky on Mars or the Moon, a milk-in-water demonstration",
+          "false": "It only asserts the explanation without any supporting observation or example"
+        }
+      },
+      "on_topic": {
+        "type": "noul",
+        "instructions": "Is `answer` about why the sky is blue in the day and red or orange at sunset, rather than about a different topic?"
+      },
+      "misconception": {
+        "type": "choice",
+        "instructions": "Does `answer` contain a scientifically incorrect claim about the cause of the sky's color? Which one?",
+        "criteria": {
+          "none": "No incorrect scientific claim",
+          "reflects_ocean": "Says the sky is blue because it reflects the ocean, lakes, or water",
+          "air_is_blue": "Says the air or its gases are themselves blue-colored",
+          "refraction_not_scattering": "Describes the atmosphere bending light like a prism (refraction) instead of scattering",
+          "other_misconception": "Another incorrect claim about the cause, e.g. the Sun gets closer or hotter at sunset, or pollution is the main reason"
+        }
+      },
+      "overall": {
+        "type": "score",
+        "instructions": {
+          "question": "How well does `answer` respond to `assignment.prompt`?",
+          "focus": "Judge the science content, not spelling or grammar."
+        },
+        "criteria": [
+          "Off topic, blank, restates the question, or the explanation is mostly incorrect",
+          "Names the phenomenon but the explanation is missing key parts or contains an error",
+          "The explanation is correct with a minor gap, such as no evidence or no name for the process",
+          "Complete and accurate: the cause, the sunset, the process name, and supporting evidence"
+        ]
+      },
+      "clarity": {
+        "type": "score",
+        "instructions": "How clearly is `answer` written, regardless of whether the science is right?",
+        "criteria": [
+          "Hard to follow: disorganized, or grammar gets in the way of meaning",
+          "Understandable, with some awkward or unclear sentences",
+          "Clear and well organized"
+        ]
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "cause_scattering": {
+        "type": "noul",
+        "noul": 0.99
+      },
+      "sunset_path": {
+        "type": "noul",
+        "noul": 0.96
+      },
+      "names_rayleigh": {
+        "type": "noul",
+        "noul": 0.99
+      },
+      "evidence_or_example": {
+        "type": "noul",
+        "noul": 0.98
+      },
+      "on_topic": {
+        "type": "noul",
+        "noul": 0.99
+      },
+      "misconception": {
+        "type": "choice",
+        "choice": "none",
+        "confidence": 0.98,
+        "probabilities": {
+          "other_misconception": 0.01,
+          "air_is_blue": 0,
+          "reflects_ocean": 0,
+          "none": 0.99,
+          "refraction_not_scattering": 0
+        }
+      },
+      "overall": {
+        "type": "score",
+        "score": 2.99,
+        "confidence": 0.99,
+        "legend": {
+          "0": "Off topic, blank, restates the question, or the explanation is mostly incorrect",
+          "1": "Names the phenomenon but the explanation is missing key parts or contains an error",
+          "2": "The explanation is correct with a minor gap, such as no evidence or no name for the process",
+          "3": "Complete and accurate: the cause, the sunset, the process name, and supporting evidence"
+        },
+        "probabilities": {
+          "0": 0,
+          "1": 0,
+          "2": 0.01,
+          "3": 0.99
+        }
+      },
+      "clarity": {
+        "type": "score",
+        "score": 1.65,
+        "confidence": 0.48,
+        "legend": {
+          "0": "Hard to follow: disorganized, or grammar gets in the way of meaning",
+          "1": "Understandable, with some awkward or unclear sentences",
+          "2": "Clear and well organized"
+        },
+        "probabilities": {
+          "0": 0,
+          "1": 0.35,
+          "2": 0.65
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 1274,
+      "output_tokens": 193
+    }
+  },
+  "cost": {
+    "usd": 0.000053508
+  }
+}

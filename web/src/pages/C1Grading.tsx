@@ -51,7 +51,7 @@ const LEARNING = {
 
 function MiniBar({ value, status }: { value: number; status: CriterionStatus }) {
   return (
-    <span className={`inline-flex min-w-16 items-center justify-between gap-2 rounded-sm px-1.5 py-0.5 text-[11px] ${STATUS_TONE[status]}`} title={`${STATUS_ZH[status]} · ${value.toFixed(3)}`}>
+    <span className={`inline-flex min-w-16 items-center justify-between gap-2 whitespace-nowrap rounded-sm px-1.5 py-0.5 text-[11px] ${STATUS_TONE[status]}`} title={`${STATUS_ZH[status]} · ${value.toFixed(3)}`}>
       <span>{STATUS_ZH[status]}</span>
       <span className="num">{value.toFixed(2)}</span>
     </span>
@@ -220,15 +220,15 @@ export function C1Grading() {
                         </td>
                       ))}
                       <td className={`num px-2 py-1.5 ${g.onTopic < t.onTopicMin ? "text-bad" : "text-ink-2"}`}>{g.onTopic.toFixed(2)}</td>
-                      <td className="px-2 py-1.5 text-ink-2">{g.misconception && g.misconception.choice !== "none" ? <span className="rounded-sm bg-bad/10 px-1.5 py-0.5 text-bad">{MISCONCEPTION_ZH[g.misconception.choice]}</span> : "—"}</td>
-                      <td className="px-2 py-1.5">
+                      <td className="px-2 py-1.5 whitespace-nowrap text-ink-2">{g.misconception && g.misconception.choice !== "none" ? <span className="rounded-sm bg-bad/10 px-1.5 py-0.5 text-bad">{MISCONCEPTION_ZH[g.misconception.choice]}</span> : "—"}</td>
+                      <td className="px-2 py-1.5 whitespace-nowrap">
                         <span className="num text-ink">{g.level.toFixed(1)}</span>
                         <span className="ml-1 inline-block h-1.5 w-12 rounded-[3px] bg-paper-2 align-middle">
                           <span className="block h-1.5 rounded-[3px] bg-jev" style={{ width: `${(g.level / 3) * 100}%` }} />
                         </span>
                       </td>
                       <td className={`num px-2 py-1.5 ${g.flags.some((f) => f.startsWith("too_")) ? "text-warn" : "text-ink-2"}`}>{g.sentences}</td>
-                      <td className="px-2 py-1.5">{g.needsTeacher ? <span className="rounded-sm bg-warn/20 px-1.5 py-0.5 text-warn">{zh.c1.needsTeacher}</span> : <span className="text-ink-3">—</span>}</td>
+                      <td className="px-2 py-1.5 whitespace-nowrap">{g.needsTeacher ? <span className="rounded-sm bg-warn/20 px-1.5 py-0.5 text-warn">{zh.c1.needsTeacher}</span> : <span className="text-ink-3">—</span>}</td>
                     </tr>
                   );
                 })}

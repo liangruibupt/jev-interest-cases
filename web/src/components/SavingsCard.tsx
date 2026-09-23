@@ -52,9 +52,9 @@ export function SavingsCard({ scenario, jevTraces, defaultTier = "standard" }: {
 function Figure({ value, sub, label, tone }: { value: string; sub?: string; label: string; tone: string }) {
   return (
     <div className="min-w-0">
-      <div className={`num break-words text-lg leading-tight ${tone}`}>
-        {value}
-        {sub && <span className="ml-1 text-xs">{sub}</span>}
+      <div className={`num text-lg leading-tight ${tone}`}>
+        <span className="whitespace-nowrap">{value}</span>
+        {sub && <span className="ml-1 whitespace-nowrap text-xs">{sub}</span>}
       </div>
       <div className="text-[11px] text-ink-3">{label}</div>
     </div>

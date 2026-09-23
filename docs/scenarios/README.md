@@ -12,6 +12,10 @@
 | 6 | A3 文档逐行语义搜索 | 纯 Jev | 218 行 Choice + 存在性 Noul，无 embedding | [`A3.md`](A3.md) ✔ |
 | 7 | B3 RAG 段落守门人 | Jev + Claude | 四个 Noul 过滤证据与注入，Claude 只用被采纳的证据 | [`B3.md`](B3.md) ✔ |
 | 8 | B4 智能家居助手 | Jev + Claude | 14 个 speculative 问题驱动虚拟房屋 | [`B4.md`](B4.md) ✔ |
+| 9 | C1 作业按细则评分 | 行业判断 · Jev + Claude | 细则 Noul + 情境 Score；Claude 反馈由 Jev 核验 | [`C1.md`](C1.md) ✔ |
+| 10 | C2 患者留言分诊 | 行业判断 · 纯 Jev | 紧急度 + 红旗 + 科室；数值由代码比较 | `C2.md`（P11） |
+| 11 | C3 公告重大性判断 | 行业判断 · 纯 Jev | 事件类型 + 重大性 Score，批量待阅列表 | `C3.md`（P12） |
+| 12 | C4 VPP 调度通知与告警 | 行业判断 · 纯 Jev | 通知 × 站点适用性；kW 与时间窗由代码解析 | `C4.md`（P13） |
 
 ## P0 环境检查记录
 
