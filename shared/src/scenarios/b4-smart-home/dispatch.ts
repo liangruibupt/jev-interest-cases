@@ -33,6 +33,8 @@ export type Dispatch =
   | { kind: "state_question"; trace: DispatchTrace };
 
 const BRIGHTNESS_PERCENT: Record<Exclude<Brightness, "off">, number> = { dim: 30, medium: 60, bright: 100 };
+const BRIGHTNESS_WORDS = ["dim", "medium", "bright"] as const;
+const COLORS: readonly LightColor[] = ["white", "warm_white", "red", "blue", "green", "purple"];
 const ACTION_QUESTION: Record<DeviceId, string> = {
   lights: "light_action",
   thermostat: "thermostat_action",
@@ -41,6 +43,9 @@ const ACTION_QUESTION: Record<DeviceId, string> = {
   tv: "tv_action",
   front_door_lock: "lock_action",
 };
+const DEVICE_ZH: Record<DeviceId, string> = { lights: "灯", thermostat: "温控", blinds: "窗帘", speaker: "音箱", tv: "电视", front_door_lock: "前门锁" };
+
+const clamp = (n: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, n));
 
 /** Turns the fourteen answers into commands, a clarification, a confirmation, or a hand-off to Claude. */
 export function dispatch(answers: Answers, request: string, t: B4Thresholds = B4_THRESHOLDS): Dispatch {
@@ -70,6 +75,7 @@ export function dispatch(answers: Answers, request: string, t: B4Thresholds = B4
     return d;
   };
   const clarify = (question_zh: string, rule: string) => finish({ kind: "clarify" as const, question_zh, trace }, rule);
+  const commands = (cmds: Command[], rule: string) => finish({ kind: "commands" as const, commands: cmds, trace }, rule);
 
   const category = choice("category");
   trace.category = category;
@@ -84,71 +90,67 @@ export function dispatch(answers: Answers, request: string, t: B4Thresholds = B4
     return clarify("要控制哪个设备？", `device = ${device?.choice ?? "?"}（置信度 ${(device?.confidence ?? 0).toFixed(2)}，门限 ${t.deviceMin}）`);
   }
   const deviceId = device.choice as DeviceId;
-
-  let room: RoomTarget | undefined;
-  if (deviceId !== "front_door_lock") {
-    const r = choice("room");
-    trace.room = r;
-    if (!r || r.choice === "not_stated" || r.confidence < t.roomMin) return clarify("哪个房间？", `room = ${r?.choice ?? "?"}（置信度 ${(r?.confidence ?? 0).toFixed(2)}，门限 ${t.roomMin}）`);
-    if (r.choice === "whole_house") room = "all";
-    else if ((ROOMS as readonly string[]).includes(r.choice)) room = r.choice as RoomTarget;
-    else return clarify("哪个房间？", `room = ${r.choice} 不在房间列表中`);
-  }
-
   const actionId = ACTION_QUESTION[deviceId];
   const action = choice(actionId);
   if (!action || action.choice === "not_applicable" || action.confidence < t.actionMin) {
-    return clarify(`对${deviceLabel(deviceId)}做什么？`, `${actionId} = ${action?.choice ?? "?"}（置信度 ${(action?.confidence ?? 0).toFixed(2)}，门限 ${t.actionMin}）`);
+    return clarify(`对${DEVICE_ZH[deviceId]}做什么？`, `${actionId} = ${action?.choice ?? "?"}（置信度 ${(action?.confidence ?? 0).toFixed(2)}，门限 ${t.actionMin}）`);
   }
   trace.action = { id: actionId, read: action };
   const n = trace.number;
 
+  // The door lock is house-level (no room) and high-risk.
+  if (deviceId === "front_door_lock") {
+    const command = { type: "lock" as const, locked: action.choice === "lock" };
+    if (action.choice === "unlock") return finish({ kind: "confirm_lock", command, confidence: action.confidence, trace }, "开锁永远需要确认");
+    if (action.confidence < t.lockMin) return finish({ kind: "confirm_lock", command, confidence: action.confidence, trace }, `lock 置信度 ${action.confidence.toFixed(2)} < ${t.lockMin} → 要求确认`);
+    return commands([command], `lock 置信度 ${action.confidence.toFixed(2)} ≥ ${t.lockMin} → 直接上锁`);
+  }
+
+  const r = choice("room");
+  trace.room = r;
+  if (!r || r.choice === "not_stated" || r.confidence < t.roomMin) return clarify("哪个房间？", `room = ${r?.choice ?? "?"}（置信度 ${(r?.confidence ?? 0).toFixed(2)}，门限 ${t.roomMin}）`);
+  let room: RoomTarget;
+  if (r.choice === "whole_house") room = "all";
+  else if ((ROOMS as readonly string[]).includes(r.choice)) room = r.choice as RoomTarget;
+  else return clarify("哪个房间？", `room = ${r.choice} 不在房间列表中`);
+
   switch (deviceId) {
-    case "front_door_lock": {
-      const command = { type: "lock" as const, locked: action.choice === "lock" };
-      if (action.choice === "unlock") return finish({ kind: "confirm_lock", command, confidence: action.confidence, trace }, "开锁永远需要确认");
-      if (action.confidence < t.lockMin) return finish({ kind: "confirm_lock", command, confidence: action.confidence, trace }, `lock 置信度 ${action.confidence.toFixed(2)} < ${t.lockMin} → 要求确认`);
-      return finish({ kind: "commands", commands: [command], trace }, `lock 置信度 ${action.confidence.toFixed(2)} ≥ ${t.lockMin} → 直接上锁`);
-    }
     case "lights": {
-      const r = room!;
-      if (action.choice === "turn_on") return finish({ kind: "commands", commands: [{ type: "lights", room: r, on: true }], trace }, "light_action = turn_on");
-      if (action.choice === "turn_off") return finish({ kind: "commands", commands: [{ type: "lights", room: r, on: false }], trace }, "light_action = turn_off");
+      if (action.choice === "turn_on") return commands([{ type: "lights", room, on: true }], "light_action = turn_on");
+      if (action.choice === "turn_off") return commands([{ type: "lights", room, on: false }], "light_action = turn_off");
       if (action.choice === "change_color") {
         const c = choice("color");
-        if (!c || c.choice === "not_stated" || c.confidence < t.actionMin) return clarify("换成什么颜色？", `color = ${c?.choice ?? "?"}`);
-        return finish({ kind: "commands", commands: [{ type: "lights", room: r, color: c.choice as LightColor }], trace }, `light_action = change_color，color = ${c.choice}`);
+        if (!c || c.confidence < t.actionMin || !COLORS.includes(c.choice as LightColor)) return clarify("换成什么颜色？", `color = ${c?.choice ?? "?"}`);
+        return commands([{ type: "lights", room, color: c.choice as LightColor }], `light_action = change_color，color = ${c.choice}`);
       }
-      // change_brightness: a percentage from the regex wins; otherwise the level in words.
-      if (n && n.unit === "percent") return finish({ kind: "commands", commands: [{ type: "lights", room: r, brightnessPercent: n.value }], trace }, `light_action = change_brightness，正则取到 ${n.value}%`);
+      // change_brightness: any number in the text is read as a percentage; otherwise the level in words.
+      if (n && n.unit !== "celsius") {
+        const pct = clamp(Math.round(n.value), 0, 100);
+        return commands([{ type: "lights", room, brightnessPercent: pct }], `light_action = change_brightness，正则取到 ${n.value}${n.unit === "percent" ? "%" : ""} → ${pct}%`);
+      }
       const level = choice("brightness_level");
-      if (!level || level.choice === "not_stated" || level.confidence < t.actionMin) return clarify("调到多亮？（暗 / 中 / 亮，或一个百分比）", `brightness_level = ${level?.choice ?? "?"}，且没有百分比`);
+      if (!level || level.confidence < t.actionMin || !(BRIGHTNESS_WORDS as readonly string[]).includes(level.choice)) return clarify("调到多亮？（暗 / 中 / 亮，或一个百分比）", `brightness_level = ${level?.choice ?? "?"}，且没有百分比`);
       const b = level.choice as Exclude<Brightness, "off">;
-      return finish({ kind: "commands", commands: [{ type: "lights", room: r, brightness: b, brightnessPercent: BRIGHTNESS_PERCENT[b] }], trace }, `light_action = change_brightness，brightness_level = ${b}`);
+      return commands([{ type: "lights", room, brightness: b, brightnessPercent: BRIGHTNESS_PERCENT[b] }], `light_action = change_brightness，brightness_level = ${b}`);
     }
     case "thermostat": {
-      const r = room!;
-      if (action.choice === "warmer") return finish({ kind: "commands", commands: [{ type: "thermostat", room: r, delta: 2 }], trace }, "thermostat_action = warmer → +2°C");
-      if (action.choice === "cooler") return finish({ kind: "commands", commands: [{ type: "thermostat", room: r, delta: -2 }], trace }, "thermostat_action = cooler → −2°C");
-      if (!n || (n.unit !== "celsius" && n.unit !== "bare")) return clarify("设到几度？", "thermostat_action = set_specific 但正则没取到温度");
-      return finish({ kind: "commands", commands: [{ type: "thermostat", room: r, targetC: n.value }], trace }, `thermostat_action = set_specific，正则取到 ${n.value}°C`);
+      if (action.choice === "warmer") return commands([{ type: "thermostat", room, delta: 2 }], "thermostat_action = warmer → +2°C");
+      if (action.choice === "cooler") return commands([{ type: "thermostat", room, delta: -2 }], "thermostat_action = cooler → −2°C");
+      if (!n || n.unit === "percent") return clarify("设到几度？", "thermostat_action = set_specific 但正则没取到温度");
+      return commands([{ type: "thermostat", room, targetC: n.value }], `thermostat_action = set_specific，正则取到 ${n.value}°C`);
     }
     case "blinds":
-      return finish({ kind: "commands", commands: [{ type: "blinds", room: room!, open: action.choice === "open" }], trace }, `blinds_action = ${action.choice}`);
+      return commands([{ type: "blinds", room, open: action.choice === "open" }], `blinds_action = ${action.choice}`);
     case "speaker": {
-      const r = room!;
-      if (action.choice === "play") return finish({ kind: "commands", commands: [{ type: "speaker", room: r, playing: true }], trace }, "speaker_action = play");
-      if (action.choice === "pause_or_stop") return finish({ kind: "commands", commands: [{ type: "speaker", room: r, playing: false }], trace }, "speaker_action = pause_or_stop");
-      if (action.choice === "volume_up") return finish({ kind: "commands", commands: [{ type: "speaker", room: r, volumeDelta: 2 }], trace }, "speaker_action = volume_up → +2");
-      if (action.choice === "volume_down") return finish({ kind: "commands", commands: [{ type: "speaker", room: r, volumeDelta: -2 }], trace }, "speaker_action = volume_down → −2");
-      if (!n) return clarify("音量调到几？（0–10）", "speaker_action = set_volume 但正则没取到数字");
-      return finish({ kind: "commands", commands: [{ type: "speaker", room: r, volume: n.unit === "percent" ? Math.round(n.value / 10) : n.value }], trace }, `speaker_action = set_volume，正则取到 ${n.value}`);
+      if (action.choice === "play") return commands([{ type: "speaker", room, playing: true }], "speaker_action = play");
+      if (action.choice === "pause_or_stop") return commands([{ type: "speaker", room, playing: false }], "speaker_action = pause_or_stop");
+      if (action.choice === "volume_up") return commands([{ type: "speaker", room, volumeDelta: 2 }], "speaker_action = volume_up → +2");
+      if (action.choice === "volume_down") return commands([{ type: "speaker", room, volumeDelta: -2 }], "speaker_action = volume_down → −2");
+      if (!n || n.unit === "celsius") return clarify("音量调到几？（0–10）", "speaker_action = set_volume 但正则没取到数字");
+      const volume = clamp(Math.round(n.unit === "percent" ? n.value / 10 : n.value), 0, 10);
+      return commands([{ type: "speaker", room, volume }], `speaker_action = set_volume，正则取到 ${n.value}${n.unit === "percent" ? "%" : ""} → ${volume}`);
     }
     case "tv":
-      return finish({ kind: "commands", commands: [{ type: "tv", room: room!, on: action.choice === "turn_on" }], trace }, `tv_action = ${action.choice}`);
+      return commands([{ type: "tv", room, on: action.choice === "turn_on" }], `tv_action = ${action.choice}`);
   }
-}
-
-function deviceLabel(d: DeviceId): string {
-  return { lights: "灯", thermostat: "温控", blinds: "窗帘", speaker: "音箱", tv: "电视", front_door_lock: "前门锁" }[d];
 }

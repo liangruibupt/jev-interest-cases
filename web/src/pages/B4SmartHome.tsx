@@ -1,5 +1,5 @@
 import { B4_THRESHOLDS, EXAMPLE_REQUESTS, INITIAL_HOME, ROOMS, applyCommand, describeCommand, type Command, type Dispatch, type ExampleRequest, type HomeState, type JevTrace, type Trace } from "@jev/shared";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfidenceRing } from "../components/ConfidenceRing";
 import { FloorPlan } from "../components/FloorPlan";
 import { LatencyChip } from "../components/LatencyChip";
@@ -13,7 +13,8 @@ import { ApiError, api } from "../lib/api";
 import { fmtUsd } from "../lib/format";
 import { useSession } from "../store/session";
 
-type Decision = Exclude<Dispatch, { kind: "split" }> | { kind: "split"; parts: { text: string; decision: Dispatch }[]; trace: Dispatch["trace"] };
+type Part = { text: string; decision: Dispatch; error?: undefined } | { text: string; decision?: undefined; error: string };
+type Decision = Exclude<Dispatch, { kind: "split" }> | { kind: "split"; parts: Part[]; trace: Dispatch["trace"] };
 interface CommandResponse {
   request: string;
   decision: Decision;
@@ -93,6 +94,8 @@ export function B4SmartHome() {
   const [pending, setPending] = useState<{ request: string; command: Command; confidence: number } | null>(null);
   const [changed, setChanged] = useState<Set<string>>(new Set());
   const [history, setHistory] = useState<Trace[]>([]);
+  const highlightTimer = useRef<number | null>(null);
+  useEffect(() => () => { if (highlightTimer.current !== null) window.clearTimeout(highlightTimer.current); }, []);
 
   async function send(text: string, confirmed = false) {
     const t = text.trim();
@@ -108,7 +111,8 @@ export function B4SmartHome() {
       if (res.commands.length) {
         setHome((h) => res.commands.reduce(applyCommand, h));
         setChanged(affectedRooms(res.commands));
-        window.setTimeout(() => setChanged(new Set()), 1800);
+        if (highlightTimer.current !== null) window.clearTimeout(highlightTimer.current);
+        highlightTimer.current = window.setTimeout(() => setChanged(new Set()), 1800);
       }
       const jev = res.traces.filter((x): x is JevTrace => x.kind === "jev");
       setLog((l) => [
@@ -151,7 +155,7 @@ export function B4SmartHome() {
           <section className="hairline rounded-md bg-panel p-3">
             <div className="flex items-center justify-between px-1 pb-2 text-xs text-ink-3">
               <span>{zh.b4.floorPlan}</span>
-              <button type="button" className="hover:text-ink" onClick={() => { setHome(INITIAL_HOME); setLog([]); setLast(null); setPending(null); }}>
+              <button type="button" className="hover:text-ink" onClick={() => { setHome(INITIAL_HOME); setLog([]); setLast(null); setPending(null); setChanged(new Set()); setError(null); }}>
                 {zh.b4.reset}
               </button>
             </div>
@@ -296,11 +300,15 @@ export function B4SmartHome() {
                 {decision?.kind === "split" && (
                   <Section title={zh.b4.parts}>
                     <ol className="space-y-1 text-xs">
-                      {decision.parts.map((p) => (
-                        <li key={p.text} className="flex items-center gap-2">
-                          <span className={`rounded-sm px-1.5 py-0.5 text-[11px] ${KIND_TONE[p.decision.kind]}`}>{zh.b4.kinds[p.decision.kind]}</span>
+                      {decision.parts.map((p, i) => (
+                        <li key={`${i}-${p.text}`} className="flex items-center gap-2">
+                          {p.decision ? (
+                            <span className={`rounded-sm px-1.5 py-0.5 text-[11px] ${KIND_TONE[p.decision.kind]}`}>{zh.b4.kinds[p.decision.kind]}</span>
+                          ) : (
+                            <span className="rounded-sm bg-bad/10 px-1.5 py-0.5 text-[11px] text-bad" title={p.error}>Jev 失败</span>
+                          )}
                           <span className="text-ink">{p.text}</span>
-                          <span className="ml-auto text-ink-3">{p.decision.trace.rule_zh}</span>
+                          <span className="ml-auto text-ink-3">{p.decision?.trace.rule_zh ?? p.error}</span>
                         </li>
                       ))}
                     </ol>

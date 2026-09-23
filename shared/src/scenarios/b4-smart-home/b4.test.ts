@@ -47,6 +47,10 @@ describe("B4 home reducer", () => {
     expect(applyCommand(INITIAL_HOME, { type: "thermostat", room: "bedroom", targetC: 99 }).rooms.bedroom.thermostat.targetC).toBe(30);
     expect(applyCommand(INITIAL_HOME, { type: "lock", locked: true }).front_door_lock.locked).toBe(true);
     expect(applyCommand(INITIAL_HOME, { type: "speaker", room: "office", volumeDelta: 2 }).rooms.office.speaker.volume).toBe(6);
+    expect(applyCommand(INITIAL_HOME, { type: "speaker", room: "office", volumeDelta: 9 }).rooms.office.speaker.volume).toBe(10);
+    expect(applyCommand(INITIAL_HOME, { type: "thermostat", room: "kitchen", targetC: 21.3 }).rooms.kitchen.thermostat.targetC).toBe(21.5);
+    const allWarm = applyCommand(INITIAL_HOME, { type: "thermostat", room: "all", delta: 1 });
+    expect(ROOMS.map((r) => allWarm.rooms[r].thermostat.targetC)).toEqual(ROOMS.map((r) => INITIAL_HOME.rooms[r].thermostat.targetC + 1));
     expect(describeCommand({ type: "lights", room: "office", brightnessPercent: 30 })).toBe("书房灯 → 亮度 30%（暗）");
     expect(describeCommand({ type: "lock", locked: false })).toBe("前门 → 开锁");
   });
@@ -57,7 +61,10 @@ describe("B4 numbers", () => {
     expect(extractNumber("set the bedroom to 21 degrees")).toEqual({ value: 21, unit: "celsius" });
     expect(extractNumber("set it to 21°C")).toEqual({ value: 21, unit: "celsius" });
     expect(extractNumber("dim the office lights to 30%")).toEqual({ value: 30, unit: "percent" });
-    expect(extractNumber("set the office volume to 4")).toEqual({ value: 4, unit: "level" });
+    expect(extractNumber("set the office volume to 4")).toEqual({ value: 4, unit: "bare" });
+    expect(extractNumber("volume 7 please")).toEqual({ value: 7, unit: "level" });
+    expect(extractNumber("set the bedroom to 21")).toEqual({ value: 21, unit: "bare" });
+    expect(extractNumber("make it 21°")).toEqual({ value: 21, unit: "celsius" });
     expect(extractNumber("turn on 2 lights")).toEqual({ value: 2, unit: "bare" });
     expect(extractNumber("no numbers here")).toBeNull();
   });
@@ -84,6 +91,7 @@ describe("B4 dispatch", () => {
     expect(dispatch(answers({ category: { choice: "chit_chat" } }), "hi", t).kind).toBe("chat");
     expect(dispatch(answers({ category: { choice: "information_question" } }), "is it locked?", t).kind).toBe("state_question");
     expect(dispatch(answers({ is_question_about_state: 0.7 }), "is it on?", t).kind).toBe("state_question");
+    expect(dispatch(answers({ is_question_about_state: 0.69 }), "turn it on", t).kind).toBe("commands");
     expect(dispatch(answers({ is_compound: 0.7 }), "a and b", t).kind).toBe("split");
     expect(dispatch(answers({ is_compound: 0.69 }), "a", t).kind).toBe("commands");
   });
@@ -100,6 +108,7 @@ describe("B4 dispatch", () => {
     expect(dispatch(lockAns("lock", 0.84), "lock the door", t)).toMatchObject({ kind: "confirm_lock", command: { type: "lock", locked: true }, confidence: 0.84 });
     expect(dispatch(lockAns("lock", 0.85), "lock the door", t)).toMatchObject({ kind: "commands", commands: [{ type: "lock", locked: true }] });
     expect(dispatch(lockAns("unlock", 0.99), "unlock the door", t)).toMatchObject({ kind: "confirm_lock", command: { type: "lock", locked: false } });
+    expect(dispatch(lockAns("lock", 0.9), "lock the door", t).trace.ignored).toContain("room");
   });
   it("builds device commands, letting regex numbers override words and clarifying when a needed number is missing", () => {
     const pct = dispatch(answers({ room: { choice: "office" }, light_action: { choice: "change_brightness" }, brightness_level: { choice: "bright" } }), "dim the office lights to 30%", t);
@@ -110,6 +119,11 @@ describe("B4 dispatch", () => {
     expect(dispatch(answers({ light_action: { choice: "change_color" }, color: { choice: "blue" } }), "make it blue", t)).toMatchObject({ kind: "commands", commands: [{ type: "lights", room: "bedroom", color: "blue" }] });
     const temp = dispatch(answers({ device: { choice: "thermostat" }, thermostat_action: { choice: "set_specific" } }), "set the bedroom to 21 degrees", t);
     expect(temp).toMatchObject({ kind: "commands", commands: [{ type: "thermostat", room: "bedroom", targetC: 21 }] });
+    expect(dispatch(answers({ device: { choice: "thermostat" }, thermostat_action: { choice: "set_specific" } }), "set the bedroom to 21", t)).toMatchObject({ kind: "commands", commands: [{ type: "thermostat", room: "bedroom", targetC: 21 }] });
+    expect(dispatch(answers({ room: { choice: "office" }, light_action: { choice: "change_brightness" } }), "set the office lights to 50", t)).toMatchObject({ kind: "commands", commands: [{ type: "lights", room: "office", brightnessPercent: 50 }] });
+    expect(dispatch(answers({ room: { choice: "office" }, light_action: { choice: "change_brightness" } }), "set the office lights to 150%", t)).toMatchObject({ kind: "commands", commands: [{ type: "lights", room: "office", brightnessPercent: 100 }] });
+    expect(dispatch(answers({ device: { choice: "speaker" }, speaker_action: { choice: "set_volume" } }), "volume to 4.6", t)).toMatchObject({ kind: "commands", commands: [{ type: "speaker", room: "bedroom", volume: 5 }] });
+    expect(dispatch(answers({ device: { choice: "speaker" }, speaker_action: { choice: "set_volume" } }), "volume to 40", t)).toMatchObject({ kind: "commands", commands: [{ type: "speaker", room: "bedroom", volume: 10 }] });
     expect(dispatch(answers({ device: { choice: "thermostat" }, thermostat_action: { choice: "set_specific" } }), "set the bedroom temperature", t)).toMatchObject({ kind: "clarify", question_zh: "设到几度？" });
     expect(dispatch(answers({ device: { choice: "thermostat" }, thermostat_action: { choice: "warmer" } }), "warmer", t)).toMatchObject({ kind: "commands", commands: [{ type: "thermostat", room: "bedroom", delta: 2 }] });
     expect(dispatch(answers({ device: { choice: "speaker" }, speaker_action: { choice: "set_volume" } }), "set the office volume to 4", t)).toMatchObject({ kind: "commands", commands: [{ type: "speaker", room: "bedroom", volume: 4 }] });

@@ -14,6 +14,7 @@ function answersFor(request: string): Answers {
   if (request.includes(" and ")) over.is_compound = 0.9;
   if (request.startsWith("close the bedroom blinds")) Object.assign(over, { room: { choice: "bedroom" }, device: { choice: "blinds" }, blinds_action: { choice: "close" } });
   if (request.startsWith("unlock")) Object.assign(over, { device: { choice: "front_door_lock" }, room: { choice: "not_stated" }, lock_action: { choice: "unlock", confidence: 0.97 } });
+  if (request.startsWith("turn on the living room lights")) Object.assign(over, { room: { choice: "living_room" }, light_action: { choice: "turn_on" } });
   if (request.startsWith("hi")) over.category = { choice: "chit_chat", confidence: 0.98 };
   if (request.startsWith("is the")) over.category = { choice: "information_question", confidence: 0.96 };
   const merged = { ...base, ...over };
@@ -39,7 +40,11 @@ function build() {
   });
   const ctrace = (purpose: string): ClaudeTrace => ({ kind: "claude", id: `c-${purpose}`, scenario: "b4", purpose, startedAt: "", latencyMs: 1500, model: "m", tier: "standard", inputTokens: 300, outputTokens: 40, stopReason: "end_turn", cost: { usd: 0.001 } });
   const claudeText = vi.fn(async (call: { purpose: string }) => ({ text: `reply:${call.purpose}`, trace: ctrace(call.purpose) }));
-  const claudeParse = vi.fn(async (call: { purpose: string }) => ({ parsed: { parts: ["turn off the kitchen lights", "close the bedroom blinds"] }, trace: ctrace(call.purpose) }));
+  const claudeParse = vi.fn(async (call: { purpose: string; messages: { content: string }[] }) => {
+    const text = call.messages[0]!.content;
+    const parts = text.startsWith("unlock") ? ["unlock the front door", "turn on the living room lights"] : ["turn off the kitchen lights", "close the bedroom blinds"];
+    return { parsed: { parts }, trace: ctrace(call.purpose) };
+  });
   return { app: createB4Routes({ askJev: askJev as never, claudeText: claudeText as never, claudeParse: claudeParse as never }), askJev, claudeText, claudeParse };
 }
 
@@ -49,6 +54,7 @@ const post = (app: ReturnType<typeof build>["app"], body: unknown) =>
 describe("POST /api/b4/command", () => {
   it("single command: one Jev request, no Claude, commands returned; example text uses read-write cache", async () => {
     const { app, askJev, claudeText, claudeParse } = build();
+    // The mock answers "kitchen" for every request that does not override the room, hence room: "kitchen" below.
     const res = await post(app, { request: "turn off all the lights", home: INITIAL_HOME });
     expect(res.status).toBe(200);
     const body = (await res.json()) as { decision: { kind: string }; commands: unknown[]; traces: unknown[]; baseline: { functionCallingUsd: number } };
@@ -72,6 +78,16 @@ describe("POST /api/b4/command", () => {
     expect(claudeParse).toHaveBeenCalledTimes(1);
     expect(askJev).toHaveBeenCalledTimes(3);
     expect(body.traces).toHaveLength(4);
+  });
+
+  it("a lock inside a split is never applied — not even with confirmed: true — and the user is told", async () => {
+    const { app } = build();
+    const plain = (await (await post(app, { request: "unlock the front door and turn on the living room lights", home: INITIAL_HOME })).json()) as { commands: unknown[]; clarification?: string; decision: { parts?: { decision: { kind: string } }[] } };
+    expect(plain.decision.parts?.map((p) => p.decision.kind)).toEqual(["confirm_lock", "commands"]);
+    expect(plain.commands).toEqual([{ type: "lights", room: "living_room", on: true }]);
+    expect(plain.clarification).toMatch(/单独发送并确认/);
+    const forced = (await (await post(app, { request: "unlock the front door and turn on the living room lights", home: INITIAL_HOME, confirmed: true })).json()) as { commands: unknown[] };
+    expect(forced.commands).toEqual([{ type: "lights", room: "living_room", on: true }]);
   });
 
   it("unlock needs confirmation; confirmed → command. chit-chat and state questions go to claudeText only", async () => {
@@ -102,6 +118,7 @@ describe("POST /api/b4/command", () => {
     expect((await post(app, { request: "", home: INITIAL_HOME })).status).toBe(400);
     expect((await post(app, { request: "x".repeat(301), home: INITIAL_HOME })).status).toBe(400);
     expect((await post(app, { request: "hi", home: null })).status).toBe(400);
+    expect((await post(app, { request: "hi", home: { rooms: null, front_door_lock: {} } })).status).toBe(400);
     expect((await post(app, null)).status).toBe(400);
   });
 });

@@ -27,10 +27,17 @@ interface CommandBody {
   confirmed?: unknown;
 }
 
-export type B4Decision = Exclude<Dispatch, { kind: "split" }> | { kind: "split"; parts: { text: string; decision: Dispatch }[]; trace: Dispatch["trace"] };
+export type B4Part = { text: string; decision: Dispatch; error?: undefined } | { text: string; decision?: undefined; error: string };
+export type B4Decision = Exclude<Dispatch, { kind: "split" }> | { kind: "split"; parts: B4Part[]; trace: Dispatch["trace"] };
 
-const isHome = (h: unknown): h is HomeState =>
-  typeof h === "object" && h !== null && "rooms" in h && "front_door_lock" in h && ROOMS.every((r) => typeof (h as { rooms: Record<string, unknown> }).rooms[r] === "object");
+const MAX_HOME_CHARS = 20_000;
+const isHome = (h: unknown): h is HomeState => {
+  if (typeof h !== "object" || h === null) return false;
+  const rooms = (h as { rooms?: unknown }).rooms;
+  const lock = (h as { front_door_lock?: unknown }).front_door_lock;
+  if (typeof rooms !== "object" || rooms === null || typeof lock !== "object" || lock === null) return false;
+  return ROOMS.every((r) => typeof (rooms as Record<string, unknown>)[r] === "object" && (rooms as Record<string, unknown>)[r] !== null);
+};
 
 /**
  * One Jev request with fourteen speculative questions; the pure dispatcher decides. Claude only splits
@@ -53,7 +60,8 @@ export function createB4Routes(deps: { askJev: typeof defaultAskJev; claudeText:
     const request = typeof body.request === "string" ? body.request.trim() : "";
     if (!request) throw new BadRequestError("请输入指令");
     if (request.length > MAX_REQUEST_CHARS) throw new BadRequestError(`指令不能超过 ${MAX_REQUEST_CHARS} 个字符`, { length: request.length });
-    if (!isHome(body.home)) throw new BadRequestError("缺少房屋状态 home");
+    if (!isHome(body.home)) throw new BadRequestError("缺少或无效的房屋状态 home");
+    if (JSON.stringify(body.home).length > MAX_HOME_CHARS) throw new BadRequestError("房屋状态过大");
     const home = body.home;
     const confirmed = body.confirmed === true;
     const cache = EXAMPLE_REQUESTS.some((e) => e.text === request) ? "read-write" : "read-only";
@@ -67,10 +75,15 @@ export function createB4Routes(deps: { askJev: typeof defaultAskJev; claudeText:
     traces.push(first.trace);
     let decision: B4Decision = first.decision.kind === "split" ? { kind: "split", parts: [], trace: first.decision.trace } : first.decision;
 
-    const collect = (d: Dispatch) => {
+    const addClarification = (q: string) => {
+      clarification = clarification ? `${clarification}；${q}` : q;
+    };
+    /** Parts of a split never apply a lock (no dialog ever described that command) and never trigger Claude again. */
+    const collectPart = (text: string, d: Dispatch) => {
       if (d.kind === "commands") commands.push(...d.commands);
-      else if (d.kind === "confirm_lock" && confirmed) commands.push(d.command);
-      else if (d.kind === "clarify") clarification = clarification ? `${clarification}；${d.question_zh}` : d.question_zh;
+      else if (d.kind === "confirm_lock") addClarification(`"${text}"：开锁 / 上锁请单独发送并确认`);
+      else if (d.kind === "clarify") addClarification(`"${text}"：${d.question_zh}`);
+      else addClarification(`"${text}"：请单独发送`);
     };
 
     if (first.decision.kind === "split") {
@@ -80,12 +93,18 @@ export function createB4Routes(deps: { askJev: typeof defaultAskJev; claudeText:
       });
       usage.record(trace);
       traces.push(trace);
-      const parts = await Promise.all(parsed.parts.map(async (text) => {
-        const r = await judge(text, home, cache);
-        traces.push(r.trace);
-        return { text, decision: r.decision };
-      }));
-      parts.forEach((p) => collect(p.decision));
+      const settled = await Promise.allSettled(parsed.parts.map((text) => judge(text, home, cache)));
+      const parts = settled.map((s, i) => {
+        const text = parsed.parts[i]!;
+        if (s.status === "fulfilled") {
+          traces.push(s.value.trace);
+          collectPart(text, s.value.decision);
+          return { text, decision: s.value.decision };
+        }
+        const error = s.reason instanceof Error ? s.reason.message : String(s.reason);
+        addClarification(`"${text}"：Jev 调用失败，请重试`);
+        return { text, error };
+      });
       decision = { kind: "split", parts, trace: first.decision.trace };
     } else if (first.decision.kind === "chat" || first.decision.kind === "state_question") {
       const isState = first.decision.kind === "state_question";
@@ -103,12 +122,20 @@ export function createB4Routes(deps: { askJev: typeof defaultAskJev; claudeText:
         traces.push(trace);
       }
       reply = cached.text;
-    } else {
-      collect(first.decision);
-      if (first.decision.kind === "confirm_lock" && confirmed) decision = { kind: "commands", commands: [first.decision.command], trace: first.decision.trace };
+    } else if (first.decision.kind === "commands") {
+      commands.push(...first.decision.commands);
+    } else if (first.decision.kind === "confirm_lock") {
+      // The client re-sends the same request with confirmed: true after the user approves the dialog.
+      if (confirmed) {
+        commands.push(first.decision.command);
+        decision = { kind: "commands", commands: [first.decision.command], trace: first.decision.trace };
+      }
+    } else if (first.decision.kind === "clarify") {
+      addClarification(first.decision.question_zh);
     }
 
-    const jevTokens = traces.filter((t): t is JevTrace => t.kind === "jev").reduce((s, t) => s + t.response.usage.input_tokens, 0);
+    // An LLM doing function calling would read the request once; only the first Jev call is the like-for-like baseline.
+    const jevTokens = first.trace.response.usage.input_tokens;
     return c.json({
       request,
       decision,
