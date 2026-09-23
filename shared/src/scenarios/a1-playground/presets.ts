@@ -94,7 +94,7 @@ export const A1_PRESETS: A1Preset[] = [
     id: "counting",
     title_zh: "4 · 不要让它数数",
     lesson_zh: "Jev 不是计算器。让它数满足条件的项（坏问法）会得到模糊分布；正确做法是每项问一个 Noul，让代码求和。8 个 Noul 与 1 个 Choice 在同一次请求里并行评估。",
-    expect_zh: "how_many_fruits 的分布可能分散；8 个 item_* 里 apple / banana / orange 应接近 1，其余接近 0；代码求和 = 3。",
+    expect_zh: "8 个 item_* 里 apple / banana / orange 接近 1，其余接近 0，代码求和 = 3。实测中 8 项的小列表 Choice 也能数对（3，置信 0.93）；官方说明误差随列表变长而增大，代码求和则永远精确且免费。",
     state: { items: FRUIT_ITEMS },
     questions: {
       how_many_fruits: {
@@ -125,7 +125,7 @@ export const A1_PRESETS: A1Preset[] = [
     id: "contrastive",
     title_zh: "6 · 对照式 criteria：what / not_for / examples",
     lesson_zh: "两个容易混淆的选项，用结构化对象说明各自覆盖什么、不覆盖什么、举例。字段名不是 API 保留字，模型能看到字段名与内容。对比同一问题的字符串版本。",
-    expect_zh: "两版都应选 return_status；结构化版本的概率更集中、置信度更高。",
+    expect_zh: "两版都选 return_status。实测本例两版都是 1.00：这句话本身不歧义。把 state 改成边界句（如 \"Can I still send these back if I wore them once? It's been a week.\"）再比较两版的分布。",
     state: "I sent the shoes back a week ago. When do I get my money?",
     questions: {
       return_topic_plain: {
@@ -155,7 +155,7 @@ export const A1_PRESETS: A1Preset[] = [
     id: "cjk",
     title_zh: "7 · 中文输入对照",
     lesson_zh: "Jev 以英文为主训练；中文可用但准确率与置信度会下降。这组用预置 1 的中文译文和完全相同的英文问题，对比概率分布的差异。",
-    expect_zh: "结论方向通常一致，但概率更分散、置信度更低；这是选择英文演示数据的原因。",
+    expect_zh: "结论方向一致。实测本例中文版 department 置信度 0.92 反而高于英文版 0.76：单例不能证明语言差异。官方声明 CJK 整体准确率较低，上线前要用你自己的中文数据评估。",
     state: "你好，我已经尝试连接 Stripe 账户三天了，集成一直失败。我正在损失销售额。请尽快帮忙！",
     questions: QUICKSTART_QUESTIONS,
   },

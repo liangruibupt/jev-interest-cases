@@ -1,0 +1,132 @@
+{
+  "kind": "jev",
+  "id": "8e334748-098a-45d7-962a-f36810bbcb0c",
+  "scenario": "a1",
+  "startedAt": "2026-09-23T00:30:15.490Z",
+  "latencyMs": 588,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "items": [
+        "typesafe",
+        "apple",
+        "california",
+        "banana",
+        "likes",
+        "calibration",
+        "orange",
+        "vertex"
+      ]
+    },
+    "questions": {
+      "how_many_fruits": {
+        "type": "choice",
+        "instructions": "How many of the entries in `items` are the names of fruits?",
+        "criteria": {
+          "0": null,
+          "1": null,
+          "2": null,
+          "3": null,
+          "4": null,
+          "5": null,
+          "6": null,
+          "7": null,
+          "8": null
+        }
+      },
+      "item_0": {
+        "type": "noul",
+        "instructions": "Is `items[0]` the name of a fruit?"
+      },
+      "item_1": {
+        "type": "noul",
+        "instructions": "Is `items[1]` the name of a fruit?"
+      },
+      "item_2": {
+        "type": "noul",
+        "instructions": "Is `items[2]` the name of a fruit?"
+      },
+      "item_3": {
+        "type": "noul",
+        "instructions": "Is `items[3]` the name of a fruit?"
+      },
+      "item_4": {
+        "type": "noul",
+        "instructions": "Is `items[4]` the name of a fruit?"
+      },
+      "item_5": {
+        "type": "noul",
+        "instructions": "Is `items[5]` the name of a fruit?"
+      },
+      "item_6": {
+        "type": "noul",
+        "instructions": "Is `items[6]` the name of a fruit?"
+      },
+      "item_7": {
+        "type": "noul",
+        "instructions": "Is `items[7]` the name of a fruit?"
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "how_many_fruits": {
+        "type": "choice",
+        "choice": "3",
+        "confidence": 0.94,
+        "probabilities": {
+          "0": 0,
+          "1": 0,
+          "2": 0.03,
+          "3": 0.95,
+          "4": 0.02,
+          "5": 0,
+          "6": 0,
+          "7": 0,
+          "8": 0
+        }
+      },
+      "item_0": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "item_1": {
+        "type": "noul",
+        "noul": 0.99
+      },
+      "item_2": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "item_3": {
+        "type": "noul",
+        "noul": 0.99
+      },
+      "item_4": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "item_5": {
+        "type": "noul",
+        "noul": 0.02
+      },
+      "item_6": {
+        "type": "noul",
+        "noul": 0.98
+      },
+      "item_7": {
+        "type": "noul",
+        "noul": 0.01
+      }
+    },
+    "usage": {
+      "input_tokens": 542,
+      "output_tokens": 229
+    }
+  },
+  "cost": {
+    "usd": 0.000022763999999999998
+  }
+}
