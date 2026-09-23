@@ -25,7 +25,7 @@ claude plugin install typesafe@typesafe-ai
 
 ## 学习路径
 
-| # | 场景 | 证明了什么 | 预估成本下降 |
+| # | 场景 | 证明了什么 | 成本下降（预估 → 实测） |
 |---|---|---|---|
 | 1 | **A1 原语实验室** ✔ | 三种原语的返回形状；~100ms 可嵌入 UI；字面理解与数数陷阱 | 判断步骤 ≈99% |
 | 2 | **A2 工单分流看板** ✔ | speculative fan-out、置信度路由、"判断即数据"（改阈值零推理） | ≈99%，重排额外省 100% |
@@ -36,7 +36,11 @@ claude plugin install typesafe@typesafe-ai
 | 7 | **B3 RAG 段落守门人** ✔ | 证据筛选与提示注入检测；让 LLM 敢于反驳错误前提 | 守门步骤实测 73×（98.6%）；端到端另省生成阶段输入 tokens |
 | 8 | **B4 智能家居助手** ✔ | 带概率的 function calling；数字留给正则；高风险动作更高门限 | 纯指令实测 68×（98.5%）；20 条混合流量 ≈ 83% |
 
-成本估算方法与完整表见 `docs/05-成本模型.md`。
+成本估算方法与完整实测表见 `docs/05-成本模型.md`：判断步骤实测 50–635×，含生成的端到端 29–87%。
+
+## 截图
+
+`docs/screenshots/`：`home.png` 总览 · `a1-quickstart.png` / `a1-counting.png` · `a2-board.png` / `a2-sliders.png` · `a4-heatmap.png` · `b1-router.png` · `b2-citations.png` · `a3-find.png` / `a3-absent.png` · `b3-gatekeeper.png` / `b3-ungated.png` / `b3-false-premise.png` · `b4-home.png`。
 
 ## 文档
 
