@@ -6,6 +6,7 @@ import { resolveCacheMode } from "./lib/cache";
 import { toHttpError } from "./lib/errors";
 import { queues } from "./lib/queue";
 import { usage } from "./lib/usage";
+import { a1Routes } from "./routes/a1";
 
 export const app = new Hono();
 
@@ -40,7 +41,8 @@ app.get("/api/_boom", () => {
   throw new Error("boom");
 });
 
-// Scenario routes are mounted here in later phases, e.g. app.route("/api/a1", a1Routes).
+// Scenario routes.
+app.route("/api/a1", a1Routes);
 
 // Production: serve the built web app (run `npm run build` first). Dev uses Vite's proxy instead.
 app.use("/*", serveStatic({ root: "../web/dist" }));
