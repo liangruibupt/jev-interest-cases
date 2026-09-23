@@ -32,12 +32,12 @@ const key = (n: string, s: string) => `${n}:${s}`;
 
 const LEARNING = {
   proves: [
-    "\"这份通知是否适用于本站点\"是文字判断：区域词、资产词、是否点名、是否要求行动，每对一次请求、8 题，约 500 tokens。",
+    "\"这份通知是否适用于本站点\"是文字判断：区域词、资产词、是否点名、是否要求行动，每对一次请求、9 题，约 1,100 tokens。",
     "数字全部在代码里：≥ 1 MW 与站点 2 MW / 800 kW 的比较、50% 限出力、16:00–19:00 时间窗都由正则解析，Jev 只判断词。",
-    "同一条通知对三个站点给出不同路由——这是聚合商每天要做的事，用 Jev 一次请求 $0.00002 就能做一对。",
+    "同一条通知对三个站点给出不同路由——这是聚合商每天要做的事，用 Jev 一次请求约 $0.00004 就能做一对。",
   ],
   tryThis: [
-    "看 N02（≥ 1 MW 的测试）：S1 测试确认、S2 因代码比较 800 kW < 1 MW 不适用、S3 不是调频资源。",
+    "看 N02（≥ 1 MW 的测试）：S1 测试确认；S2 / S3 由代码比较 800 / 350 kW < 1 MW 排除——Jev 对三个站点的 applies_asset 都 ≥ 0.79。",
     "把\"适用 / 行动 Noul ≥\"拉到 0.9，看哪些格从仅告知 / 排期掉进复核。",
     "看 N12：通知明说电池与光伏无需行动，applies_asset 对 S1 / S2 应接近 0；再看 N01 里\"demand response loads\"对电池站点 S1 的判断。",
   ],
@@ -217,6 +217,7 @@ export function C4Vpp() {
                   <MiniNoul label={zh.c4.appliesRegion} value={d.appliesRegion} act={t.act} review={t.review} />
                   <MiniNoul label={zh.c4.appliesAsset} value={d.appliesAsset} act={t.act} review={t.review} />
                   <MiniNoul label={zh.c4.namesSite} value={d.namesSite} act={t.act} review={t.review} />
+                  <MiniNoul label={zh.c4.oneSite} value={d.addressedToOneSite} act={t.act} review={t.review} />
                   <MiniNoul label={zh.c4.requiresAction} value={d.requiresAction} act={t.act} review={t.review} />
                   <MiniNoul label={zh.c4.isTest} value={d.isTest} act={t.act} review={t.review} />
                 </div>

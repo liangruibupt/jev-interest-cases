@@ -1,7 +1,7 @@
 import type { VppNotice, VppSite } from "../../datasets/vppNotices";
 import type { Questions } from "../../types";
 
-export const C4_QUESTION_IDS = ["notice_type", "applies_region", "applies_asset", "names_site", "requires_action", "is_test", "urgency", "alarm_category"] as const;
+export const C4_QUESTION_IDS = ["notice_type", "applies_region", "applies_asset", "names_site", "addressed_to_one_site", "requires_action", "is_test", "urgency", "alarm_category"] as const;
 export const NOTICE_TYPES = ["dispatch_instruction", "demand_response_event", "curtailment", "test_event", "market_information", "maintenance", "settlement", "alarm", "customer_request", "registration", "other"] as const;
 export const ALARM_CATEGORIES = ["telemetry", "communications", "hardware", "safety", "market", "not_an_alarm"] as const;
 
@@ -43,6 +43,11 @@ export const C4_QUESTIONS: Questions = {
   names_site: {
     type: "noul",
     instructions: "Does `notice` refer to `site.name` specifically (by name or an unmistakable reference)?",
+  },
+  addressed_to_one_site: {
+    type: "noul",
+    instructions: "Is `notice` addressed to one specific named site or asset, rather than to a zone or a class of resources?",
+    criteria: { true: "It names a particular site, plant, gateway, or inverter as its subject", false: "It speaks to all resources of a zone or kind, or to all participants" },
   },
   requires_action: {
     type: "noul",

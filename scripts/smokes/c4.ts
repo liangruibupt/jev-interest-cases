@@ -25,6 +25,7 @@ export async function c4(): Promise<void> {
       region: d.appliesRegion.toFixed(2),
       asset: d.appliesAsset.toFixed(2),
       names: d.namesSite.toFixed(2),
+      one: d.addressedToOneSite.toFixed(2),
       action: d.requiresAction.toFixed(2),
       test: d.isTest.toFixed(2),
       urgency: d.urgency.toFixed(2),
@@ -32,7 +33,7 @@ export async function c4(): Promise<void> {
       constraints: d.constraints.map((c) => `${c.kind}${c.satisfied === false ? "✗" : c.satisfied === true ? "✓" : ""}`).join(" "),
       ms: o.trace.latencyMs,
     });
-    if (d.namesSite >= 0.7 && d.noticeType?.choice === "alarm" && d.route === "not_applicable") problems.push(`${n.id}:${s.id}: named-site alarm marked not applicable`);
+    if (d.namesSite >= 0.5 && (d.noticeType?.choice === "alarm" || d.noticeType?.choice === "customer_request") && d.route === "not_applicable") problems.push(`${n.id}:${s.id}: named-site alarm / request marked not applicable`);
   });
   console.table(rows);
   const usd = traces.reduce((acc, t) => acc + t.cost.usd, 0);

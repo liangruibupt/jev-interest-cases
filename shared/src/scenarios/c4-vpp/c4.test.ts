@@ -4,14 +4,15 @@ import type { Answers } from "../../types";
 import { validateQuestions } from "../../validate";
 import { ALARM_CATEGORIES, C4_NOT_ASKED, C4_QUESTIONS, C4_QUESTION_IDS, C4_THRESHOLDS, NOTICE_TYPES, applyNotice, buildPairState, parseConstraints } from "./index";
 
-type Over = Partial<{ type: string; region: number; asset: number; names: number; action: number; test: number; urgency: number; alarm: string; alarmConf: number }>;
+type Over = Partial<{ type: string; region: number; asset: number; names: number; one: number; action: number; test: number; urgency: number; alarm: string; alarmConf: number }>;
 function answers(o: Over = {}): Answers {
-  const v = { type: "market_information", region: 0.95, asset: 0.95, names: 0.05, action: 0.1, test: 0.02, urgency: 0.3, alarm: "not_an_alarm", alarmConf: 0.95, ...o };
+  const v = { type: "market_information", region: 0.95, asset: 0.95, names: 0.05, one: 0.05, action: 0.1, test: 0.02, urgency: 0.3, alarm: "not_an_alarm", alarmConf: 0.95, ...o };
   return {
     notice_type: { type: "choice", choice: v.type, probabilities: { [v.type]: 1 }, confidence: 0.9 },
     applies_region: { type: "noul", noul: v.region },
     applies_asset: { type: "noul", noul: v.asset },
     names_site: { type: "noul", noul: v.names },
+    addressed_to_one_site: { type: "noul", noul: v.one },
     requires_action: { type: "noul", noul: v.action },
     is_test: { type: "noul", noul: v.test },
     urgency: { type: "score", score: v.urgency, probabilities: { "0": 0, "1": 0, "2": 0, [String(Math.round(v.urgency))]: 1 }, legend: {}, confidence: 0.9 },
@@ -20,6 +21,7 @@ function answers(o: Over = {}): Answers {
 }
 const S1 = VPP_SITES[0]!;
 const S2 = VPP_SITES[1]!;
+const S3 = VPP_SITES[2]!;
 const N02 = VPP_NOTICES[1]!;
 const N04 = VPP_NOTICES[3]!;
 
@@ -30,6 +32,7 @@ describe("C4 dataset and questions", () => {
     expect(VPP_NOTICES.every((n) => VPP_SITES.every((s) => (n.expected[s.id]?.length ?? 0) > 0))).toBe(true);
     expect(validateQuestions(C4_QUESTIONS)).toEqual([]);
     expect(Object.keys(C4_QUESTIONS)).toEqual([...C4_QUESTION_IDS]);
+    expect(C4_QUESTION_IDS).toHaveLength(9);
     const nt = C4_QUESTIONS.notice_type!;
     if (nt.type !== "choice") throw new Error("notice_type must be a choice");
     expect(Object.keys(nt.criteria)).toEqual([...NOTICE_TYPES]);
@@ -47,6 +50,13 @@ describe("C4 constraints parsed in code", () => {
     expect(c1.find((c) => c.kind === "min_capacity_kw")).toMatchObject({ value: 1000, satisfied: true });
     expect(parseConstraints(N02.text, S2).find((c) => c.kind === "min_capacity_kw")).toMatchObject({ value: 1000, satisfied: false });
     expect(parseConstraints("resources with a minimum of 500 kW", S2).find((c) => c.kind === "min_capacity_kw")).toMatchObject({ value: 500, satisfied: true });
+    expect(parseConstraints("at least 1,000 kW of storage", S2).find((c) => c.kind === "min_capacity_kw")).toMatchObject({ value: 1000, satisfied: false });
+    expect(parseConstraints("batteries of more than 500 kW", S3).find((c) => c.kind === "min_capacity_kw")).toMatchObject({ value: 500, satisfied: false });
+    expect(parseConstraints("resources 1 MW or larger", S1).find((c) => c.kind === "min_capacity_kw")).toMatchObject({ value: 1000, satisfied: true });
+    expect(parseConstraints("a total of 12 MW is enrolled in North Zone", S1).find((c) => c.kind === "min_capacity_kw")).toBeUndefined();
+    expect(parseConstraints("acknowledge within 15 minutes", S1).find((c) => c.kind === "deadline")?.text).toBe("within 15 minutes");
+    expect(parseConstraints("confirm by 12:00 on September 24", S1).find((c) => c.kind === "deadline")?.text).toBe("12:00 on September 24");
+    expect(parseConstraints("affected by Storm 3 this week", S1).find((c) => c.kind === "deadline")).toBeUndefined();
     expect(parseConstraints(VPP_NOTICES[2]!.text, S2).map((c) => c.kind)).toEqual(["curtail_percent", "time_window"]);
     expect(parseConstraints(VPP_NOTICES[2]!.text, S2).find((c) => c.kind === "curtail_percent")?.value).toBe(50);
     expect(parseConstraints(VPP_NOTICES[0]!.text, S1).find((c) => c.kind === "time_window")?.text).toBe("16:00–19:00");
@@ -61,6 +71,15 @@ describe("C4 applyNotice", () => {
     expect(applyNotice(answers({ type: "test_event", test: 0.95 }), N02, S2, t)).toMatchObject({ route: "not_applicable", ruleId: "capacity" });
     expect(applyNotice(answers({ type: "test_event", test: 0.95 }), N02, S1, t)).toMatchObject({ route: "acknowledge_test", ruleId: "test" });
     expect(applyNotice(answers({ names: 0.9, type: "alarm", alarm: "telemetry" }), N02, S2, t).route).toBe("alarm"); // named site wins
+    expect(applyNotice(answers({ names: 0.58, type: "alarm", alarm: "communications" }), N02, S2, t).route).toBe("alarm"); // site-specific at 0.5–0.7 is never capacity-gated
+  });
+  it("a notice addressed to one other site does not leak to same-zone, same-kind neighbours", () => {
+    expect(applyNotice(answers({ type: "dispatch_instruction", one: 0.9, names: 0.05, region: 0.9, asset: 0.9, action: 0.95, urgency: 2 }), N04, S1, t)).toMatchObject({ route: "not_applicable", ruleId: "other_site" });
+    expect(applyNotice(answers({ type: "dispatch_instruction", one: 0.9, names: 0.8, region: 0.9, asset: 0.9, action: 0.95, urgency: 2 }), N04, S1, t).route).toBe("act_now");
+    expect(applyNotice(answers({ type: "dispatch_instruction", one: 0.2, names: 0.05, region: 0.9, asset: 0.9, action: 0.95, urgency: 2 }), N04, S1, t).route).toBe("act_now");
+    // alarm_category alone (notice_type says dispatch) still makes the notice site-specific
+    expect(applyNotice(answers({ type: "dispatch_instruction", alarm: "safety", alarmConf: 0.95, names: 0.1, region: 0.9, asset: 0.9 }), N04, S1, t)).toMatchObject({ route: "not_applicable", ruleId: "not_named" });
+    expect(applyNotice(answers({ type: "dispatch_instruction", alarm: "safety", alarmConf: 0.95, names: 0.6, region: 0.2, asset: 0.3 }), N04, S1, t)).toMatchObject({ route: "alarm", applies: 0.6 });
   });
   it("alarms and customer requests are judged by the site name alone", () => {
     expect(applyNotice(answers({ type: "alarm", alarm: "communications", names: 0.5, region: 0.4, asset: 0.8 }), N04, S1, t)).toMatchObject({ route: "alarm" });

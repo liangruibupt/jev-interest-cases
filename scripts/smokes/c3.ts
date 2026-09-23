@@ -38,7 +38,7 @@ export async function c3(): Promise<void> {
   console.table(rows);
   const usd = traces.reduce((s, t) => s + t.cost.usd, 0);
   const sorted = traces.map((t) => t.latencyMs).sort((a, b) => a - b);
-  console.log(`lane hits ${hits}/15 · event hits ${eventHits}/${FILINGS.filter((f) => f.expected.event).length} · tokens ${traces.reduce((s, t) => s + t.response.usage.input_tokens, 0)} · cost $${usd.toFixed(6)} · p50 ${sorted[7]}ms · max ${sorted[14]}ms`);
+  console.log(`lane hits ${hits}/15 · event hits ${eventHits}/${FILINGS.filter((f) => f.expected.event).length} · tokens ${traces.reduce((s, t) => s + t.response.usage.input_tokens, 0)} · cost $${usd.toFixed(6)} · p50 ${sorted[Math.floor(sorted.length / 2)]}ms · max ${sorted[sorted.length - 1]}ms`);
   const est = estimateLlmBaseline("c3", traces, "standard");
   console.log(`judgment baseline ${est.tierLabel}: $${est.llmUsd.toFixed(4)} vs Jev $${est.jevUsd.toFixed(6)} → ${est.savingsPct.toFixed(2)}% (${est.ratio?.toFixed(0)}×)`);
   if (hits < 13) problems.push(`only ${hits}/15 lanes match`);

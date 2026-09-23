@@ -14,6 +14,7 @@ export interface PairDecision {
   appliesRegion: number;
   appliesAsset: number;
   namesSite: number;
+  addressedToOneSite: number;
   requiresAction: number;
   isTest: number;
   urgency: number;
@@ -54,15 +55,20 @@ export function applyNotice(answers: Answers, notice: VppNotice, site: VppSite, 
   const namesSite = noul("names_site");
   const requiresAction = noul("requires_action");
   const isTest = noul("is_test");
+  const addressedToOneSite = noul("addressed_to_one_site");
   const constraints = parseConstraints(notice.text, site);
-  const applies = namesSite >= t.act || (namesSite >= t.namesSiteMin && (noticeType?.choice === "alarm" || noticeType?.choice === "customer_request")) ? namesSite : Math.min(appliesRegion, appliesAsset);
-  const base = { applies, appliesRegion, appliesAsset, namesSite, requiresAction, isTest, urgency, noticeType, alarmCategory, constraints };
-  const decide = (route: C4Route, ruleId: string, rule_zh: string, reasons: string[]): PairDecision => ({ route, ruleId, rule_zh, reasons, ...base });
-
-  const unmet = constraints.find((c) => c.kind === "min_capacity_kw" && c.satisfied === false);
-  if (unmet && namesSite < t.act) return decide("not_applicable", "capacity", `代码比较：站点 ${site.capacity_kw} kW 不满足 "${unmet.text}" → 不适用`, [`min_capacity_kw ${unmet.value} > ${site.capacity_kw}`]);
   // Alarms and customer requests concern one site: only the site name decides, zone and asset words do not.
   const siteSpecific = noticeType?.choice === "alarm" || noticeType?.choice === "customer_request" || (alarmCategory !== null && alarmCategory.choice !== "not_an_alarm" && alarmCategory.confidence >= t.act);
+  const namedThreshold = siteSpecific ? t.namesSiteMin : t.act;
+  const applies = namesSite >= namedThreshold ? namesSite : Math.min(appliesRegion, appliesAsset);
+  const base = { applies, appliesRegion, appliesAsset, namesSite, addressedToOneSite, requiresAction, isTest, urgency, noticeType, alarmCategory, constraints };
+  const decide = (route: C4Route, ruleId: string, rule_zh: string, reasons: string[]): PairDecision => ({ route, ruleId, rule_zh, reasons, ...base });
+
+  // Capacity thresholds gate class-wide notices only; a notice that names this site is never capacity-gated.
+  const unmet = constraints.find((c) => c.kind === "min_capacity_kw" && c.satisfied === false);
+  if (unmet && !siteSpecific && namesSite < t.act) return decide("not_applicable", "capacity", `代码比较：站点 ${site.capacity_kw} kW 不满足 "${unmet.text}" → 不适用`, [`min_capacity_kw ${unmet.value} > ${site.capacity_kw}`]);
+  // A notice addressed to one particular site that is not this one does not leak to same-zone, same-kind neighbours.
+  if (addressedToOneSite >= t.act && namesSite < t.review) return decide("not_applicable", "other_site", `addressed_to_one_site ${addressedToOneSite.toFixed(2)} ≥ ${t.act} 且 names_site ${namesSite.toFixed(2)} < ${t.review} → 点名的是别的站点，不适用`, []);
   let named = namesSite >= t.act;
   if (siteSpecific && !named) {
     if (namesSite >= t.namesSiteMin) named = true;
@@ -73,7 +79,7 @@ export function applyNotice(answers: Answers, notice: VppNotice, site: VppSite, 
     if (appliesRegion < t.review || appliesAsset < t.review) return decide("not_applicable", "not_applicable", `applies_region ${appliesRegion.toFixed(2)} / applies_asset ${appliesAsset.toFixed(2)}：至少一项 < ${t.review} → 不适用`, []);
     if (appliesRegion < t.act || appliesAsset < t.act) return decide("review", "review", `适用性落在 ${t.review}–${t.act} 灰区 → 复核`, [`applies_region ${appliesRegion.toFixed(2)}`, `applies_asset ${appliesAsset.toFixed(2)}`]);
   }
-  const how = named ? `names_site ${namesSite.toFixed(2)} ≥ ${siteSpecific ? t.namesSiteMin : t.act}` : `applies_region ${appliesRegion.toFixed(2)} 且 applies_asset ${appliesAsset.toFixed(2)} ≥ ${t.act}`;
+  const how = named ? `names_site ${namesSite.toFixed(2)} ≥ ${namedThreshold}` : `applies_region ${appliesRegion.toFixed(2)} 且 applies_asset ${appliesAsset.toFixed(2)} ≥ ${t.act}`;
   if (isTest >= t.act) return decide("acknowledge_test", "test", `${how}；is_test ${isTest.toFixed(2)} ≥ ${t.act} → 测试，确认收到即可`, []);
   const isAlarm = (alarmCategory && alarmCategory.choice !== "not_an_alarm" && alarmCategory.confidence >= t.act) || noticeType?.choice === "alarm";
   if (isAlarm) return decide("alarm", "alarm", `${how}；告警（${alarmCategory?.choice ?? "alarm"}）→ 告警队列`, [`alarm_category ${alarmCategory?.choice ?? "?"} ${(alarmCategory?.confidence ?? 0).toFixed(2)}`]);

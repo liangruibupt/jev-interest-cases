@@ -24,12 +24,12 @@ const MATERIALITY_LEGEND: Record<string, string> = { "0": "常规事务，不影
 
 const LEARNING = {
   proves: [
-    "公告的重大性、事件类型、方向、措辞是否含糊，都是对文字的判断：一次请求 8 题，每条约 900 tokens、$0.00004。",
+    "公告的重大性、事件类型、方向、措辞是否含糊，都是对文字的判断：一次请求 8 题，每条约 1,200 tokens、$0.00005。",
     "校准过的概率比 LLM 的口头\"可能重大\"更好用：materiality 是 0–3 的连续值，可以排序、可以设门限、可以随风险调整。",
     "边界清楚：没有问买卖、估值或涨跌；金额只由代码提取用于展示。",
   ],
   tryThis: [
-    "把\"立即看\"门限从 2.3 拉到 2.8，看哪些公告掉到今日看；再拉回 2.0 看归档里有没有被漏掉的。",
+    "把\"立即看\"门限从 1.8 拉到 2.3（设计稿的值），看 F01 / F08 / F09 / F14 掉到今日看——再想想四级描述里\"显著影响\"到底该进哪个泳道。",
     "看 F12（更换审计师）：\"except as described\"、\"certain matters\" 让 hedged_language 升高，会计规则把它直接送到立即看。",
     "对比 F05（回购授权）和 F07（分红不变）：同是 capital_return，重大性差别由 Score 的情境描述体现。",
   ],
@@ -161,8 +161,8 @@ export function C3Filings() {
                                     {FLAG_LABELS_ZH[fl] ?? fl}
                                   </span>
                                 ))}
-                                {j.amounts.map((a) => (
-                                  <span key={a.text} className="num rounded-sm bg-paper-2 px-1 text-[10px] text-ink-3">
+                                {j.amounts.map((a, i) => (
+                                  <span key={`${a.text}-${i}`} className="num rounded-sm bg-paper-2 px-1 text-[10px] text-ink-3">
                                     {a.text}
                                   </span>
                                 ))}
