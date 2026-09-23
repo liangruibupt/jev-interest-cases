@@ -12,13 +12,13 @@ const TIERS: ClaudeTierId[] = ["standard", "strong"];
 
 const AnswerSchema = z.object({
   answer: z.string(),
-  claims: z.array(z.object({ claim: z.string(), section_id: z.string(), quote: z.string() })).min(1).max(8),
+  claims: z.array(z.object({ claim: z.string(), section_id: z.string(), quote: z.string() })).min(2).max(8),
 });
 type Answer = z.infer<typeof AnswerSchema>;
 
 export const ANSWER_SYSTEM = [
   "You answer questions about RFC 7519 (JSON Web Token) using ONLY the RFC text supplied in the user message.",
-  "Write a concise answer (at most 150 words). Then list 2 to 6 claims that your answer relies on.",
+  "Write a concise answer (at most 150 words). Then list 3 to 6 distinct claims that your answer relies on, each from a different sentence of the RFC where possible.",
   "For each claim give: the claim in your own words, the section_id it comes from (one of the section numbers shown as '## <id>' in the text), and a quote copied VERBATIM from that section (at most 40 words, no paraphrase, no ellipsis).",
   "If the RFC does not address the question, say so in the answer and cite the closest relevant section.",
 ].join(" ");

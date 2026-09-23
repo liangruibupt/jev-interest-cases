@@ -1,0 +1,61 @@
+{
+  "kind": "jev",
+  "id": "a3348744-7d7e-486d-acbc-5a3608f2f681",
+  "scenario": "b2",
+  "startedAt": "2026-09-23T03:23:45.672Z",
+  "latencyMs": 760,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "claim": "When both signing and encryption are needed, producers should normally sign first and then encrypt.",
+      "section": {
+        "id": "11.2",
+        "title": "Signing and Encryption Order",
+        "text": "While syntactically the signing and encryption operations for Nested\nJWTs may be applied in any order, if both signing and encryption are\nnecessary, normally producers should sign the message and then\n\nencrypt the result (thus encrypting the signature).  This prevents\nattacks in which the signature is stripped, leaving just an encrypted\nmessage, as well as providing privacy for the signer.  Furthermore,\nsignatures over encrypted text are not considered valid in many\njurisdictions.\n\nNote that potential concerns about security issues related to the\norder of signing and encryption operations are already addressed by\nthe underlying JWS and JWE specifications; in particular, because JWE\nonly supports the use of authenticated encryption algorithms,\ncryptographic concerns about the potential need to sign after\nencryption that apply in many contexts do not apply to this\nspecification."
+      },
+      "quote": "normally producers should sign the message and then encrypt the result"
+    },
+    "questions": {
+      "relation": {
+        "type": "choice",
+        "instructions": "How does `section.text` relate to `claim`?",
+        "criteria": {
+          "supports": "The section states the claim or directly implies that it is true",
+          "contradicts": "The section states the opposite of the claim or implies it is false",
+          "says_nothing": "The section does not address what the claim asserts, either way"
+        }
+      },
+      "quote_supports": {
+        "type": "noul",
+        "instructions": "Read in the context of `section.text`, does `quote` state or directly imply `claim`?"
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "relation": {
+        "type": "choice",
+        "choice": "supports",
+        "confidence": 1,
+        "probabilities": {
+          "supports": 1,
+          "contradicts": 0,
+          "says_nothing": 0
+        }
+      },
+      "quote_supports": {
+        "type": "noul",
+        "noul": 0.98
+      }
+    },
+    "usage": {
+      "input_tokens": 651,
+      "output_tokens": 63
+    }
+  },
+  "cost": {
+    "usd": 0.000027342
+  }
+}

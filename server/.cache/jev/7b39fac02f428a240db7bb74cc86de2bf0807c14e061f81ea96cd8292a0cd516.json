@@ -1,0 +1,61 @@
+{
+  "kind": "jev",
+  "id": "dadeacb5-bbf8-4457-9413-95a6cfab2775",
+  "scenario": "b2",
+  "startedAt": "2026-09-23T03:23:45.674Z",
+  "latencyMs": 755,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "claim": "Every JWT is required to carry an exp claim.",
+      "section": {
+        "id": "4.1.4",
+        "title": "\"exp\" (Expiration Time) Claim",
+        "text": "The \"exp\" (expiration time) claim identifies the expiration time on\nor after which the JWT MUST NOT be accepted for processing.  The\nprocessing of the \"exp\" claim requires that the current date/time\nMUST be before the expiration date/time listed in the \"exp\" claim.\n\nImplementers MAY provide for some small leeway, usually no more than\na few minutes, to account for clock skew.  Its value MUST be a number\ncontaining a NumericDate value.  Use of this claim is OPTIONAL."
+      },
+      "quote": "Use of this claim is OPTIONAL."
+    },
+    "questions": {
+      "relation": {
+        "type": "choice",
+        "instructions": "How does `section.text` relate to `claim`?",
+        "criteria": {
+          "supports": "The section states the claim or directly implies that it is true",
+          "contradicts": "The section states the opposite of the claim or implies it is false",
+          "says_nothing": "The section does not address what the claim asserts, either way"
+        }
+      },
+      "quote_supports": {
+        "type": "noul",
+        "instructions": "Read in the context of `section.text`, does `quote` state or directly imply `claim`?"
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "relation": {
+        "type": "choice",
+        "choice": "contradicts",
+        "confidence": 1,
+        "probabilities": {
+          "supports": 0,
+          "contradicts": 1,
+          "says_nothing": 0
+        }
+      },
+      "quote_supports": {
+        "type": "noul",
+        "noul": 0.01
+      }
+    },
+    "usage": {
+      "input_tokens": 576,
+      "output_tokens": 65
+    }
+  },
+  "cost": {
+    "usd": 0.000024192
+  }
+}

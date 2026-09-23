@@ -8,6 +8,7 @@ import { a1 } from "./smokes/a1";
 import { a2 } from "./smokes/a2";
 import { a4 } from "./smokes/a4";
 import { b1 } from "./smokes/b1";
+import { b2 } from "./smokes/b2";
 
 type Smoke = () => Promise<void>;
 
@@ -32,7 +33,7 @@ async function p0(): Promise<void> {
   console.log(`model=${trace.model} latency=${trace.latencyMs}ms tokens=${trace.response.usage.input_tokens} cost=$${trace.cost.usd.toFixed(6)}`);
 }
 
-export const SMOKE: Record<string, Smoke> = { p0, a1, a2, a4, b1 };
+export const SMOKE: Record<string, Smoke> = { p0, a1, a2, a4, b1, b2 };
 
 const wanted = process.argv.slice(2).filter((a) => !a.startsWith("-"));
 const ids = wanted.length === 0 || wanted.includes("all") ? Object.keys(SMOKE) : wanted;

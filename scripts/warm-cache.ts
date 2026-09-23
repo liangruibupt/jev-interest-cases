@@ -1,5 +1,5 @@
 /** `npm run warm-cache` — evaluates every demo input once in normal mode so server/.cache/jev can be committed and replayed without a key. */
-import { A1_PRESETS, A2_QUESTIONS, B1_QUESTIONS, GUARDRAIL_MESSAGES, TICKETS, buildMessageState, buildTicketState } from "../shared/src/index";
+import { A1_PRESETS, A2_QUESTIONS, B1_QUESTIONS, B2_QUESTIONS, CANNED_CITATIONS, GUARDRAIL_MESSAGES, RFC_SECTIONS, TICKETS, buildClaimState, buildMessageState, buildTicketState, stringStage } from "../shared/src/index";
 import { askJev } from "../server/src/lib/jev";
 
 let calls = 0;
@@ -20,5 +20,8 @@ const a2 = await Promise.all(TICKETS.map((t) => askJev({ scenario: "a2", state: 
 a2.forEach((o, i) => note(`a2/${TICKETS[i]!.id}`, o.trace));
 const b1 = await Promise.all(GUARDRAIL_MESSAGES.map((m) => askJev({ scenario: "b1", state: buildMessageState(m.text), questions: B1_QUESTIONS }, { cache: "read-write" })));
 b1.forEach((o, i) => note(`b1/${GUARDRAIL_MESSAGES[i]!.id}`, o.trace));
+const b2Claims = CANNED_CITATIONS.filter((c) => stringStage(c, RFC_SECTIONS) === null);
+const b2 = await Promise.all(b2Claims.map((c) => askJev({ scenario: "b2", state: buildClaimState(c.claim, RFC_SECTIONS.find((s) => s.id === c.section_id)!, c.quote), questions: B2_QUESTIONS }, { cache: "read-write" })));
+b2.forEach((o, i) => note(`b2/${b2Claims[i]!.id}`, o.trace));
 
 console.log(`\n${calls} inputs, ${cached} already cached, ${calls - cached} fetched, spent $${usd.toFixed(6)}`);

@@ -1,0 +1,61 @@
+{
+  "kind": "jev",
+  "id": "839de67b-2e33-4409-a19d-c984bc95d141",
+  "scenario": "b2",
+  "startedAt": "2026-09-23T03:26:22.180Z",
+  "latencyMs": 526,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "claim": "Implementers may allow small leeway (usually a few minutes) for clock skew when processing exp claim",
+      "section": {
+        "id": "4.1.4",
+        "title": "\"exp\" (Expiration Time) Claim",
+        "text": "The \"exp\" (expiration time) claim identifies the expiration time on\nor after which the JWT MUST NOT be accepted for processing.  The\nprocessing of the \"exp\" claim requires that the current date/time\nMUST be before the expiration date/time listed in the \"exp\" claim.\n\nImplementers MAY provide for some small leeway, usually no more than\na few minutes, to account for clock skew.  Its value MUST be a number\ncontaining a NumericDate value.  Use of this claim is OPTIONAL."
+      },
+      "quote": "Implementers MAY provide for some small leeway, usually no more than a few minutes, to account for clock skew."
+    },
+    "questions": {
+      "relation": {
+        "type": "choice",
+        "instructions": "How does `section.text` relate to `claim`?",
+        "criteria": {
+          "supports": "The section states the claim or directly implies that it is true",
+          "contradicts": "The section states the opposite of the claim or implies it is false",
+          "says_nothing": "The section does not address what the claim asserts, either way"
+        }
+      },
+      "quote_supports": {
+        "type": "noul",
+        "instructions": "Read in the context of `section.text`, does `quote` state or directly imply `claim`?"
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "relation": {
+        "type": "choice",
+        "choice": "supports",
+        "confidence": 1,
+        "probabilities": {
+          "says_nothing": 0,
+          "supports": 1,
+          "contradicts": 0
+        }
+      },
+      "quote_supports": {
+        "type": "noul",
+        "noul": 0.97
+      }
+    },
+    "usage": {
+      "input_tokens": 607,
+      "output_tokens": 63
+    }
+  },
+  "cost": {
+    "usd": 0.000025494000000000004
+  }
+}

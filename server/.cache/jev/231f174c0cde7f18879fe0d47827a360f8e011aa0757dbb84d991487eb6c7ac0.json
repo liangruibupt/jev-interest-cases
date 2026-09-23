@@ -1,0 +1,61 @@
+{
+  "kind": "jev",
+  "id": "c29fd814-af20-4339-9546-477dc99b4942",
+  "scenario": "b2",
+  "startedAt": "2026-09-23T03:23:45.671Z",
+  "latencyMs": 797,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "claim": "Conforming JWT implementations must implement HS256 and the none algorithm.",
+      "section": {
+        "id": "8",
+        "title": "Implementation Requirements",
+        "text": "This section defines which algorithms and features of this\nspecification are mandatory to implement.  Applications using this\nspecification can impose additional requirements upon implementations\nthat they use.  For instance, one application might require support\nfor encrypted JWTs and Nested JWTs, while another might require\nsupport for signing JWTs with the Elliptic Curve Digital Signature\nAlgorithm (ECDSA) using the P-256 curve and the SHA-256 hash\nalgorithm (\"ES256\").\n\nOf the signature and MAC algorithms specified in JSON Web Algorithms\n[JWA], only HMAC SHA-256 (\"HS256\") and \"none\" MUST be implemented by\nconforming JWT implementations.  It is RECOMMENDED that\nimplementations also support RSASSA-PKCS1-v1_5 with the SHA-256 hash\nalgorithm (\"RS256\") and ECDSA using the P-256 curve and the SHA-256\nhash algorithm (\"ES256\").  Support for other algorithms and key sizes\nis OPTIONAL.\n\nSupport for encrypted JWTs is OPTIONAL.  If an implementation\nprovides encryption capabilities, of the encryption algorithms\nspecified in [JWA], only RSAES-PKCS1-v1_5 with 2048-bit keys\n(\"RSA1_5\"), AES Key Wrap with 128- and 256-bit keys (\"A128KW\" and\n\"A256KW\"), and the composite authenticated encryption algorithm using\nAES-CBC and HMAC SHA-2 (\"A128CBC-HS256\" and \"A256CBC-HS512\") MUST be\nimplemented by conforming implementations.  It is RECOMMENDED that\nimplementations also support using Elliptic Curve Diffie-Hellman\nEphemeral Static (ECDH-ES) to agree upon a key used to wrap the\nContent Encryption Key (\"ECDH-ES+A128KW\" and \"ECDH-ES+A256KW\") and\nAES in Galois/Counter Mode (GCM) with 128- and 256-bit keys\n(\"A128GCM\" and \"A256GCM\").  Support for other algorithms and key\nsizes is OPTIONAL.\n\nSupport for Nested JWTs is OPTIONAL."
+      },
+      "quote": "only HMAC SHA-256 (\"HS256\") and \"none\" MUST be implemented by conforming JWT implementations."
+    },
+    "questions": {
+      "relation": {
+        "type": "choice",
+        "instructions": "How does `section.text` relate to `claim`?",
+        "criteria": {
+          "supports": "The section states the claim or directly implies that it is true",
+          "contradicts": "The section states the opposite of the claim or implies it is false",
+          "says_nothing": "The section does not address what the claim asserts, either way"
+        }
+      },
+      "quote_supports": {
+        "type": "noul",
+        "instructions": "Read in the context of `section.text`, does `quote` state or directly imply `claim`?"
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "relation": {
+        "type": "choice",
+        "choice": "supports",
+        "confidence": 1,
+        "probabilities": {
+          "supports": 1,
+          "says_nothing": 0,
+          "contradicts": 0
+        }
+      },
+      "quote_supports": {
+        "type": "noul",
+        "noul": 0.97
+      }
+    },
+    "usage": {
+      "input_tokens": 994,
+      "output_tokens": 63
+    }
+  },
+  "cost": {
+    "usd": 0.00004174800000000001
+  }
+}
