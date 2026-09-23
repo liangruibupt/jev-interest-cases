@@ -9,6 +9,7 @@ import { B2Citations } from "./pages/B2Citations";
 import { B3Rag } from "./pages/B3Rag";
 import { B4SmartHome } from "./pages/B4SmartHome";
 import { C1Grading } from "./pages/C1Grading";
+import { C2Triage } from "./pages/C2Triage";
 import { Home } from "./pages/Home";
 import { Placeholder } from "./pages/Placeholder";
 import { SessionProvider } from "./store/session";
@@ -29,6 +30,7 @@ export default function App() {
             <Route path="b3" element={<B3Rag />} />
             <Route path="b4" element={<B4SmartHome />} />
             <Route path="c1" element={<C1Grading />} />
+            <Route path="c2" element={<C2Triage />} />
             <Route path=":id" element={<Placeholder />} />
           </Route>
         </Routes>
