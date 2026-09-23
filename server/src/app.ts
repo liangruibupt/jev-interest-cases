@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
+import { logger } from "hono/logger";
 import { resolveCacheMode } from "./lib/cache";
 import { apiErrorHandler } from "./lib/errors";
 import { queues } from "./lib/queue";
@@ -21,6 +22,7 @@ export const app = new Hono();
 
 app.onError(apiErrorHandler);
 // Reject oversized bodies before parsing (A1 state limit is 12k chars; 256 KB leaves room for JSON questions).
+app.use("/api/*", logger());
 app.use("/api/*", bodyLimit({ maxSize: 256 * 1024 }));
 
 app.get("/api/health", (c) =>

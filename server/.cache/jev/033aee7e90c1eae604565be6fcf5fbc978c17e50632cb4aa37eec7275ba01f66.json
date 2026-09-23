@@ -1,0 +1,320 @@
+{
+  "kind": "jev",
+  "id": "179685f0-70e2-481d-96f1-70efde7de8da",
+  "scenario": "b4",
+  "startedAt": "2026-09-23T04:57:37.283Z",
+  "latencyMs": 665,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "request": "set the office volume to 4",
+      "rooms": [
+        "living_room",
+        "kitchen",
+        "bedroom",
+        "bathroom",
+        "office"
+      ],
+      "devices": [
+        "lights",
+        "thermostat",
+        "blinds",
+        "speaker",
+        "tv",
+        "front_door_lock"
+      ]
+    },
+    "questions": {
+      "category": {
+        "type": "choice",
+        "instructions": "What kind of request is `request`?",
+        "criteria": {
+          "device_command": "Asks to change the state of a light, thermostat, blinds, speaker, TV or door lock",
+          "information_question": "Asks about the current state of the home or a device",
+          "chit_chat": "Greeting, thanks, or small talk with no home action",
+          "other": "None of the above"
+        }
+      },
+      "is_compound": {
+        "type": "noul",
+        "instructions": "Does `request` ask for more than one distinct action, possibly in different rooms?",
+        "criteria": {
+          "true": "Two or more separate actions joined by and / then / also, or actions on different devices",
+          "false": "A single action, even if it applies to several rooms at once"
+        }
+      },
+      "room": {
+        "type": "choice",
+        "instructions": "Which room does `request` refer to?",
+        "criteria": {
+          "living_room": null,
+          "kitchen": null,
+          "bedroom": null,
+          "bathroom": null,
+          "office": null,
+          "whole_house": "The whole home, all rooms, or everywhere",
+          "not_stated": "No room is named or implied"
+        }
+      },
+      "device": {
+        "type": "choice",
+        "instructions": "Which device does `request` want to control or ask about?",
+        "criteria": {
+          "lights": null,
+          "thermostat": null,
+          "blinds": null,
+          "speaker": null,
+          "tv": null,
+          "front_door_lock": null,
+          "not_stated": "No device is named or implied"
+        }
+      },
+      "light_action": {
+        "type": "choice",
+        "instructions": "If `request` is about lights, what should happen?",
+        "criteria": {
+          "turn_on": null,
+          "turn_off": null,
+          "change_brightness": "Make them brighter, dimmer, or set a level",
+          "change_color": null,
+          "not_applicable": "The request is not about lights"
+        }
+      },
+      "brightness_level": {
+        "type": "choice",
+        "instructions": "If `request` sets a brightness level in words, which one?",
+        "criteria": {
+          "dim": null,
+          "medium": null,
+          "bright": null,
+          "not_stated": "No level in words (a percentage counts as not stated)"
+        }
+      },
+      "color": {
+        "type": "choice",
+        "instructions": "If `request` names a light color, which one?",
+        "criteria": {
+          "white": null,
+          "warm_white": null,
+          "red": null,
+          "blue": null,
+          "green": null,
+          "purple": null,
+          "not_stated": "No color is named"
+        }
+      },
+      "thermostat_action": {
+        "type": "choice",
+        "instructions": "If `request` is about temperature or heating, what should happen?",
+        "criteria": {
+          "set_specific": "Set to a specific temperature",
+          "warmer": "Make it warmer",
+          "cooler": "Make it cooler",
+          "not_applicable": "The request is not about temperature"
+        }
+      },
+      "blinds_action": {
+        "type": "choice",
+        "instructions": "If `request` is about blinds or curtains, what should happen?",
+        "criteria": {
+          "open": null,
+          "close": null,
+          "not_applicable": "The request is not about blinds"
+        }
+      },
+      "speaker_action": {
+        "type": "choice",
+        "instructions": "If `request` is about music or the speaker, what should happen?",
+        "criteria": {
+          "play": null,
+          "pause_or_stop": null,
+          "volume_up": null,
+          "volume_down": null,
+          "set_volume": "Set the volume to a specific level",
+          "not_applicable": "The request is not about the speaker"
+        }
+      },
+      "tv_action": {
+        "type": "choice",
+        "instructions": "If `request` is about the TV, what should happen?",
+        "criteria": {
+          "turn_on": null,
+          "turn_off": null,
+          "not_applicable": "The request is not about the TV"
+        }
+      },
+      "lock_action": {
+        "type": "choice",
+        "instructions": "If `request` is about the front door, what should happen?",
+        "criteria": {
+          "lock": null,
+          "unlock": null,
+          "not_applicable": "The request is not about the door lock"
+        }
+      },
+      "mentions_number": {
+        "type": "noul",
+        "instructions": "Does `request` contain a specific number for a temperature, percentage, or volume level?"
+      },
+      "is_question_about_state": {
+        "type": "noul",
+        "instructions": "Is `request` asking what the current state of something is, rather than asking to change it?"
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "category": {
+        "type": "choice",
+        "choice": "device_command",
+        "confidence": 0.98,
+        "probabilities": {
+          "other": 0.02,
+          "information_question": 0,
+          "device_command": 0.98,
+          "chit_chat": 0
+        }
+      },
+      "is_compound": {
+        "type": "noul",
+        "noul": 0.04
+      },
+      "room": {
+        "type": "choice",
+        "choice": "office",
+        "confidence": 1,
+        "probabilities": {
+          "kitchen": 0,
+          "bedroom": 0,
+          "not_stated": 0,
+          "office": 1,
+          "whole_house": 0,
+          "living_room": 0,
+          "bathroom": 0
+        }
+      },
+      "device": {
+        "type": "choice",
+        "choice": "speaker",
+        "confidence": 0.97,
+        "probabilities": {
+          "lights": 0,
+          "speaker": 0.97,
+          "tv": 0,
+          "not_stated": 0.03,
+          "front_door_lock": 0,
+          "thermostat": 0,
+          "blinds": 0
+        }
+      },
+      "light_action": {
+        "type": "choice",
+        "choice": "not_applicable",
+        "confidence": 0.95,
+        "probabilities": {
+          "change_color": 0,
+          "not_applicable": 0.96,
+          "turn_on": 0,
+          "change_brightness": 0.04,
+          "turn_off": 0
+        }
+      },
+      "brightness_level": {
+        "type": "choice",
+        "choice": "not_stated",
+        "confidence": 0.97,
+        "probabilities": {
+          "dim": 0,
+          "not_stated": 0.99,
+          "medium": 0.01,
+          "bright": 0
+        }
+      },
+      "color": {
+        "type": "choice",
+        "choice": "not_stated",
+        "confidence": 1,
+        "probabilities": {
+          "green": 0,
+          "red": 0,
+          "purple": 0,
+          "white": 0,
+          "warm_white": 0,
+          "blue": 0,
+          "not_stated": 1
+        }
+      },
+      "thermostat_action": {
+        "type": "choice",
+        "choice": "not_applicable",
+        "confidence": 0.99,
+        "probabilities": {
+          "not_applicable": 0.99,
+          "set_specific": 0.01,
+          "cooler": 0,
+          "warmer": 0
+        }
+      },
+      "blinds_action": {
+        "type": "choice",
+        "choice": "not_applicable",
+        "confidence": 1,
+        "probabilities": {
+          "close": 0,
+          "not_applicable": 1,
+          "open": 0
+        }
+      },
+      "speaker_action": {
+        "type": "choice",
+        "choice": "set_volume",
+        "confidence": 0.98,
+        "probabilities": {
+          "set_volume": 0.99,
+          "volume_down": 0,
+          "not_applicable": 0.01,
+          "pause_or_stop": 0,
+          "play": 0,
+          "volume_up": 0
+        }
+      },
+      "tv_action": {
+        "type": "choice",
+        "choice": "not_applicable",
+        "confidence": 0.99,
+        "probabilities": {
+          "not_applicable": 0.99,
+          "turn_on": 0.01,
+          "turn_off": 0
+        }
+      },
+      "lock_action": {
+        "type": "choice",
+        "choice": "not_applicable",
+        "confidence": 0.99,
+        "probabilities": {
+          "lock": 0,
+          "not_applicable": 1,
+          "unlock": 0
+        }
+      },
+      "mentions_number": {
+        "type": "noul",
+        "noul": 0.98
+      },
+      "is_question_about_state": {
+        "type": "noul",
+        "noul": 0.02
+      }
+    },
+    "usage": {
+      "input_tokens": 1423,
+      "output_tokens": 675
+    }
+  },
+  "cost": {
+    "usd": 0.000059766000000000003
+  }
+}
