@@ -48,6 +48,7 @@ describe("POST /api/a3/search", () => {
     expect(ok.status).toBe(200);
     expect(askJev.mock.calls[0]?.[1]).toEqual({ cache: "read-only" });
     expect((await post(app, { query: "   " })).status).toBe(400);
+    expect((await post(app, null)).status).toBe(400);
     expect((await post(app, { query: "x".repeat(201) })).status).toBe(400);
     expect(askJev).toHaveBeenCalledTimes(1);
   });

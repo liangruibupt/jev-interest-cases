@@ -37,7 +37,7 @@ export function createB1Routes(deps: { askJev: typeof defaultAskJev; claudeText:
   app.onError(apiErrorHandler);
 
   app.post("/message", async (c) => {
-    const body = (await c.req.json().catch(() => ({}))) as B1Body;
+    const body = ((await c.req.json().catch(() => ({}))) ?? {}) as B1Body;
     const message = typeof body.message === "string" ? body.message.trim() : "";
     if (!message) throw new BadRequestError("message 不能为空");
     if (message.length > MAX_MESSAGE_CHARS) throw new BadRequestError(`message 最多 ${MAX_MESSAGE_CHARS} 字符`);

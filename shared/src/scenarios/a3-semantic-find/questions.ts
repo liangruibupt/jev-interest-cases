@@ -6,7 +6,7 @@ import { A3_LINES, lineId } from "./buildState";
  * (a Choice always sums to 1, so it will always name some line), and one speculative Noul.
  */
 export function buildFindQuestions(query: string, lineCount: number = A3_LINES.length): Questions {
-  const q = query.trim().replace(/"/g, "'");
+  const q = query.replace(/\s+/g, " ").trim().replace(/"/g, "'");
   return {
     where: {
       type: "choice",

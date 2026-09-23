@@ -39,9 +39,9 @@ export async function a3(): Promise<void> {
   const est = estimateLlmBaseline("a3", traces, "standard");
   console.log(`baseline ${est.tierLabel}: $${est.llmUsd.toFixed(4)} vs Jev $${est.jevUsd.toFixed(6)} → ${est.savingsPct.toFixed(2)}% (${est.ratio?.toFixed(0)}×)`);
 
-  const ownership = outcomes["who owns the code I upload?"]!;
+  const ownership = outcomes[A3_PRESET_QUERIES[0]!.query]!;
   if (!/own/i.test(ownership.ranked[0]?.text ?? "")) throw new Error(`A3 smoke: ownership top line does not mention ownership: ${ownership.ranked[0]?.lineId}`);
-  const arbitration = outcomes["do I have to take disputes to arbitration?"]!;
+  const arbitration = outcomes[A3_PRESET_QUERIES[2]!.query]!;
   if (arbitration.exists >= 0.5) throw new Error(`A3 smoke: arbitration exists=${arbitration.exists.toFixed(2)}, expected the document not to answer it`);
   if (statusHits < statusChecked - 1) throw new Error(`A3 smoke: only ${statusHits}/${statusChecked} statuses match`);
 }

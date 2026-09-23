@@ -38,7 +38,7 @@ export function createB2Routes(deps: { askJev: typeof defaultAskJev; claudeParse
   app.get("/sections", (c) => c.json({ sections: RFC_SECTIONS }));
 
   app.post("/answer", async (c) => {
-    const body = (await c.req.json().catch(() => ({}))) as { question?: string; tier?: ClaudeTierId; injectErrors?: boolean };
+    const body = ((await c.req.json().catch(() => ({}))) ?? {}) as { question?: string; tier?: ClaudeTierId; injectErrors?: boolean };
     const question = typeof body.question === "string" ? body.question.trim() : "";
     if (!question) throw new BadRequestError("question 不能为空");
     if (question.length > MAX_QUESTION_CHARS) throw new BadRequestError(`question 最多 ${MAX_QUESTION_CHARS} 字符`);
@@ -68,7 +68,7 @@ export function createB2Routes(deps: { askJev: typeof defaultAskJev; claudeParse
   });
 
   app.post("/verify", async (c) => {
-    const body = (await c.req.json().catch(() => ({}))) as { claims?: Citation[] };
+    const body = ((await c.req.json().catch(() => ({}))) ?? {}) as { claims?: Citation[] };
     const claims = Array.isArray(body.claims) ? body.claims : [];
     if (claims.length === 0) throw new BadRequestError("claims 不能为空");
     if (claims.length > MAX_CLAIMS) throw new BadRequestError(`一次最多核验 ${MAX_CLAIMS} 条引用`);

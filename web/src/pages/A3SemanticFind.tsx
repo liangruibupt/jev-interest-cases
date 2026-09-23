@@ -1,4 +1,4 @@
-import { A3_LINES, A3_PRESET_QUERIES, A3_STATUS_ZH, A3_THRESHOLDS, type A3Result, type A3Status, type Answers, type JevTrace } from "@jev/shared";
+import { A3_LINES, A3_PRESET_QUERIES, A3_STATUS_ZH, A3_THRESHOLDS, lineId, type A3Result, type A3Status, type Answers, type JevTrace } from "@jev/shared";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LatencyChip } from "../components/LatencyChip";
 import { LearningCard } from "../components/LearningCard";
@@ -28,7 +28,7 @@ const LEARNING = {
   proves: [
     "一个 Choice 就是一次交叉编码级的相关度打分：218 行各得一个概率，不需要 embedding、索引或生成。",
     "Choice 的概率和恒为 1，它永远会\"选出\"一行——必须配一个存在性 Noul 才能说\"文档未涉及\"。",
-    "整篇文档（约 11k tokens）作为 state 一次发送；Choice 的 255 选项上限决定了单次能覆盖的行数。",
+    "整篇文档（约 12k tokens）作为 state 一次发送；Choice 的 255 选项上限决定了单次能覆盖的行数。",
   ],
   tryThis: [
     "问一个文档里没有的问题（如仲裁条款），比较 exists 与 top 概率：Choice 仍会给出一行，exists 会说不。",
@@ -36,7 +36,7 @@ const LEARNING = {
     "打开\"忽略 exists\"，体会没有存在性判断时检索结果有多误导。",
   ],
   pitfalls: [
-    "每次查询都发整篇文档：约 11k tokens、$0.0005。相对向量检索 Jev 并不省钱，优势是零索引、可解释、无冷启动。",
+    "每次查询都发整篇文档：约 12k tokens、$0.0005。相对向量检索 Jev 并不省钱，优势是零索引、可解释、无冷启动。",
     "超过 255 行的文档要分段（或先按段落粗筛再逐行）；行越长、越多，无关内容对判断的干扰越大。",
     "Jev 按字面理解：问法里的措辞会直接影响它挑哪一行，先在小样本上调好问法。",
   ],
@@ -45,7 +45,7 @@ const LEARNING = {
 function heat(prob: number, top: number): string | undefined {
   if (prob < A3_THRESHOLDS.minShow || top <= 0) return undefined;
   const alpha = 0.1 + 0.75 * Math.min(1, prob / top);
-  return `rgba(29, 79, 216, ${alpha.toFixed(3)})`;
+  return `rgb(from var(--color-jev) r g b / ${alpha.toFixed(3)})`;
 }
 
 export function A3SemanticFind() {
@@ -63,7 +63,7 @@ export function A3SemanticFind() {
     const w = data?.answers.where;
     return w && w.type === "choice" ? w.probabilities : {};
   }, [data]);
-  const top = data?.result.naiveTop.prob ?? 0;
+  const top = data?.result.naiveTop?.prob ?? 0;
   const highlighted = useMemo(() => new Set((data?.result.ranked ?? []).slice(0, data?.result.highlightCount ?? 0).map((r) => r.index)), [data]);
 
   /** Scroll only the document pane (not the page) so the query bar and verdict stay in view. */
@@ -159,7 +159,7 @@ export function A3SemanticFind() {
             </div>
             <ol ref={listRef} className="relative max-h-[70vh] overflow-y-auto p-2 font-mono text-[12px] leading-relaxed">
               {A3_LINES.map((text, i) => {
-                const id = `L${String(i).padStart(3, "0")}`;
+                const id = lineId(i);
                 const p = probs[id] ?? 0;
                 const bg = heat(p, top);
                 const outlined = highlighted.has(i);
@@ -187,8 +187,8 @@ export function A3SemanticFind() {
               {naive ? (
                 <div className="mt-2">
                   <div className="inline-flex items-center gap-2 rounded-md border border-claude/30 bg-claude-soft px-3 py-1.5 text-sm text-claude">
-                    {zh.a3.naiveVerdict} <span className="num font-medium">{result.naiveTop.lineId}</span>
-                    <span className="num text-xs">{result.naiveTop.prob.toFixed(2)}</span>
+                    {zh.a3.naiveVerdict} <span className="num font-medium">{result.naiveTop?.lineId ?? "—"}</span>
+                    <span className="num text-xs">{result.naiveTop ? result.naiveTop.prob.toFixed(2) : ""}</span>
                   </div>
                   <p className="mt-2 text-xs text-ink-2">{zh.a3.naiveNote}</p>
                 </div>

@@ -22,8 +22,8 @@ export interface A3Result {
   ranked: RankedLine[];
   /** How many top lines to highlight (3 when the answer spans several lines). */
   highlightCount: number;
-  /** What a bare Choice would report — always some line, even when the document says nothing. */
-  naiveTop: { lineId: string; prob: number };
+  /** What a bare Choice would report — always some line, even when the document says nothing. Null only if the response had no Choice. */
+  naiveTop: { lineId: string; prob: number } | null;
 }
 
 export function composeFind(answers: Answers, lines: readonly string[] = A3_LINES, t: A3Thresholds = A3_THRESHOLDS): A3Result {
@@ -32,6 +32,7 @@ export function composeFind(answers: Answers, lines: readonly string[] = A3_LINE
   const exists = answers.exists?.type === "noul" ? answers.exists.noul : 0;
   const spansMultiple = answers.spans_multiple?.type === "noul" ? answers.spans_multiple.noul : 0;
   const sorted = Object.entries(probs)
+    .filter(([lineId]) => /^L\d{3}$/.test(lineId))
     .map(([lineId, prob]) => ({ lineId, prob, index: Number(lineId.slice(1)) }))
     .sort((a, b) => b.prob - a.prob);
   const ranked: RankedLine[] = sorted
@@ -39,6 +40,6 @@ export function composeFind(answers: Answers, lines: readonly string[] = A3_LINE
     .slice(0, t.topN)
     .map((x) => ({ ...x, text: lines[x.index] ?? "" }));
   const status: A3Status = exists >= t.found ? "answered" : exists <= t.absent ? "absent" : "partial";
-  const top = sorted[0] ?? { lineId: "L000", prob: 0 };
-  return { status, exists, spansMultiple, ranked, highlightCount: spansMultiple >= t.spans ? 3 : 1, naiveTop: { lineId: top.lineId, prob: top.prob } };
+  const top = sorted[0];
+  return { status, exists, spansMultiple, ranked, highlightCount: spansMultiple >= t.spans ? 3 : 1, naiveTop: top ? { lineId: top.lineId, prob: top.prob } : null };
 }

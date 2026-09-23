@@ -17,8 +17,8 @@ export function createA3Routes(deps: { askJev: typeof defaultAskJev }) {
   app.onError(apiErrorHandler);
 
   app.post("/search", async (c) => {
-    const body = (await c.req.json().catch(() => ({}))) as { query?: unknown };
-    const query = typeof body.query === "string" ? body.query.trim() : "";
+    const body = (await c.req.json().catch(() => null)) as { query?: unknown } | null;
+    const query = typeof body?.query === "string" ? body.query.trim() : "";
     if (!query) throw new BadRequestError("请输入查询");
     if (query.length > MAX_QUERY_CHARS) throw new BadRequestError(`查询不能超过 ${MAX_QUERY_CHARS} 个字符`, { length: query.length });
     const preset = A3_PRESET_QUERIES.some((p) => p.query === query);
