@@ -17,3 +17,4 @@ export * from "./scenarios/b4-smart-home/index";
 export * from "./scenarios/c1-grading/index";
 export * from "./scenarios/c2-triage/index";
 export * from "./scenarios/c3-filings/index";
+export * from "./scenarios/c4-vpp/index";

@@ -11,6 +11,7 @@ import { B4SmartHome } from "./pages/B4SmartHome";
 import { C1Grading } from "./pages/C1Grading";
 import { C2Triage } from "./pages/C2Triage";
 import { C3Filings } from "./pages/C3Filings";
+import { C4Vpp } from "./pages/C4Vpp";
 import { Home } from "./pages/Home";
 import { Placeholder } from "./pages/Placeholder";
 import { SessionProvider } from "./store/session";
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="c1" element={<C1Grading />} />
             <Route path="c2" element={<C2Triage />} />
             <Route path="c3" element={<C3Filings />} />
+            <Route path="c4" element={<C4Vpp />} />
             <Route path=":id" element={<Placeholder />} />
           </Route>
         </Routes>

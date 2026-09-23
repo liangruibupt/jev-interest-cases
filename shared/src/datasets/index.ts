@@ -5,3 +5,4 @@ export { GUARDRAIL_MESSAGES, type GuardrailMessage } from "./guardrailMessages";
 export { ASSIGNMENT, ESSAYS, type Essay, type RubricId, type MisconceptionId } from "./essays";
 export { PATIENT_MESSAGES, type PatientMessage, type TriageLane } from "./patientMessages";
 export { FILINGS, type Filing, type EventType, type ReadingLane } from "./filings";
+export { VPP_SITES, VPP_NOTICES, type VppSite, type VppNotice, type C4Route } from "./vppNotices";
