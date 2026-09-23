@@ -1,0 +1,166 @@
+{
+  "kind": "jev",
+  "id": "fa8c357c-ecd0-4fd5-85e5-75c8ad510911",
+  "scenario": "c4",
+  "startedAt": "2026-09-23T14:53:24.130Z",
+  "latencyMs": 409,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "notice": "Scheduled maintenance of the aggregator portal on Saturday from 02:00 to 04:00. Telemetry and dispatch are not affected; the portal will be unavailable during the window.",
+      "from": "aggregator",
+      "site": {
+        "name": "Riverside Commercial DR",
+        "region": "North Zone",
+        "asset_type": "demand_response_load"
+      }
+    },
+    "questions": {
+      "notice_type": {
+        "type": "choice",
+        "instructions": "What kind of message is `notice`?",
+        "criteria": {
+          "dispatch_instruction": "Tells resources to charge, discharge, or run at a level",
+          "demand_response_event": "Calls or schedules a demand response event",
+          "curtailment": "Orders generation or output to be reduced",
+          "test_event": "A test or drill with no real response required",
+          "market_information": "Prices or market conditions, informational only",
+          "maintenance": "Planned maintenance of systems or portals",
+          "settlement": "Settlement statements, invoices, or payment information",
+          "alarm": "An automated alarm or fault report from equipment or monitoring",
+          "customer_request": "A message from a customer or site owner asking for something",
+          "registration": "Enrollment, re-registration, or program deadlines",
+          "other": "None of the above"
+        }
+      },
+      "applies_region": {
+        "type": "noul",
+        "instructions": "Does `notice` apply to sites located in `site.region`?",
+        "criteria": {
+          "true": "It names that zone, or it does not limit itself to any particular zone (a general notice applies everywhere)",
+          "false": "It limits itself to other zones only"
+        }
+      },
+      "applies_asset": {
+        "type": "noul",
+        "instructions": "Does `notice` apply to resources of the kind in `site.asset_type`?",
+        "criteria": {
+          "true": "It names that kind of resource (battery storage, solar, demand response load), or it does not limit itself to particular kinds of resource",
+          "false": "It limits itself to other kinds of resource, or explicitly excludes this kind"
+        }
+      },
+      "names_site": {
+        "type": "noul",
+        "instructions": "Does `notice` refer to `site.name` specifically (by name or an unmistakable reference)?"
+      },
+      "requires_action": {
+        "type": "noul",
+        "instructions": "Does `notice` require the operator of the site to do something (dispatch, curtail, respond, confirm, re-register, exclude), rather than only informing them?"
+      },
+      "is_test": {
+        "type": "noul",
+        "instructions": "Is `notice` a test or drill with no real response required?"
+      },
+      "urgency": {
+        "type": "score",
+        "instructions": "How soon does `notice` need attention from the site operator?",
+        "criteria": [
+          "Informational, no deadline",
+          "Action needed within days",
+          "Action needed now or within hours"
+        ]
+      },
+      "alarm_category": {
+        "type": "choice",
+        "instructions": "If `notice` is an alarm or fault report, what kind?",
+        "criteria": {
+          "telemetry": "Sensor readings missing, stale, or implausible",
+          "communications": "Lost connection, heartbeat, or gateway offline",
+          "hardware": "Equipment fault or failure",
+          "safety": "Fire, smoke, flooding, or other danger to people or equipment",
+          "market": "Market or settlement anomaly",
+          "not_an_alarm": "The notice is not an alarm"
+        }
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "notice_type": {
+        "type": "choice",
+        "choice": "maintenance",
+        "confidence": 1,
+        "probabilities": {
+          "customer_request": 0,
+          "demand_response_event": 0,
+          "test_event": 0,
+          "dispatch_instruction": 0,
+          "curtailment": 0,
+          "registration": 0,
+          "alarm": 0,
+          "maintenance": 1,
+          "other": 0,
+          "settlement": 0,
+          "market_information": 0
+        }
+      },
+      "applies_region": {
+        "type": "noul",
+        "noul": 0.86
+      },
+      "applies_asset": {
+        "type": "noul",
+        "noul": 0.84
+      },
+      "names_site": {
+        "type": "noul",
+        "noul": 0.06
+      },
+      "requires_action": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "is_test": {
+        "type": "noul",
+        "noul": 0.1
+      },
+      "urgency": {
+        "type": "score",
+        "score": 0.08,
+        "confidence": 0.87,
+        "legend": {
+          "0": "Informational, no deadline",
+          "1": "Action needed within days",
+          "2": "Action needed now or within hours"
+        },
+        "probabilities": {
+          "0": 0.95,
+          "1": 0.02,
+          "2": 0.03
+        }
+      },
+      "alarm_category": {
+        "type": "choice",
+        "choice": "not_an_alarm",
+        "confidence": 1,
+        "probabilities": {
+          "not_an_alarm": 1,
+          "hardware": 0,
+          "market": 0,
+          "telemetry": 0,
+          "communications": 0,
+          "safety": 0
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 1051,
+      "output_tokens": 273
+    }
+  },
+  "cost": {
+    "usd": 0.000044142000000000005
+  }
+}
