@@ -19,7 +19,7 @@
 
 | 日期 | Jev | Sonnet 5 text/parse | Opus 5 text/parse | Sonnet 4.6 text/parse | 备注 |
 |---|---|---|---|---|---|
-| 2026-09-23 | 待填（key 未配置） | ✔ 1.2–4.6s / ✔ `tool-lax` 3.1s | ✔ 1.5s / ✔ `tool-lax` 2.8s | ✔ 1.2s / ✔ `format` 1.2s | 见下方说明 |
+| 2026-09-23 | ✔ jev-1.13.0，首次 3.1s，稳定 0.54–0.76s | ✔ 1.2–4.6s / ✔ `tool-lax` 3.1s | ✔ 1.5s / ✔ `tool-lax` 2.8s | ✔ 1.2s / ✔ `format` 1.2s | 见下方说明 |
 
 ### Bedrock runtime 上的结构化输出
 
@@ -27,3 +27,12 @@
 - Sonnet 5 / Opus 5：`output_config.format` 返回 400 "Extra inputs are not permitted"；`strict: true` 的工具也被拒；**非 strict 的强制工具调用**（`tool_choice: {type:"tool"}`）可用，服务端用 zod 校验工具输入。
 - `server/src/lib/claude.ts` 的 `claudeParse` 按 `format → tool → tool-lax` 自动回退并按模型记住可用模式；可用 `STRUCTURED_OUTPUT_MODE=format|tool|tool-lax` 强制。
 - 首次调用 Sonnet 5 有约 4–5s 的冷启动，之后 1–2s。
+
+### 本地网络下的 Jev 延迟（2026-09-23，`npm run latency`）
+
+| 调用 | 延迟 | 说明 |
+|---|---|---|
+| 首次 | 1.2–3.1 s | 建连 + TLS（`curl` 测得 TCP 275ms、TLS 610ms）|
+| 之后 6 次 | 540–760 ms | 连接复用后的稳定值 |
+
+官方"约 100ms"是近区服务端延迟；从本地网络看，Jev 稳定在 0.5–0.8s，同网络下 Claude 文本调用为 1.2–5s。A4 场景会用同一网络同时测两者。

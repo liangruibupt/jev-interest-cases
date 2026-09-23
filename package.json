@@ -2,7 +2,11 @@
   "name": "jev-lab",
   "private": true,
   "type": "module",
-  "workspaces": ["shared", "server", "web"],
+  "workspaces": [
+    "shared",
+    "server",
+    "web"
+  ],
   "scripts": {
     "dev": "concurrently -n server,web -c blue,green \"npm run dev -w @jev/server\" \"npm run dev -w @jev/web\"",
     "build": "npm run build -w @jev/web",
@@ -12,7 +16,8 @@
     "check-env": "tsx --env-file=.env scripts/check-env.ts",
     "smoke": "tsx --env-file=.env scripts/smoke.ts",
     "vendor": "tsx scripts/vendor-datasets.ts",
-    "cache:clear": "rm -f server/.cache/jev/*.json"
+    "cache:clear": "rm -f server/.cache/jev/*.json",
+    "latency": "tsx --env-file=.env scripts/latency-probe.ts"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
