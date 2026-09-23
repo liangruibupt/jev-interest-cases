@@ -1,0 +1,194 @@
+{
+  "kind": "jev",
+  "id": "2a1e5741-8260-41c7-9067-a8201c1d65be",
+  "scenario": "c2",
+  "startedAt": "2026-09-23T14:04:12.831Z",
+  "latencyMs": 384,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "message": "It's about what we talked about at my last visit. Can someone call me back when they get a chance?",
+      "channel": "portal"
+    },
+    "questions": {
+      "urgency": {
+        "type": "score",
+        "instructions": {
+          "question": "How soon does `message` need clinical attention?",
+          "focus": "Judge from what the sender describes, not from how worried they sound."
+        },
+        "criteria": [
+          "Routine administrative or scheduling matter, or a general question with no symptoms",
+          "A clinical question or mild concern that can wait a few days",
+          "Symptoms or a situation that need clinical attention the same day",
+          "A possible emergency: symptoms that could be life-threatening or rapidly worsening"
+        ]
+      },
+      "department": {
+        "type": "choice",
+        "instructions": {
+          "question": "Who should handle `message`?",
+          "focus": "Pick the single team whose work this is."
+        },
+        "criteria": {
+          "scheduling": {
+            "what": "Booking, moving, or cancelling appointments"
+          },
+          "billing": {
+            "what": "Charges, statements, insurance coverage"
+          },
+          "pharmacy_refill": {
+            "what": "Refilling an existing prescription",
+            "not_for": "Questions about whether or how to take a drug"
+          },
+          "nursing": {
+            "what": "Symptoms, side effects, wound or fever concerns that a nurse should assess"
+          },
+          "physician": {
+            "what": "Questions about results, medications, treatment, or health advice that need a clinician's judgment"
+          },
+          "behavioral_health": {
+            "what": "Mood, anxiety, sleep, thoughts of self-harm"
+          },
+          "other": "Complaints, unclear requests, or anything not listed"
+        }
+      },
+      "red_flag_chest_pain": {
+        "type": "noul",
+        "instructions": "Does `message` describe chest pain or chest pressure happening now or very recently, especially spreading to the arm, jaw, or back?"
+      },
+      "red_flag_breathing": {
+        "type": "noul",
+        "instructions": "Does `message` describe difficulty breathing, shortness of breath at rest, or bluish lips or face?",
+        "criteria": {
+          "true": "It reports trouble breathing or blue lips now",
+          "false": "It explicitly says breathing is fine, or does not mention breathing"
+        }
+      },
+      "red_flag_self_harm": {
+        "type": "noul",
+        "instructions": "Does `message` suggest the sender may be thinking about harming themselves or ending their life?"
+      },
+      "red_flag_stroke_or_bleeding": {
+        "type": "noul",
+        "instructions": "Does `message` describe sudden weakness or numbness, facial drooping, slurred speech, sudden confusion, or heavy bleeding that will not stop?"
+      },
+      "mentions_measurement": {
+        "type": "noul",
+        "instructions": "Does `message` include a specific measured value, such as a temperature, blood sugar reading, blood pressure, oxygen level, or lab result number?"
+      },
+      "requests_medical_advice": {
+        "type": "noul",
+        "instructions": "Does `message` ask for a diagnosis, a specific medication dose, or whether a medication is safe to take, rather than for administrative help?"
+      },
+      "about_child": {
+        "type": "noul",
+        "instructions": "Is `message` about a child or infant rather than about the sender themselves?"
+      },
+      "distress": {
+        "type": "score",
+        "instructions": "How distressed does the sender of `message` sound?",
+        "criteria": [
+          "Calm or neutral",
+          "Worried or frustrated but composed",
+          "Very frightened, desperate, or angry"
+        ]
+      },
+      "wants_callback_or_human": {
+        "type": "noul",
+        "instructions": "Does `message` explicitly ask to speak with a person, a manager, or to be called back?"
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "urgency": {
+        "type": "score",
+        "score": 0.24,
+        "confidence": 0.76,
+        "legend": {
+          "0": "Routine administrative or scheduling matter, or a general question with no symptoms",
+          "1": "A clinical question or mild concern that can wait a few days",
+          "2": "Symptoms or a situation that need clinical attention the same day",
+          "3": "A possible emergency: symptoms that could be life-threatening or rapidly worsening"
+        },
+        "probabilities": {
+          "0": 0.77,
+          "1": 0.22,
+          "2": 0.01,
+          "3": 0
+        }
+      },
+      "department": {
+        "type": "choice",
+        "choice": "other",
+        "confidence": 0.76,
+        "probabilities": {
+          "physician": 0.18,
+          "behavioral_health": 0,
+          "billing": 0,
+          "scheduling": 0.02,
+          "pharmacy_refill": 0,
+          "nursing": 0.01,
+          "other": 0.79
+        }
+      },
+      "red_flag_chest_pain": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "red_flag_breathing": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "red_flag_self_harm": {
+        "type": "noul",
+        "noul": 0.06
+      },
+      "red_flag_stroke_or_bleeding": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "mentions_measurement": {
+        "type": "noul",
+        "noul": 0.01
+      },
+      "requests_medical_advice": {
+        "type": "noul",
+        "noul": 0.03
+      },
+      "about_child": {
+        "type": "noul",
+        "noul": 0.1
+      },
+      "distress": {
+        "type": "score",
+        "score": 0.04,
+        "confidence": 0.94,
+        "legend": {
+          "0": "Calm or neutral",
+          "1": "Worried or frustrated but composed",
+          "2": "Very frightened, desperate, or angry"
+        },
+        "probabilities": {
+          "0": 0.96,
+          "1": 0.04,
+          "2": 0
+        }
+      },
+      "wants_callback_or_human": {
+        "type": "noul",
+        "noul": 0.98
+      }
+    },
+    "usage": {
+      "input_tokens": 1023,
+      "output_tokens": 268
+    }
+  },
+  "cost": {
+    "usd": 0.000042966
+  }
+}

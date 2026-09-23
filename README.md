@@ -36,7 +36,7 @@ claude plugin install typesafe@typesafe-ai
 | 7 | **B3 RAG 段落守门人** ✔ | 证据筛选与提示注入检测；让 LLM 敢于反驳错误前提 | 守门步骤实测 73×（98.6%）；端到端另省生成阶段输入 tokens |
 | 8 | **B4 智能家居助手** ✔ | 带概率的 function calling；数字留给正则；高风险动作更高门限 | 纯指令实测 68×（98.5%）；20 条混合流量 ≈ 85% |
 | 9 | **C1 作业按细则评分**（教育） ✔ | 行业判断：细则 Noul + 情境 Score，内容与表达分开，低置信度交老师；Claude 反馈由 Jev 核验 | 评分步骤实测 99×（99.0%）；含反馈端到端 ≈ 66% |
-| 10 | **C2 患者留言分诊**（医疗） | 行业判断：分诊可以，诊断不行；红旗硬规则，化验值由代码比较 | 规划中 |
+| 10 | **C2 患者留言分诊**（医疗） ✔ | 行业判断：分诊可以，诊断不行；红旗硬规则，化验值由代码比较，明示不问 Jev 的问题 | 分诊步骤实测 94×（98.9%）；16/16 泳道命中 |
 | 11 | **C3 公告重大性判断**（金融） | 行业判断：判断文字不判断价格；批量成待阅列表 | 规划中 |
 | 12 | **C4 VPP 调度通知与告警**（能源） | 行业判断：通知是否适用于本站点交 Jev，kW 与时间窗交代码 | 规划中 |
 
@@ -44,7 +44,7 @@ claude plugin install typesafe@typesafe-ai
 
 ## 截图
 
-`docs/screenshots/`：`home.png` 总览 · `a1-quickstart.png` / `a1-counting.png` · `a2-board.png` / `a2-sliders.png` · `a4-heatmap.png` · `b1-router.png` · `b2-citations.png` · `a3-find.png` / `a3-absent.png` · `b3-gatekeeper.png` / `b3-ungated.png` / `b3-false-premise.png` · `b4-home.png` · `c1-grading.png`。
+`docs/screenshots/`：`home.png` 总览 · `a1-quickstart.png` / `a1-counting.png` · `a2-board.png` / `a2-sliders.png` · `a4-heatmap.png` · `b1-router.png` · `b2-citations.png` · `a3-find.png` / `a3-absent.png` · `b3-gatekeeper.png` / `b3-ungated.png` / `b3-false-premise.png` · `b4-home.png` · `c1-grading.png` · `c2-triage.png`。
 
 ## 文档
 
