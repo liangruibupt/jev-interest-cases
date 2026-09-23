@@ -2,10 +2,10 @@ import type { Passage } from "./corpus";
 
 const STOPWORDS = new Set(["a", "an", "the", "is", "are", "be", "been", "to", "of", "in", "on", "for", "and", "or", "not", "it", "its", "this", "that", "with", "as", "by", "at", "from", "do", "does", "i", "my", "we", "you", "how", "what", "which", "when", "if", "then", "than", "they", "their", "there", "here", "all", "any", "also", "into", "about", "so", "have", "has", "had", "will", "would", "every"]);
 
-export const K1 = 1.5;
-export const B = 0.75;
+export const BM25_K1 = 1.5;
+export const BM25_B = 0.75;
 
-export function tokenize(text: string): string[] {
+export function bm25Tokenize(text: string): string[] {
   return text
     .toLowerCase()
     .split(/[^a-z0-9]+/)
@@ -28,7 +28,7 @@ export interface Bm25Index {
 export function buildIndex(passages: Passage[]): Bm25Index {
   const docs: IndexedDoc[] = passages.map((p) => {
     const tf = new Map<string, number>();
-    const tokens = tokenize(`${p.title} ${p.text}`);
+    const tokens = bm25Tokenize(`${p.title} ${p.text}`);
     for (const t of tokens) tf.set(t, (tf.get(t) ?? 0) + 1);
     return { id: p.id, tf, len: tokens.length };
   });
@@ -38,8 +38,8 @@ export function buildIndex(passages: Passage[]): Bm25Index {
   return { docs, df, avgdl };
 }
 
-export function search(index: Bm25Index, query: string, k = 10): { id: string; score: number }[] {
-  const terms = [...new Set(tokenize(query))].filter((t) => index.df.has(t));
+export function bm25Search(index: Bm25Index, query: string, k = 10): { id: string; score: number }[] {
+  const terms = [...new Set(bm25Tokenize(query))].filter((t) => index.df.has(t));
   if (terms.length === 0) return [];
   const N = index.docs.length;
   const scored = index.docs
@@ -50,8 +50,8 @@ export function search(index: Bm25Index, query: string, k = 10): { id: string; s
         if (tf === 0) continue;
         const df = index.df.get(t) ?? 0;
         const idf = Math.log(1 + (N - df + 0.5) / (df + 0.5));
-        const norm = tf + K1 * (1 - B + (B * d.len) / (index.avgdl || 1));
-        score += idf * ((tf * (K1 + 1)) / norm);
+        const norm = tf + BM25_K1 * (1 - BM25_B + (BM25_B * d.len) / (index.avgdl || 1));
+        score += idf * ((tf * (BM25_K1 + 1)) / norm);
       }
       return { id: d.id, score };
     })

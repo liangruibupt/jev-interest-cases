@@ -1,4 +1,4 @@
-import { B3_PRESET_QUERIES, B3_QUESTIONS, CORPUS, buildEvidencePrompt, buildIndex, buildPassageState, buildRawPrompt, gatePassage, passageById, search, type Answers, type ClaudeTierId, type GateResult, type Passage, type Trace } from "@jev/shared";
+import { B3_PRESET_QUERIES, B3_QUESTIONS, CORPUS, bm25Search, buildEvidencePrompt, buildIndex, buildPassageState, buildRawPrompt, gatePassage, passageById, type Answers, type B3Retrieved, type ClaudeTierId, type Trace } from "@jev/shared";
 import { Hono } from "hono";
 import { claudeText as defaultClaudeText } from "../lib/claude";
 import { BadRequestError, apiErrorHandler } from "../lib/errors";
@@ -21,13 +21,6 @@ interface AskBody {
   tier?: unknown;
 }
 
-interface Retrieved {
-  passage: Passage;
-  bm25: number;
-  answers?: Answers;
-  gate?: GateResult;
-}
-
 /**
  * BM25 top-k → (gatekeeper) one Jev request per passage → ordered gate → Claude answers from the
  * accepted evidence only. With the gatekeeper off the raw top-k goes straight to Claude for contrast.
@@ -38,28 +31,39 @@ export function createB3Routes(deps: { askJev: typeof defaultAskJev; claudeText:
   const answerCache = new Map<string, { text: string; trace: Trace }>();
 
   app.post("/ask", async (c) => {
-    const body = (await c.req.json().catch(() => ({}))) as AskBody;
+    const body = ((await c.req.json().catch(() => ({}))) ?? {}) as AskBody;
     const query = typeof body.query === "string" ? body.query.trim() : "";
     if (!query) throw new BadRequestError("请输入问题");
     if (query.length > MAX_QUERY_CHARS) throw new BadRequestError(`问题不能超过 ${MAX_QUERY_CHARS} 个字符`, { length: query.length });
+    if (body.gatekeeper !== undefined && typeof body.gatekeeper !== "boolean") throw new BadRequestError("gatekeeper 必须是布尔值");
+    if (body.tier !== undefined && body.tier !== "standard" && body.tier !== "strong") throw new BadRequestError("生成模型只支持 standard（Sonnet 5）或 strong（Opus 5）", { tier: body.tier });
     const gatekeeper = body.gatekeeper !== false;
     const tier: ClaudeTierId = body.tier === "strong" ? "strong" : "standard";
     const preset = B3_PRESET_QUERIES.some((p) => p.query === query);
 
-    const hits = search(INDEX, query, TOP_K);
-    const retrieved: Retrieved[] = hits.map((h) => ({ passage: passageById(h.id)!, bm25: h.score }));
+    const hits = bm25Search(INDEX, query, TOP_K);
+    const retrieved: B3Retrieved[] = hits.map((h) => ({ passage: passageById(h.id)!, bm25: h.score }));
     const traces: Trace[] = [];
 
     if (gatekeeper) {
-      const outcomes = await Promise.all(
-        retrieved.map((r) => deps.askJev({ scenario: "b3", state: buildPassageState(query, r.passage), questions: B3_QUESTIONS }, { cache: preset ? "read-write" : "read-only" })),
+      // Record every completed call as it lands so one failure never loses the other nine traces.
+      const settled = await Promise.allSettled(
+        retrieved.map(async (r) => {
+          const o = await deps.askJev({ scenario: "b3", state: buildPassageState(query, r.passage), questions: B3_QUESTIONS }, { cache: preset ? "read-write" : "read-only" });
+          usage.record(o.trace);
+          traces.push(o.trace);
+          return o;
+        }),
       );
-      outcomes.forEach((o, i) => {
-        const answers = o.result.answers as unknown as Answers;
-        retrieved[i]!.answers = answers;
-        retrieved[i]!.gate = gatePassage(answers);
-        traces.push(o.trace);
-        usage.record(o.trace);
+      settled.forEach((s, i) => {
+        const r = retrieved[i]!;
+        if (s.status === "fulfilled") {
+          const answers = s.value.result.answers as unknown as Answers;
+          r.answers = answers;
+          r.gate = gatePassage(answers);
+        } else {
+          r.error = s.reason instanceof Error ? s.reason.message : String(s.reason);
+        }
       });
     }
 
@@ -69,7 +73,8 @@ export function createB3Routes(deps: { askJev: typeof defaultAskJev; claudeText:
     const gatedPrompt = buildEvidencePrompt(query, accepted, conflicting);
     const prompt = gatekeeper ? gatedPrompt : rawPrompt;
 
-    const key = `${tier}::${gatekeeper}::${query}`;
+    // Keyed on the exact prompt: a free-text query re-judged by Jev may produce a different evidence set.
+    const key = `${tier}::${prompt}`;
     let cached = answerCache.get(key);
     const wasCached = Boolean(cached);
     if (!cached) {

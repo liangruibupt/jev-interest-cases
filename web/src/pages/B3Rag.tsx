@@ -1,4 +1,4 @@
-import { B3_PRESET_QUERIES, B3_ROUTE_LABELS_ZH, B3_THRESHOLDS, type Answers, type B3Route, type ClaudeTierId, type GateResult, type Passage, type Trace } from "@jev/shared";
+import { B3_PRESET_QUERIES, B3_ROUTE_LABELS_ZH, B3_THRESHOLDS, type B3Retrieved, type B3Route, type ClaudeTierId, type Passage, type Trace } from "@jev/shared";
 import { useMemo, useState } from "react";
 import { LatencyChip } from "../components/LatencyChip";
 import { LearningCard } from "../components/LearningCard";
@@ -9,17 +9,11 @@ import { ApiError, api } from "../lib/api";
 import { fmtUsd } from "../lib/format";
 import { useSession } from "../store/session";
 
-interface Retrieved {
-  passage: Passage;
-  bm25: number;
-  answers?: Answers;
-  gate?: GateResult;
-}
 interface AskResponse {
   query: string;
   gatekeeper: boolean;
   tier: ClaudeTierId;
-  retrieved: Retrieved[];
+  retrieved: B3Retrieved[];
   prompt: string;
   promptChars: { gated: number | null; raw: number };
   answer: string;
@@ -54,7 +48,7 @@ const LEARNING = {
   pitfalls: [
     "守门人判断相关性、证据与前提冲突，不判断真伪：博客说 exp 必填时 Jev 不会知道它错了，只能靠 source_type 让 Claude 优先 RFC。",
     "注入检测不是安全边界：官方明确 Jev 对对抗性内容并不免疫；把它当作一层过滤而不是唯一防线。",
-    "每段一次请求（10 段 ≈ 10 次调用、约 5k tokens）：文档警告过把多段塞进一个 state 会互相干扰（context rot）。",
+    "每段一次请求（10 段 ≈ 10 次调用、约 7k tokens）：文档警告过把多段塞进一个 state 会互相干扰（context rot）。",
   ],
 };
 
@@ -200,6 +194,10 @@ export function B3Rag() {
                       {g ? (
                         <span className={`rounded-sm px-1.5 py-0.5 text-[11px] ${ROUTE_TONE[g.route]}`} title={g.rule_zh}>
                           {B3_ROUTE_LABELS_ZH[g.route]}
+                        </span>
+                      ) : r.error ? (
+                        <span className="rounded-sm bg-bad/10 px-1.5 py-0.5 text-[11px] text-bad" title={r.error}>
+                          Jev 失败
                         </span>
                       ) : (
                         <span className="rounded-sm bg-claude-soft px-1.5 py-0.5 text-[11px] text-claude">→ Claude</span>

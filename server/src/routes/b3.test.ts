@@ -2,9 +2,10 @@ import type { ClaudeTrace, JevTrace } from "@jev/shared";
 import { describe, expect, it, vi } from "vitest";
 import { createB3Routes } from "./b3";
 
-function build() {
+function build(opts: { failId?: string } = {}) {
   const askJev = vi.fn(async (input: { state: { passage: { id: string } } }, _opts: unknown) => {
     const id = input.state.passage.id;
+    if (id === opts.failId) throw new Error(`Jev 限流（模拟）：${id}`);
     const injection = id === "forum-injection" ? 0.95 : 0.02;
     const contradicts = id.startsWith("blog-") ? 0.85 : 0.05;
     const relevant = id.startsWith("rfc-10") ? 0.2 : 0.9;
@@ -23,6 +24,7 @@ function build() {
     return { result: { model: "jev-1.13.0", answers, usage: trace.response.usage }, trace };
   });
   const claudeText = vi.fn(async (call: { messages: { content: string }[]; tier?: string }) => {
+    void call;
     const trace: ClaudeTrace = { kind: "claude", id: "c1", scenario: "b3", purpose: "answer", startedAt: "", latencyMs: 2000, model: "m", tier: (call.tier ?? "standard") as never, inputTokens: 900, outputTokens: 120, stopReason: "end_turn", cost: { usd: 0.003 } };
     return { text: `answer to: ${call.messages[0]!.content.slice(0, 20)}`, trace };
   });
@@ -65,6 +67,35 @@ describe("POST /api/b3/ask", () => {
     expect(askJev.mock.calls[0]?.[1]).toEqual({ cache: "read-only" });
     expect((await post(app, { query: "" })).status).toBe(400);
     expect((await post(app, { query: "x".repeat(301) })).status).toBe(400);
+    expect((await post(app, null)).status).toBe(400);
+    expect((await post(app, { query: "ok", gatekeeper: "false" })).status).toBe(400);
+    expect((await post(app, { query: "ok", tier: "frontier" })).status).toBe(400);
     expect((await post(app, { query: "zzzz qqqq" })).status).toBe(200); // nothing retrieved → still answers with (none)
+  });
+
+  it("caches the Claude answer per exact prompt and forwards the tier", async () => {
+    const { app, claudeText } = build();
+    const q = "How do I validate a JWT signature step by step?";
+    const first = (await (await post(app, { query: q, tier: "strong" })).json()) as { answerCached: boolean; traces: unknown[] };
+    const second = (await (await post(app, { query: q, tier: "strong" })).json()) as { answerCached: boolean; traces: unknown[] };
+    expect(first.answerCached).toBe(false);
+    expect(second.answerCached).toBe(true);
+    expect(first.traces).toHaveLength(11);
+    expect(second.traces).toHaveLength(10);
+    expect(claudeText).toHaveBeenCalledTimes(1);
+    expect((claudeText.mock.calls[0]?.[0] as { tier?: string }).tier).toBe("strong");
+  });
+
+  it("keeps the other nine passages when one Jev call fails", async () => {
+    const { app, claudeText } = build({ failId: "rfc-6" });
+    const res = await post(app, { query: "How do I validate a JWT signature step by step?" });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { retrieved: { passage: { id: string }; gate?: unknown; error?: string }[]; traces: unknown[] };
+    const failed = body.retrieved.find((r) => r.passage.id === "rfc-6");
+    expect(failed?.gate).toBeUndefined();
+    expect(failed?.error).toMatch(/限流/);
+    expect(body.retrieved.filter((r) => r.gate).length).toBe(9);
+    expect(body.traces).toHaveLength(10); // 9 Jev + 1 Claude
+    expect(claudeText).toHaveBeenCalledTimes(1);
   });
 });

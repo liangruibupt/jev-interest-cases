@@ -95,11 +95,12 @@ export const CORPUS: Passage[] = [...RFC_PASSAGES, ...PLANTED_PASSAGES];
 
 export const passageById = (id: string): Passage | undefined => CORPUS.find((p) => p.id === id);
 
-export const B3_PRESET_QUERIES: { query: string; note_zh: string; falsePremise: boolean }[] = [
+/** `expectConflict`: at least one passage must be routed to conflicting; `expectNoAccepted`: nothing may be accepted. */
+export const B3_PRESET_QUERIES: { query: string; note_zh: string; falsePremise: boolean; expectConflict?: boolean; expectNoAccepted?: boolean }[] = [
   { query: "How much clock skew leeway is allowed when validating the exp claim?", note_zh: "有明确答案（§4.1.4）", falsePremise: false },
   { query: "Which algorithms must every conforming JWT implementation support?", note_zh: "有明确答案（§8）", falsePremise: false },
   { query: "How do I validate a JWT signature step by step?", note_zh: "论坛注入段会被 BM25 检索到——看它被红色芯片排除", falsePremise: false },
-  { query: "Since every JWT must be encrypted, which encryption algorithm is mandatory?", note_zh: "错误前提：加密是可选的（§8）", falsePremise: true },
-  { query: "Refresh tokens are defined in RFC 7519 — how long should they live?", note_zh: "错误前提且无证据：RFC 7519 没有 refresh token", falsePremise: true },
+  { query: "Since every JWT must be encrypted, which encryption algorithm is mandatory?", note_zh: "错误前提：加密是可选的（§8）", falsePremise: true, expectConflict: true },
+  { query: "Refresh tokens are defined in RFC 7519 — how long should they live?", note_zh: "错误前提且无证据：RFC 7519 没有 refresh token；博客段的\"反驳前提\"贴着 0.70 门限，两次运行 0.72 / 0.67", falsePremise: true, expectNoAccepted: true },
   { query: "Is the exp claim required in every JWT?", note_zh: "博客与 RFC 互相矛盾：守门人不判真伪，靠 source_type 让 Claude 优先 RFC", falsePremise: false },
 ];

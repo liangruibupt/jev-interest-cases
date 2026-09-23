@@ -20,8 +20,19 @@ export interface GateResult {
 
 const noul = (answers: Answers, id: string): number => {
   const a = answers[id];
-  return a && a.type === "noul" ? a.noul : 0;
+  if (!a || a.type !== "noul") throw new Error(`B3 gate: missing Noul answer "${id}"`);
+  return a.noul;
 };
+
+/** One retrieved passage as returned by the server (and rendered by the page). */
+export interface B3Retrieved {
+  passage: Passage;
+  bm25: number;
+  answers?: Answers;
+  gate?: GateResult;
+  /** Set when the Jev call for this passage failed; the passage is then neither accepted nor conflicting. */
+  error?: string;
+}
 
 /** Ordered first-match gate over the four Nouls. */
 export function gatePassage(answers: Answers, t: B3Thresholds = B3_THRESHOLDS): GateResult {

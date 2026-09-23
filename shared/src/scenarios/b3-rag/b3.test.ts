@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Answers } from "../../types";
 import { validateQuestions } from "../../validate";
-import { B3_PRESET_QUERIES, B3_QUESTIONS, B3_THRESHOLDS, CORPUS, MAX_PASSAGE_CHARS, PLANTED_PASSAGES, RFC_PASSAGES, buildEvidencePrompt, buildIndex, buildPassageState, gatePassage, search, type Passage } from "./index";
+import { B3_PRESET_QUERIES, B3_QUESTIONS, B3_THRESHOLDS, CORPUS, MAX_PASSAGE_CHARS, PLANTED_PASSAGES, RFC_PASSAGES, bm25Search, buildEvidencePrompt, buildIndex, buildPassageState, gatePassage, splitSection, type Passage } from "./index";
 
 const nouls = (v: { relevant: number; evidence: number; contradicts: number; injection: number }): Answers => ({
   is_relevant: { type: "noul", noul: v.relevant },
@@ -22,6 +22,14 @@ describe("B3 corpus", () => {
     expect(B3_PRESET_QUERIES).toHaveLength(6);
     expect(B3_PRESET_QUERIES.filter((q) => q.falsePremise)).toHaveLength(2);
   });
+  it("hard-splits over-long paragraphs and drops empty sections", () => {
+    const long = { id: "x", title: "X", text: `${"word ".repeat(600).trim()}\n\nshort tail` };
+    const parts = splitSection(long);
+    expect(parts.length).toBeGreaterThanOrEqual(3);
+    expect(parts.every((p) => p.text.length <= MAX_PASSAGE_CHARS)).toBe(true);
+    expect(parts.map((p) => p.id)).toEqual(parts.map((_, i) => `rfc-x#${i + 1}`));
+    expect(splitSection({ id: "e", title: "Empty", text: "  \n\n " })).toEqual([]);
+  });
 });
 
 describe("B3 BM25", () => {
@@ -32,17 +40,18 @@ describe("B3 BM25", () => {
   ];
   const index = buildIndex(docs);
   it("ranks by term relevance, ignores stopwords, is deterministic and returns nothing for unknown terms", () => {
-    const hits = search(index, "how much leeway for clock skew on exp?", 10);
+    const hits = bm25Search(index, "how much leeway for clock skew on exp?", 10);
     expect(hits[0]?.id).toBe("a");
     expect(hits.map((h) => h.id)).toContain("c");
     expect(hits.map((h) => h.id)).not.toContain("b");
-    expect(search(index, "the is of and", 10)).toEqual([]);
-    expect(search(index, "zebra", 10)).toEqual([]);
-    expect(search(index, "clock skew", 1)).toHaveLength(1);
-    expect(JSON.stringify(search(index, "claim", 10))).toBe(JSON.stringify(search(index, "claim", 10)));
+    expect(bm25Search(index, "the is of and", 10)).toEqual([]);
+    expect(bm25Search(index, "zebra", 10)).toEqual([]);
+    expect(bm25Search(index, "clock skew", 1)).toHaveLength(1);
+    const twins = buildIndex([{ id: "z", title: "", text: "same text here", source_type: "rfc" }, { id: "a", title: "", text: "same text here", source_type: "rfc" }]);
+    expect(bm25Search(twins, "same text", 10).map((h) => h.id)).toEqual(["a", "z"]);
   });
   it("retrieves the forum injection for a signature-validation query on the real corpus", () => {
-    const hits = search(buildIndex(CORPUS), "How do I validate a JWT signature step by step?", 10);
+    const hits = bm25Search(buildIndex(CORPUS), "How do I validate a JWT signature step by step?", 10);
     expect(hits).toHaveLength(10);
     expect(hits.map((h) => h.id)).toContain("forum-injection");
   });
@@ -64,6 +73,7 @@ describe("B3 questions and gate", () => {
     expect(gatePassage(nouls({ relevant: 0.45, evidence: 0.55, contradicts: 0.1, injection: 0 }), t).route).toBe("accepted");
     expect(gatePassage(nouls({ relevant: 0.9, evidence: 0.54, contradicts: 0.1, injection: 0 }), t).route).toBe("excluded_no_evidence");
     expect(gatePassage(nouls({ relevant: 0.9, evidence: 0.54, contradicts: 0.1, injection: 0 }), t).rule_zh).toBeTruthy();
+    expect(() => gatePassage({ is_relevant: { type: "noul", noul: 0.9 } }, t)).toThrow(/missing Noul answer/);
   });
   it("builds a prompt with accepted and conflicting blocks", () => {
     const p = buildEvidencePrompt("Q?", [CORPUS[0]!], [PLANTED_PASSAGES[1]!]);

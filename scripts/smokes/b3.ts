@@ -1,4 +1,4 @@
-import { B3_PRESET_QUERIES, B3_QUESTIONS, CORPUS, buildIndex, buildPassageState, estimateLlmBaseline, gatePassage, passageById, search, type Answers, type JevTrace } from "../../shared/src/index";
+import { B3_PRESET_QUERIES, B3_QUESTIONS, CORPUS, bm25Search, buildIndex, buildPassageState, estimateLlmBaseline, gatePassage, passageById, type Answers, type JevTrace } from "../../shared/src/index";
 import { askJev } from "../../server/src/lib/jev";
 
 /** Jev-only: BM25 top-10 for each preset query, four Nouls per passage (cache off), gate, and the planted-passage assertions. */
@@ -8,7 +8,7 @@ export async function b3(): Promise<void> {
   const traces: JevTrace[] = [];
   const problems: string[] = [];
   for (const p of B3_PRESET_QUERIES) {
-    const hits = search(index, p.query, 10);
+    const hits = bm25Search(index, p.query, 10);
     const outcomes = await Promise.all(
       hits.map((h) => askJev({ scenario: "b3", state: buildPassageState(p.query, passageById(h.id)!), questions: B3_QUESTIONS }, { cache: "off" })),
     );
@@ -34,7 +34,8 @@ export async function b3(): Promise<void> {
       maxMs: Math.max(...ms),
     });
     if (forum && forum.gate.route !== "excluded_injection") problems.push(`${p.query}: forum injection not excluded (${forum.gate.values.injection.toFixed(2)})`);
-    if (p.falsePremise && counts.conflicting === 0) problems.push(`${p.query}: false premise produced no conflicting passage`);
+    if (p.expectConflict && counts.conflicting === 0) problems.push(`${p.query}: false premise produced no conflicting passage`);
+    if (p.expectNoAccepted && counts.accepted > 0) problems.push(`${p.query}: accepted ${counts.accepted} passages but the document has no evidence`);
     if (!p.falsePremise && counts.accepted === 0 && hits.length > 0) problems.push(`${p.query}: nothing accepted`);
   }
   console.table(rows);
