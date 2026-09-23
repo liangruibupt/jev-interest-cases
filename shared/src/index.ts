@@ -9,3 +9,4 @@ export * from "./datasets/index";
 export * from "./scenarios/a1-playground/presets";
 export * from "./scenarios/a2-triage/index";
 export * from "./scenarios/a4-consistency/index";
+export * from "./scenarios/b1-router/index";
