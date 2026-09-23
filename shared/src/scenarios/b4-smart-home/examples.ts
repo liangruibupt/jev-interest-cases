@@ -18,7 +18,7 @@ export const EXAMPLE_REQUESTS: ExampleRequest[] = [
   { text: "play some music in the bathroom", note_zh: "音箱播放", group: "single", expect: ["commands"] },
   { text: "set the office volume to 4", note_zh: "裸数字 → 音量", group: "single", expect: ["commands"] },
   { text: "turn the TV off", note_zh: "没说房间 → 追问", group: "single", expect: ["clarify"] },
-  { text: "make it brighter", note_zh: "没说房间、设备也含糊 → 追问", group: "single", expect: ["clarify"] },
+  { text: "make it brighter", note_zh: "没说房间 → 追问（设备 Jev 反而很确定是灯 0.99）", group: "single", expect: ["clarify"] },
   { text: "lock the front door", note_zh: "高风险动作：置信度 ≥ 0.85 才直接执行", group: "confirm", expect: ["commands", "confirm_lock"] },
   { text: "unlock the front door", note_zh: "开锁永远要求确认", group: "confirm", expect: ["confirm_lock"] },
   { text: "turn off the kitchen lights and close the bedroom blinds", note_zh: "复合指令 → Claude 拆分 → 每段再问 Jev", group: "compound", expect: ["split"] },

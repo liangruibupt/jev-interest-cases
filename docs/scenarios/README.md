@@ -11,7 +11,7 @@
 | 5 | B2 引用核验 | Jev + Claude | Claude 带引用作答，Jev 逐条核验 | [`B2.md`](B2.md) ✔ |
 | 6 | A3 文档逐行语义搜索 | 纯 Jev | 218 行 Choice + 存在性 Noul，无 embedding | [`A3.md`](A3.md) ✔ |
 | 7 | B3 RAG 段落守门人 | Jev + Claude | 四个 Noul 过滤证据与注入，Claude 只用被采纳的证据 | [`B3.md`](B3.md) ✔ |
-| 8 | B4 智能家居助手 | Jev + Claude | 14 个 speculative 问题驱动虚拟房屋 | `B4.md`（P8） |
+| 8 | B4 智能家居助手 | Jev + Claude | 14 个 speculative 问题驱动虚拟房屋 | [`B4.md`](B4.md) ✔ |
 
 ## P0 环境检查记录
 
