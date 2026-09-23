@@ -18,7 +18,8 @@
     "vendor": "tsx scripts/vendor-datasets.ts",
     "cache:clear": "rm -f server/.cache/jev/*.json",
     "latency": "tsx --env-file=.env scripts/latency-probe.ts",
-    "warm-cache": "tsx --env-file=.env scripts/warm-cache.ts"
+    "warm-cache": "tsx --env-file=.env scripts/warm-cache.ts",
+    "a4:merge": "tsx scripts/a4-merge-results.ts"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",

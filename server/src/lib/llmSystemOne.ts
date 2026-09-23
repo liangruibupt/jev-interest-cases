@@ -9,9 +9,12 @@ import { ClaudeStructuredOutputError, claudeParse as defaultParse, type ClaudePa
  */
 export const SYSTEM_PROMPT = [
   "You are a calibrated decision model. Read STATE literally and answer every question in QUESTIONS.",
-  "For a choice question, return a probability for each listed option; for a score question, a probability for each level index; for a noul question, the probability that the answer is yes.",
-  "Each distribution must sum to 1.0 and reflect how likely each option is to be correct.",
-  "Do not add options, explanations, or any text outside the required structure.",
+  "Return exactly one structured object keyed by question id.",
+  'For a "choice" question the value is {"probabilities": {<option>: <number>, ...}} with one entry per listed option.',
+  'For a "score" question the value is {"probabilities": {"0": <number>, "1": <number>, ...}} with one entry per level index.',
+  'For a "noul" question the value is {"p_yes": <number>}.',
+  "Every probability is between 0 and 1 and each distribution sums to 1.0, reflecting how likely each option is to be correct.",
+  "Never return a bare label or free text as a value; never add options, keys, or explanations.",
 ].join(" ");
 
 export function optionKeys(question: Question): string[] {
@@ -102,8 +105,11 @@ export interface AskLlmSystemOneInput {
 export interface AskLlmSystemOneOutput {
   answers: Answers;
   trace: ClaudeTrace;
-  debug: NormalizeDebug & { retried: boolean };
+  debug: NormalizeDebug & { retried: number };
 }
+
+/** Corrective re-asks after a schema failure (Opus 5 on Bedrock has returned bare labels instead of objects). */
+export const MAX_CORRECTIVE_RETRIES = 2;
 
 type ParseFn = <T>(call: ClaudeParseCall<T>) => Promise<{ parsed: T; trace: ClaudeTrace }>;
 
@@ -123,21 +129,24 @@ export function createLlmSystemOne(deps: { parse: ParseFn }) {
       ...(input.temperature !== undefined ? { temperature: input.temperature } : {}),
       schema,
     };
-    let retried = false;
-    let result: { parsed: z.infer<typeof schema>; trace: ClaudeTrace };
-    try {
-      result = await deps.parse(base);
-    } catch (err) {
-      if (!(err instanceof ClaudeStructuredOutputError)) throw err;
-      retried = true;
-      result = await deps.parse({
-        ...base,
-        messages: [
-          ...base.messages,
-          { role: "user", content: "Your previous reply did not match the required structure. Return only the structured object with a probability for every listed option." },
-        ],
-      });
+    let retried = 0;
+    let result: { parsed: z.infer<typeof schema>; trace: ClaudeTrace } | undefined;
+    let lastError: unknown;
+    const messages = [...base.messages];
+    for (let attempt = 0; attempt <= MAX_CORRECTIVE_RETRIES && !result; attempt++) {
+      try {
+        result = await deps.parse({ ...base, messages });
+      } catch (err) {
+        if (!(err instanceof ClaudeStructuredOutputError)) throw err;
+        lastError = err;
+        retried = attempt + 1;
+        messages.push({
+          role: "user",
+          content: `Your previous reply did not match the required structure (${err.message.slice(0, 300)}). Return only the structured object: for each question id a value of the form {"probabilities": {...}} (choice/score) or {"p_yes": number} (noul), with a probability for every listed option.`,
+        });
+      }
     }
+    if (!result) throw lastError instanceof Error ? lastError : new Error(String(lastError));
     const { answers, debug } = normalizeAnswers(result.parsed as Record<string, unknown>, input.questions);
     return { answers, trace: result.trace, debug: { ...debug, retried } };
   };

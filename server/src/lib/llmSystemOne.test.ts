@@ -1,6 +1,7 @@
 import type { Questions } from "@jev/shared";
 import { describe, expect, it, vi } from "vitest";
-import { buildSchema, buildUserMessage, createLlmSystemOne, normalizeAnswers, optionKeys } from "./llmSystemOne";
+import { ClaudeStructuredOutputError } from "./claude";
+import { MAX_CORRECTIVE_RETRIES, buildSchema, buildUserMessage, createLlmSystemOne, normalizeAnswers, optionKeys } from "./llmSystemOne";
 
 const questions: Questions = {
   dept: { type: "choice", instructions: "Which team?", criteria: { billing: null, tech: "Bugs", sales: null } },
@@ -79,5 +80,32 @@ describe("llmSystemOne", () => {
     expect(call.effort).toBe("low");
     expect(call.tier).toBe("standard");
     expect(call.maxTokens).toBe(256 + 16 * 7);
+  });
+});
+
+describe("llmSystemOne corrective retries", () => {
+  it("re-asks with the validation error up to MAX_CORRECTIVE_RETRIES times and then succeeds", async () => {
+    const good = { dept: { probabilities: { billing: 1, tech: 0, sales: 0 } }, sev: { probabilities: { "0": 1, "1": 0, "2": 0 } }, urgent: { p_yes: 0.2 } };
+    const trace = { kind: "claude" as const, id: "c", scenario: "a4" as const, purpose: "llmSystemOne", startedAt: "", latencyMs: 1, tier: "strong" as const, model: "m", inputTokens: 1, outputTokens: 1, cost: { usd: 0 }, stopReason: "tool_use" };
+    let calls = 0;
+    const parse = vi.fn(async (call: { messages: unknown[] }) => {
+      calls += 1;
+      if (calls <= 2) throw new ClaudeStructuredOutputError("工具输入不符合 schema：review_path expected object, received string", null);
+      expect(call.messages).toHaveLength(3); // original + two corrections
+      return { parsed: good, trace };
+    });
+    const ask = createLlmSystemOne({ parse: parse as never });
+    const out = await ask({ scenario: "a4", state: "s", questions, tier: "strong" });
+    expect(out.debug.retried).toBe(2);
+    expect(parse).toHaveBeenCalledTimes(3);
+  });
+
+  it("gives up after the retries are exhausted", async () => {
+    const parse = vi.fn(async (_call: unknown) => {
+      throw new ClaudeStructuredOutputError("bad", null);
+    });
+    const ask = createLlmSystemOne({ parse: parse as never });
+    await expect(ask({ scenario: "a4", state: "s", questions, tier: "strong" })).rejects.toBeInstanceOf(ClaudeStructuredOutputError);
+    expect(parse).toHaveBeenCalledTimes(1 + MAX_CORRECTIVE_RETRIES);
   });
 });
