@@ -4,6 +4,7 @@ import { A1Playground } from "./pages/A1Playground";
 import { A2Triage } from "./pages/A2Triage";
 import { A4Consistency } from "./pages/A4Consistency";
 import { B1Router } from "./pages/B1Router";
+import { B2Citations } from "./pages/B2Citations";
 import { Home } from "./pages/Home";
 import { Placeholder } from "./pages/Placeholder";
 import { SessionProvider } from "./store/session";
@@ -19,6 +20,7 @@ export default function App() {
             <Route path="a2" element={<A2Triage />} />
             <Route path="a4" element={<A4Consistency />} />
             <Route path="b1" element={<B1Router />} />
+            <Route path="b2" element={<B2Citations />} />
             <Route path=":id" element={<Placeholder />} />
           </Route>
         </Routes>
