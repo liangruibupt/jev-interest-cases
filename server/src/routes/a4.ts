@@ -83,7 +83,9 @@ export function createA4Routes(deps: Deps) {
               records.push(record);
               await send("run", record);
             } catch (err) {
-              await send("arm_error", { arm: armId, run, message: toHttpError(err).message });
+              const e = toHttpError(err);
+              console.warn(`[a4] ${armId} run ${run} failed: ${e.message}`, e.detail !== undefined ? JSON.stringify(e.detail).slice(0, 400) : "");
+              await send("arm_error", { arm: armId, run, message: e.message, detail: e.detail });
             }
           }
         }),
