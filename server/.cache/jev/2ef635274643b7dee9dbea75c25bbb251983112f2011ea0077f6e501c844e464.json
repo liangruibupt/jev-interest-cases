@@ -1,0 +1,74 @@
+{
+  "kind": "jev",
+  "id": "1d33e57a-c9a2-4229-8b45-9c1c8129b127",
+  "scenario": "a1",
+  "startedAt": "2026-09-23T01:07:45.920Z",
+  "latencyMs": 423,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": "The export button is misaligned by a few pixels on the settings page.",
+    "questions": {
+      "severity_numeric": {
+        "type": "score",
+        "instructions": "Rate severity from 0 to 2, where 2 is worst",
+        "criteria": [
+          "0",
+          "1",
+          "2"
+        ]
+      },
+      "severity_descriptive": {
+        "type": "score",
+        "instructions": "How severe is the reported issue?",
+        "criteria": [
+          "Cosmetic; no impact to functionality",
+          "Broken or degraded feature, but a workaround exists",
+          "Blocking issue; no workaround exists"
+        ]
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "severity_numeric": {
+        "type": "score",
+        "score": 0.56,
+        "confidence": 0.34,
+        "legend": {
+          "0": "0",
+          "1": "1",
+          "2": "2"
+        },
+        "probabilities": {
+          "0": 0.44,
+          "1": 0.56,
+          "2": 0
+        }
+      },
+      "severity_descriptive": {
+        "type": "score",
+        "score": 0,
+        "confidence": 1,
+        "legend": {
+          "0": "Cosmetic; no impact to functionality",
+          "1": "Broken or degraded feature, but a workaround exists",
+          "2": "Blocking issue; no workaround exists"
+        },
+        "probabilities": {
+          "0": 1,
+          "1": 0,
+          "2": 0
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 378,
+      "output_tokens": 35
+    }
+  },
+  "cost": {
+    "usd": 0.000015876000000000002
+  }
+}

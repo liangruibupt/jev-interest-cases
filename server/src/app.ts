@@ -1,7 +1,6 @@
 import { serveStatic } from "@hono/node-server/serve-static";
 import type { Trace } from "@jev/shared";
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { resolveCacheMode } from "./lib/cache";
 import { toHttpError } from "./lib/errors";
 import { queues } from "./lib/queue";
@@ -12,7 +11,7 @@ import { a4Routes } from "./routes/a4";
 
 export const app = new Hono();
 
-app.use("/api/*", cors());
+// No CORS: the browser reaches /api through the same-origin Vite proxy (dev) or the static server (prod).
 
 app.onError((err, c) => {
   const e = toHttpError(err);

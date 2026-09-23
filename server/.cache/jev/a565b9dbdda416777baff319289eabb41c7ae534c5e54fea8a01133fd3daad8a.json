@@ -1,0 +1,77 @@
+{
+  "kind": "jev",
+  "id": "c7583daf-e218-4de2-9212-0dbfadc5e887",
+  "scenario": "a1",
+  "startedAt": "2026-09-23T01:07:46.345Z",
+  "latencyMs": 381,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": "I sent the shoes back a week ago. When do I get my money?",
+    "questions": {
+      "return_topic_plain": {
+        "type": "choice",
+        "instructions": "Which returns topic is the customer asking about?",
+        "criteria": {
+          "return_policy": "Whether and how an item can be returned",
+          "return_status": "Progress of a return already sent"
+        }
+      },
+      "return_topic_structured": {
+        "type": "choice",
+        "instructions": {
+          "question": "Which returns topic is the customer asking about?",
+          "focus": "Classify the information the customer wants."
+        },
+        "criteria": {
+          "return_policy": {
+            "what": "Whether and how an item can be returned",
+            "not_for": "Progress of a return already sent",
+            "examples": [
+              "Can I return shoes I've worn once?",
+              "How long do I have to return an order?"
+            ]
+          },
+          "return_status": {
+            "what": "Progress of a return already sent",
+            "not_for": "Whether and how an item can be returned",
+            "examples": [
+              "Has my return arrived yet?",
+              "When will my refund be paid?"
+            ]
+          }
+        }
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "return_topic_plain": {
+        "type": "choice",
+        "choice": "return_status",
+        "confidence": 1,
+        "probabilities": {
+          "return_policy": 0,
+          "return_status": 1
+        }
+      },
+      "return_topic_structured": {
+        "type": "choice",
+        "choice": "return_status",
+        "confidence": 1,
+        "probabilities": {
+          "return_policy": 0,
+          "return_status": 1
+        }
+      }
+    },
+    "usage": {
+      "input_tokens": 523,
+      "output_tokens": 71
+    }
+  },
+  "cost": {
+    "usd": 0.000021966000000000003
+  }
+}

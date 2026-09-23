@@ -1,0 +1,77 @@
+{
+  "kind": "jev",
+  "id": "1625f6ab-6019-43ac-b333-dc072a881be9",
+  "scenario": "a1",
+  "startedAt": "2026-09-23T01:07:46.727Z",
+  "latencyMs": 386,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": "你好，我已经尝试连接 Stripe 账户三天了，集成一直失败。我正在损失销售额。请尽快帮忙！",
+    "questions": {
+      "department": {
+        "type": "choice",
+        "instructions": "Which team should handle this",
+        "criteria": {
+          "billing": "Payment or subscription issues",
+          "technical": "Bugs or integration problems",
+          "sales": "Pricing or account questions"
+        }
+      },
+      "frustration": {
+        "type": "score",
+        "instructions": "How frustrated the customer appears",
+        "criteria": [
+          "Calm, just stating facts",
+          "Frustrated but civil",
+          "Very angry, strong language"
+        ]
+      },
+      "is_urgent": {
+        "type": "noul",
+        "instructions": "The message conveys urgency or time-sensitivity"
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "department": {
+        "type": "choice",
+        "choice": "technical",
+        "confidence": 0.87,
+        "probabilities": {
+          "technical": 0.91,
+          "billing": 0.09,
+          "sales": 0
+        }
+      },
+      "frustration": {
+        "type": "score",
+        "score": 1,
+        "confidence": 1,
+        "legend": {
+          "0": "Calm, just stating facts",
+          "1": "Frustrated but civil",
+          "2": "Very angry, strong language"
+        },
+        "probabilities": {
+          "0": 0,
+          "1": 1,
+          "2": 0
+        }
+      },
+      "is_urgent": {
+        "type": "noul",
+        "noul": 0.99
+      }
+    },
+    "usage": {
+      "input_tokens": 434,
+      "output_tokens": 73
+    }
+  },
+  "cost": {
+    "usd": 0.000018228
+  }
+}

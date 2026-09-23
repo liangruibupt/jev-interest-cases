@@ -152,12 +152,20 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
     }
   }
 
+  /** Run one request inside the queue and time only the request itself (not the queue wait). */
+  async function timed<T>(fn: () => Promise<T>): Promise<{ value: T; startedAt: string; latencyMs: number }> {
+    return queue.run(async () => {
+      const startedAt = new Date().toISOString();
+      const t0 = performance.now();
+      const value = await fn();
+      return { value, startedAt, latencyMs: Math.round(performance.now() - t0) };
+    });
+  }
+
   async function claudeText(call: ClaudeCallBase): Promise<{ text: string; trace: ClaudeTrace }> {
     const { tier, params } = buildParams(call);
-    const startedAt = new Date().toISOString();
-    const t0 = performance.now();
-    const msg = await queue.run(() => deps.client().messages.create(params));
-    const trace = toTrace(call, tier.id, msg, startedAt, Math.round(performance.now() - t0));
+    const { value: msg, startedAt, latencyMs } = await timed(() => deps.client().messages.create(params));
+    const trace = toTrace(call, tier.id, msg, startedAt, latencyMs);
     throwIfRefused(msg);
     const text = msg.content
       .filter((b): b is Anthropic.TextBlock => b.type === "text")
@@ -171,7 +179,8 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
       ...params,
       output_config: { ...(params.output_config ?? {}), format: zodOutputFormat(call.schema) },
     };
-    const msg = (await queue.run(() => deps.client().messages.parse(withFormat))) as ParsedLike<T>;
+    const { value, startedAt, latencyMs } = await timed(() => deps.client().messages.parse(withFormat));
+    const msg = value as ParsedLike<T>;
     throwIfRefused(msg);
     if (msg.stop_reason === "max_tokens") {
       throw new ClaudeStructuredOutputError("输出被 max_tokens 截断，请提高 maxTokens 或减少问题数量", msg.content);
@@ -179,7 +188,7 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
     if (msg.parsed_output === null || msg.parsed_output === undefined) {
       throw new ClaudeStructuredOutputError("结构化输出解析失败（parsed_output 为空）", msg.content);
     }
-    return { msg, parsed: msg.parsed_output };
+    return { msg, parsed: msg.parsed_output, startedAt, latencyMs };
   }
 
   async function viaTool<T>(call: ClaudeParseCall<T>, params: Anthropic.MessageCreateParamsNonStreaming, strict: boolean) {
@@ -194,7 +203,7 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
       tools: [tool],
       tool_choice: { type: "tool", name: TOOL_NAME },
     };
-    const msg = await queue.run(() => deps.client().messages.create(withTool));
+    const { value: msg, startedAt, latencyMs } = await timed(() => deps.client().messages.create(withTool));
     throwIfRefused(msg);
     if (msg.stop_reason === "max_tokens") {
       throw new ClaudeStructuredOutputError("输出被 max_tokens 截断，请提高 maxTokens 或减少问题数量", msg.content);
@@ -203,7 +212,7 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
     if (!block) throw new ClaudeStructuredOutputError("模型没有返回工具调用", msg.content);
     const checked = call.schema.safeParse(block.input);
     if (!checked.success) throw new ClaudeStructuredOutputError(`工具输入不符合 schema：${checked.error.message}`, block.input);
-    return { msg, parsed: checked.data };
+    return { msg, parsed: checked.data, startedAt, latencyMs };
   }
 
   async function claudeParse<T>(call: ClaudeParseCall<T>): Promise<{ parsed: T; trace: ClaudeTrace }> {
@@ -211,14 +220,13 @@ export function createClaude(deps: { client: () => ClaudeClientLike; queue?: Que
     const forced = envMode();
     let mode: StructuredMode = forced === "auto" ? (modeByModel.get(tier.modelId) ?? "format") : forced;
     if (tier.id === "frontier") mode = "format"; // Fable 5.1 rejects forced tool_choice
-    const startedAt = new Date().toISOString();
-    const t0 = performance.now();
     for (;;) {
       try {
-        const { msg, parsed } =
+        const { msg, parsed, startedAt, latencyMs } =
           mode === "format" ? await viaFormat(call, params) : await viaTool(call, params, mode === "tool");
         modeByModel.set(tier.modelId, mode);
-        const trace = toTrace(call, tier.id, msg, startedAt, Math.round(performance.now() - t0));
+        // latencyMs covers the successful attempt only; a failed probe attempt is remembered per model so it happens once.
+        const trace = toTrace(call, tier.id, msg, startedAt, latencyMs);
         trace.structuredMode = mode;
         return { parsed, trace };
       } catch (err) {

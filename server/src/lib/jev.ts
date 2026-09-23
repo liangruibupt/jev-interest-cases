@@ -53,12 +53,16 @@ export function createJev(deps: { client: () => JevLike; cache?: JsonFileCache<J
       }
     }
 
-    const startedAt = new Date().toISOString();
-    const t0 = performance.now();
-    const result = await queue.run(() =>
-      Promise.resolve(client.systemOne({ state: input.state, questions: input.questions, model })),
-    );
-    const latencyMs = Math.round(performance.now() - t0);
+    let startedAt = new Date().toISOString();
+    let latencyMs = 0;
+    // Timed inside the queue so latency excludes time spent waiting for a concurrency slot.
+    const result = await queue.run(async () => {
+      startedAt = new Date().toISOString();
+      const t0 = performance.now();
+      const r = await client.systemOne({ state: input.state, questions: input.questions, model });
+      latencyMs = Math.round(performance.now() - t0);
+      return r;
+    });
     const trace: JevTrace = {
       kind: "jev",
       id: newTraceId(),

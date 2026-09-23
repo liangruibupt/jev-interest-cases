@@ -1,0 +1,478 @@
+{
+  "caseId": "ticket",
+  "runs": 3,
+  "arms": [
+    "jev",
+    "sonnet5"
+  ],
+  "nonce": false,
+  "startedAt": "2026-09-23T01:02:24.743Z",
+  "finishedAt": "2026-09-23T01:02:41.367Z",
+  "records": [
+    {
+      "arm": "jev",
+      "run": 1,
+      "answers": {
+        "department": {
+          "type": "choice",
+          "choice": "orders",
+          "confidence": 0.44,
+          "probabilities": {
+            "orders": 0.56,
+            "billing": 0.44,
+            "other": 0,
+            "technical": 0,
+            "account": 0
+          }
+        },
+        "requested_resolution": {
+          "type": "choice",
+          "choice": "other",
+          "confidence": 0.15,
+          "probabilities": {
+            "refund": 0.29,
+            "replacement": 0.05,
+            "fix": 0.07,
+            "other": 0.29,
+            "exchange": 0.29,
+            "information": 0.01
+          }
+        },
+        "bug_severity": {
+          "type": "score",
+          "score": 1.54,
+          "confidence": 0.31,
+          "legend": {
+            "0": "Cosmetic; no impact to functionality",
+            "1": "Broken or degraded feature, but a workaround exists",
+            "2": "Blocking issue; no workaround exists"
+          },
+          "probabilities": {
+            "0": 0.06,
+            "1": 0.35,
+            "2": 0.59
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.05
+        },
+        "mentions_open_order": {
+          "type": "noul",
+          "noul": 0.32
+        },
+        "frustration": {
+          "type": "score",
+          "score": 1,
+          "confidence": 0.99,
+          "legend": {
+            "0": "Calm and matter-of-fact",
+            "1": "Frustrated but civil",
+            "2": "Very angry, hostile, or threatening to leave"
+          },
+          "probabilities": {
+            "0": 0,
+            "1": 1,
+            "2": 0
+          }
+        }
+      },
+      "latencyMs": 715,
+      "costUsd": 0.00004788,
+      "inputTokens": 1140,
+      "outputTokens": 176,
+      "traceId": "a771cc74-fdb3-47ce-b940-e61d072392dd"
+    },
+    {
+      "arm": "jev",
+      "run": 2,
+      "answers": {
+        "department": {
+          "type": "choice",
+          "choice": "orders",
+          "confidence": 0.43,
+          "probabilities": {
+            "billing": 0.45,
+            "technical": 0,
+            "orders": 0.55,
+            "other": 0,
+            "account": 0
+          }
+        },
+        "requested_resolution": {
+          "type": "choice",
+          "choice": "other",
+          "confidence": 0.17,
+          "probabilities": {
+            "information": 0.01,
+            "replacement": 0.06,
+            "exchange": 0.28,
+            "refund": 0.27,
+            "other": 0.31,
+            "fix": 0.07
+          }
+        },
+        "bug_severity": {
+          "type": "score",
+          "score": 1.51,
+          "confidence": 0.27,
+          "legend": {
+            "0": "Cosmetic; no impact to functionality",
+            "1": "Broken or degraded feature, but a workaround exists",
+            "2": "Blocking issue; no workaround exists"
+          },
+          "probabilities": {
+            "0": 0.07,
+            "1": 0.35,
+            "2": 0.58
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.06
+        },
+        "mentions_open_order": {
+          "type": "noul",
+          "noul": 0.33
+        },
+        "frustration": {
+          "type": "score",
+          "score": 1,
+          "confidence": 0.99,
+          "legend": {
+            "0": "Calm and matter-of-fact",
+            "1": "Frustrated but civil",
+            "2": "Very angry, hostile, or threatening to leave"
+          },
+          "probabilities": {
+            "0": 0.01,
+            "1": 0.99,
+            "2": 0
+          }
+        }
+      },
+      "latencyMs": 358,
+      "costUsd": 0.00004788,
+      "inputTokens": 1140,
+      "outputTokens": 176,
+      "traceId": "4d48841c-3077-4d76-ad84-9ef221563a2e"
+    },
+    {
+      "arm": "jev",
+      "run": 3,
+      "answers": {
+        "department": {
+          "type": "choice",
+          "choice": "orders",
+          "confidence": 0.44,
+          "probabilities": {
+            "other": 0.01,
+            "orders": 0.55,
+            "billing": 0.44,
+            "technical": 0,
+            "account": 0
+          }
+        },
+        "requested_resolution": {
+          "type": "choice",
+          "choice": "other",
+          "confidence": 0.17,
+          "probabilities": {
+            "fix": 0.06,
+            "other": 0.31,
+            "exchange": 0.26,
+            "refund": 0.29,
+            "replacement": 0.07,
+            "information": 0.01
+          }
+        },
+        "bug_severity": {
+          "type": "score",
+          "score": 1.52,
+          "confidence": 0.28,
+          "legend": {
+            "0": "Cosmetic; no impact to functionality",
+            "1": "Broken or degraded feature, but a workaround exists",
+            "2": "Blocking issue; no workaround exists"
+          },
+          "probabilities": {
+            "0": 0.07,
+            "1": 0.34,
+            "2": 0.59
+          }
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.06
+        },
+        "mentions_open_order": {
+          "type": "noul",
+          "noul": 0.33
+        },
+        "frustration": {
+          "type": "score",
+          "score": 1,
+          "confidence": 0.99,
+          "legend": {
+            "0": "Calm and matter-of-fact",
+            "1": "Frustrated but civil",
+            "2": "Very angry, hostile, or threatening to leave"
+          },
+          "probabilities": {
+            "0": 0,
+            "1": 1,
+            "2": 0
+          }
+        }
+      },
+      "latencyMs": 389,
+      "costUsd": 0.00004788,
+      "inputTokens": 1140,
+      "outputTokens": 176,
+      "traceId": "b5f6efcc-e4b0-4152-9af7-8249bfcb7abb"
+    },
+    {
+      "arm": "sonnet5",
+      "run": 1,
+      "answers": {
+        "department": {
+          "type": "choice",
+          "choice": "billing",
+          "probabilities": {
+            "billing": 0.45,
+            "orders": 0.45,
+            "account": 0.02,
+            "technical": 0.03,
+            "other": 0.05
+          },
+          "confidence": null
+        },
+        "requested_resolution": {
+          "type": "choice",
+          "choice": "refund",
+          "probabilities": {
+            "refund": 0.3999999999999999,
+            "exchange": 0.3499999999999999,
+            "replacement": 0.04999999999999999,
+            "fix": 0.04999999999999999,
+            "information": 0.04999999999999999,
+            "other": 0.09999999999999998
+          },
+          "confidence": null
+        },
+        "bug_severity": {
+          "type": "score",
+          "score": 0.5000000000000001,
+          "probabilities": {
+            "0": 0.6000000000000001,
+            "1": 0.30000000000000004,
+            "2": 0.10000000000000002
+          },
+          "legend": {
+            "0": "Cosmetic; no impact to functionality",
+            "1": "Broken or degraded feature, but a workaround exists",
+            "2": "Blocking issue; no workaround exists"
+          },
+          "confidence": null
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.35
+        },
+        "mentions_open_order": {
+          "type": "noul",
+          "noul": 0.4
+        },
+        "frustration": {
+          "type": "score",
+          "score": 1.15,
+          "probabilities": {
+            "0": 0.15,
+            "1": 0.55,
+            "2": 0.3
+          },
+          "legend": {
+            "0": "Calm and matter-of-fact",
+            "1": "Frustrated but civil",
+            "2": "Very angry, hostile, or threatening to leave"
+          },
+          "confidence": null
+        }
+      },
+      "latencyMs": 7430,
+      "costUsd": 0.009514,
+      "inputTokens": 3067,
+      "outputTokens": 338,
+      "traceId": "6c4dbf41-e07e-4758-96c4-0b51468e6061",
+      "degenerate": [],
+      "normalizationDelta": {
+        "department": 0,
+        "requested_resolution": 2.220446049250313e-16,
+        "bug_severity": 1.1102230246251565e-16,
+        "frustration": 0
+      }
+    },
+    {
+      "arm": "sonnet5",
+      "run": 2,
+      "answers": {
+        "department": {
+          "type": "choice",
+          "choice": "orders",
+          "probabilities": {
+            "billing": 0.4,
+            "orders": 0.45,
+            "account": 0,
+            "technical": 0,
+            "other": 0.15
+          },
+          "confidence": null
+        },
+        "requested_resolution": {
+          "type": "choice",
+          "choice": "refund",
+          "probabilities": {
+            "refund": 0.35,
+            "exchange": 0.35,
+            "replacement": 0.05,
+            "fix": 0,
+            "information": 0.05,
+            "other": 0.2
+          },
+          "confidence": null
+        },
+        "bug_severity": {
+          "type": "score",
+          "score": 0.5000000000000001,
+          "probabilities": {
+            "0": 0.6000000000000001,
+            "1": 0.30000000000000004,
+            "2": 0.10000000000000002
+          },
+          "legend": {
+            "0": "Cosmetic; no impact to functionality",
+            "1": "Broken or degraded feature, but a workaround exists",
+            "2": "Blocking issue; no workaround exists"
+          },
+          "confidence": null
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.3
+        },
+        "mentions_open_order": {
+          "type": "noul",
+          "noul": 0.3
+        },
+        "frustration": {
+          "type": "score",
+          "score": 1.2,
+          "probabilities": {
+            "0": 0.1,
+            "1": 0.6,
+            "2": 0.3
+          },
+          "legend": {
+            "0": "Calm and matter-of-fact",
+            "1": "Frustrated but civil",
+            "2": "Very angry, hostile, or threatening to leave"
+          },
+          "confidence": null
+        }
+      },
+      "latencyMs": 3963,
+      "costUsd": 0.009514,
+      "inputTokens": 3067,
+      "outputTokens": 338,
+      "traceId": "c10aec15-7642-4a6c-b518-822535f8b6a1",
+      "degenerate": [],
+      "normalizationDelta": {
+        "department": 0,
+        "requested_resolution": 0,
+        "bug_severity": 1.1102230246251565e-16,
+        "frustration": 0
+      }
+    },
+    {
+      "arm": "sonnet5",
+      "run": 3,
+      "answers": {
+        "department": {
+          "type": "choice",
+          "choice": "orders",
+          "probabilities": {
+            "billing": 0.4,
+            "orders": 0.45,
+            "account": 0,
+            "technical": 0,
+            "other": 0.15
+          },
+          "confidence": null
+        },
+        "requested_resolution": {
+          "type": "choice",
+          "choice": "refund",
+          "probabilities": {
+            "refund": 0.35,
+            "exchange": 0.35,
+            "replacement": 0.05,
+            "fix": 0,
+            "information": 0.1,
+            "other": 0.15
+          },
+          "confidence": null
+        },
+        "bug_severity": {
+          "type": "score",
+          "score": 0.5000000000000001,
+          "probabilities": {
+            "0": 0.6000000000000001,
+            "1": 0.30000000000000004,
+            "2": 0.10000000000000002
+          },
+          "legend": {
+            "0": "Cosmetic; no impact to functionality",
+            "1": "Broken or degraded feature, but a workaround exists",
+            "2": "Blocking issue; no workaround exists"
+          },
+          "confidence": null
+        },
+        "refund_requested": {
+          "type": "noul",
+          "noul": 0.35
+        },
+        "mentions_open_order": {
+          "type": "noul",
+          "noul": 0.3
+        },
+        "frustration": {
+          "type": "score",
+          "score": 1.25,
+          "probabilities": {
+            "0": 0.1,
+            "1": 0.55,
+            "2": 0.35
+          },
+          "legend": {
+            "0": "Calm and matter-of-fact",
+            "1": "Frustrated but civil",
+            "2": "Very angry, hostile, or threatening to leave"
+          },
+          "confidence": null
+        }
+      },
+      "latencyMs": 5214,
+      "costUsd": 0.009704,
+      "inputTokens": 3067,
+      "outputTokens": 357,
+      "traceId": "599d6f12-8b00-4a18-ba9c-681d7b55d07e",
+      "degenerate": [],
+      "normalizationDelta": {
+        "department": 0,
+        "requested_resolution": 0,
+        "bug_severity": 1.1102230246251565e-16,
+        "frustration": 0
+      }
+    }
+  ]
+}

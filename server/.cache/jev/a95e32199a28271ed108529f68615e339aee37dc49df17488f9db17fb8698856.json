@@ -1,0 +1,42 @@
+{
+  "kind": "jev",
+  "id": "ba270ec7-af9b-487e-91ee-b5b1ec687701",
+  "scenario": "a1",
+  "startedAt": "2026-09-23T01:07:45.536Z",
+  "latencyMs": 383,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": "Hi, I'm Jane Doe. My phone number is 415-555-0134 and I'd like to update my shipping address to 22 Baker Street.",
+    "questions": {
+      "contains_personal_data": {
+        "type": "noul",
+        "instructions": "Does the message contain personal data such as a name, phone number, or address?"
+      },
+      "free_of_personal_data": {
+        "type": "noul",
+        "instructions": "Is the message free of personal data?"
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "contains_personal_data": {
+        "type": "noul",
+        "noul": 0.99
+      },
+      "free_of_personal_data": {
+        "type": "noul",
+        "noul": 0.01
+      }
+    },
+    "usage": {
+      "input_tokens": 338,
+      "output_tokens": 45
+    }
+  },
+  "cost": {
+    "usd": 0.000014196
+  }
+}

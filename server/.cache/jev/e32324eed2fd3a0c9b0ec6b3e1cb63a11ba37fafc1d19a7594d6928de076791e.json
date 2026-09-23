@@ -1,0 +1,70 @@
+{
+  "kind": "jev",
+  "id": "640539ba-afe9-4712-aac9-2e28e82fd192",
+  "scenario": "a1",
+  "startedAt": "2026-09-23T01:07:44.815Z",
+  "latencyMs": 715,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "ticket": {
+        "subject": "Duplicate charge",
+        "messages": [
+          {
+            "from": "customer",
+            "text": "I was charged twice for order A-104. Please refund the duplicate."
+          },
+          {
+            "from": "support",
+            "text": "We are checking the charges."
+          }
+        ]
+      },
+      "order": {
+        "id": "A-104",
+        "charges": [
+          {
+            "amount_usd": 49,
+            "status": "captured"
+          },
+          {
+            "amount_usd": 49,
+            "status": "captured"
+          }
+        ]
+      },
+      "refund_policy": "Duplicate charges are eligible for a refund."
+    },
+    "questions": {
+      "refund_requested": {
+        "type": "noul",
+        "instructions": "Does `ticket.messages[0].text` request a refund?"
+      },
+      "policy_supports_refund": {
+        "type": "noul",
+        "instructions": "Does `refund_policy` support the refund requested in `ticket.messages[0].text`, given `order.charges`?"
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "refund_requested": {
+        "type": "noul",
+        "noul": 0.99
+      },
+      "policy_supports_refund": {
+        "type": "noul",
+        "noul": 0.98
+      }
+    },
+    "usage": {
+      "input_tokens": 469,
+      "output_tokens": 41
+    }
+  },
+  "cost": {
+    "usd": 0.000019698000000000004
+  }
+}

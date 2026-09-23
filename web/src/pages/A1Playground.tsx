@@ -65,6 +65,8 @@ export function A1Playground() {
   const [live, setLive] = useState(false);
   const [showRequest, setShowRequest] = useState(false);
   const liveTimer = useRef<number | null>(null);
+  /** Monotonic request counter so a slow earlier request cannot overwrite a newer answer. */
+  const seq = useRef(0);
 
   const parsedState = useMemo(() => parseState(stateText), [stateText]);
   const validation = useMemo(() => (questions ? validateQuestions(questions) : []), [questions]);
@@ -85,18 +87,21 @@ export function A1Playground() {
   const run = useCallback(
     async (opts: { live: boolean }) => {
       if (!questions) return;
+      const mine = ++seq.current;
       setBusy(true);
       setError(null);
       try {
         const res = await api.post<A1Response>("/api/a1/evaluate", { state: parsedState.value, questions, live: opts.live });
+        if (mine !== seq.current) return; // a newer request is in flight; discard this stale answer
         setAnswers(res.answers);
         setLast(res);
         setTraces((t) => [...t, ...res.traces]);
         addTraces(res.traces);
       } catch (e) {
+        if (mine !== seq.current) return;
         setError(e instanceof ApiError ? `${e.message}${e.detail ? `：${JSON.stringify(e.detail)}` : ""}` : String(e));
       } finally {
-        setBusy(false);
+        if (mine === seq.current) setBusy(false);
       }
     },
     [questions, parsedState, addTraces],
