@@ -38,7 +38,7 @@ export type NoulAnswer = NoulResponse;
 export type AnyAnswer = ChoiceAnswer | ScoreAnswer | NoulAnswer;
 export type Answers = Record<string, AnyAnswer>;
 
-export type ScenarioId = "p0" | "a1" | "a2" | "a3" | "a4" | "b1" | "b2" | "b3" | "b4" | "c1" | "c2" | "c3" | "c4";
+export type ScenarioId = "p0" | "a1" | "a2" | "a3" | "a4" | "b1" | "b2" | "b3" | "b4" | "c1" | "c2" | "c3" | "c4" | "c5";
 
 export interface JevTrace {
   kind: "jev";

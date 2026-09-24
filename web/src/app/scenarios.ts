@@ -1,7 +1,7 @@
 export type ScenarioStatus = "planned" | "available";
 
 export interface ScenarioMeta {
-  id: "a1" | "a2" | "a3" | "a4" | "b1" | "b2" | "b3" | "b4" | "c1" | "c2" | "c3" | "c4";
+  id: "a1" | "a2" | "a3" | "a4" | "b1" | "b2" | "b3" | "b4" | "c1" | "c2" | "c3" | "c4" | "c5";
   path: string;
   title: string;
   subtitle: string;
@@ -24,4 +24,5 @@ export const SCENARIOS: ScenarioMeta[] = [
   { id: "c2", path: "/c2", title: "C2 患者留言分诊", subtitle: "医疗：紧急度 + 红旗 + 科室，数值由代码比较", proves: "行业判断：分诊可以，诊断不行", group: "industry", status: "available" },
   { id: "c3", path: "/c3", title: "C3 公告重大性判断", subtitle: "金融：事件类型 + 重大性 Score，批量成待阅列表", proves: "行业判断：判断文字，不判断价格", group: "industry", status: "available" },
   { id: "c4", path: "/c4", title: "C4 VPP 调度通知与告警", subtitle: "能源：通知是否适用于本站点、告警属于哪类", proves: "行业判断：文本适用性交 Jev，kW 与时间窗交代码", group: "industry", status: "available" },
+  { id: "c5", path: "/c5", title: "C5 语义音乐盒", subtitle: "把画面感变成可播放的器乐", proves: "语义判断驱动确定性创作；本地混音与 WAV 导出", group: "pure", status: "available" },
 ];

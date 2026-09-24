@@ -8,6 +8,7 @@ import { B1Router } from "./pages/B1Router";
 import { B2Citations } from "./pages/B2Citations";
 import { B3Rag } from "./pages/B3Rag";
 import { B4SmartHome } from "./pages/B4SmartHome";
+import { C5SoundStudio } from "./pages/C5SoundStudio";
 import { C1Grading } from "./pages/C1Grading";
 import { C2Triage } from "./pages/C2Triage";
 import { C3Filings } from "./pages/C3Filings";
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="b2" element={<B2Citations />} />
             <Route path="b3" element={<B3Rag />} />
             <Route path="b4" element={<B4SmartHome />} />
+            <Route path="c5" element={<C5SoundStudio />} />
             <Route path="c1" element={<C1Grading />} />
             <Route path="c2" element={<C2Triage />} />
             <Route path="c3" element={<C3Filings />} />

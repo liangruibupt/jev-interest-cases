@@ -11,7 +11,7 @@ export function Home() {
         </h1>
         <p className="mt-4 text-ink-2">
           Jev 是 TypeSafe 的 System One 模型：接收一个 state 和一组类型化问题（Choice / Score / Noul），约 100 毫秒返回概率分布与置信度，
-          输入 $0.042/Mtok、输出免费。下面 8 个场景按学习路径排列；每个场景都会展示发给 Jev 的原始问题、返回的概率、延迟与费用，以及
+          输入 $0.042/Mtok、输出免费。下面 {SCENARIOS.length} 个场景按学习路径排列；每个场景都会展示发给 Jev 的原始问题、返回的概率、延迟与费用，以及
           "如果用 LLM 做同样的事"的成本基线。
         </p>
       </div>

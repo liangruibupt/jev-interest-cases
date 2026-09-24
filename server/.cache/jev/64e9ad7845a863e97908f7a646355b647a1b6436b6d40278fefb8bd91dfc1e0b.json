@@ -1,0 +1,183 @@
+{
+  "kind": "jev",
+  "id": "2f888ae7-f7f8-47be-a3d5-2769d70d2176",
+  "scenario": "c5",
+  "startedAt": "2026-09-23T14:19:17.802Z",
+  "latencyMs": 418,
+  "cached": false,
+  "model": "jev-1.13.0",
+  "request": {
+    "state": {
+      "brief": "Drifting weightlessly past distant stars. Glassy sustained tones, extremely slow and spacious, a slightly mysterious mood, absolutely no drums."
+    },
+    "questions": {
+      "timbre": {
+        "type": "choice",
+        "instructions": "Which of the available synthesized timbres best matches the soundscape requested in `brief`? Interpret the imagery as an aesthetic preference, not as a request for literal recordings.",
+        "criteria": {
+          "warm": "Soft, rounded, mellow sustained tones with muted edges.",
+          "glass": "Clear bell-like tones with a delicate shimmering overtone.",
+          "pluck": "Crisp, short plucked notes with a distinct attack."
+        }
+      },
+      "energy": {
+        "type": "score",
+        "instructions": "How energetic should the requested musical movement in `brief` feel? Judge movement, independently of brightness or note count.",
+        "criteria": [
+          "Still, floating, meditative movement with almost no sense of urgency.",
+          "Slow and relaxed movement, suitable for unwinding.",
+          "A moderate, unhurried walking pulse.",
+          "Lively forward movement, suitable for brisk activity.",
+          "Fast, driving movement with an urgent, highly active pulse."
+        ]
+      },
+      "brightness": {
+        "type": "score",
+        "instructions": "How bright should the sound's tone color be for `brief`, independently of its energy?",
+        "criteria": [
+          "Dark, heavily muted tone with almost no sparkling high frequencies.",
+          "Warm, soft tone with restrained upper frequencies.",
+          "Balanced tone, neither especially dark nor sparkling.",
+          "Clear and bright tone with audible sparkle.",
+          "Brilliant, crystalline, very sparkling tone."
+        ]
+      },
+      "density": {
+        "type": "score",
+        "instructions": "How densely packed should the musical notes in `brief` be, independently of their speed?",
+        "criteria": [
+          "Isolated notes separated by large spaces of silence.",
+          "A sparse pattern with frequent gaps.",
+          "A simple steady pattern with breathing room.",
+          "A busy pattern with many notes and few gaps.",
+          "A densely filled sequence with continuous note activity."
+        ]
+      },
+      "tension": {
+        "type": "score",
+        "instructions": "How much emotional suspense or tension should the music evoke according to `brief`?",
+        "criteria": [
+          "Settled, reassuring and peaceful, with no suspense.",
+          "Mostly comfortable, with a trace of anticipation.",
+          "Ambiguous or mildly mysterious, without alarm.",
+          "Suspenseful and unsettled, expecting something to happen.",
+          "Strongly tense and ominous, with a persistent sense of unease."
+        ]
+      },
+      "percussion": {
+        "type": "noul",
+        "instructions": "Does the requested soundscape in `brief` call for audible percussion or drum beats? Explicitly requesting no drums or no percussion means no, even if the imagery contains movement."
+      },
+      "silence": {
+        "type": "noul",
+        "instructions": "Does `brief` explicitly ask for complete silence or no sound at all? Quiet, soft, calm music or gaps between notes do not mean complete silence."
+      }
+    },
+    "model": "jev-latest"
+  },
+  "response": {
+    "answers": {
+      "timbre": {
+        "type": "choice",
+        "choice": "glass",
+        "confidence": 0.91,
+        "probabilities": {
+          "glass": 0.94,
+          "warm": 0.06,
+          "pluck": 0
+        }
+      },
+      "energy": {
+        "type": "score",
+        "score": 0,
+        "confidence": 1,
+        "legend": {
+          "0": "Still, floating, meditative movement with almost no sense of urgency.",
+          "1": "Slow and relaxed movement, suitable for unwinding.",
+          "2": "A moderate, unhurried walking pulse.",
+          "3": "Lively forward movement, suitable for brisk activity.",
+          "4": "Fast, driving movement with an urgent, highly active pulse."
+        },
+        "probabilities": {
+          "0": 1,
+          "1": 0,
+          "2": 0,
+          "3": 0,
+          "4": 0
+        }
+      },
+      "brightness": {
+        "type": "score",
+        "score": 1.91,
+        "confidence": 0.13,
+        "legend": {
+          "0": "Dark, heavily muted tone with almost no sparkling high frequencies.",
+          "1": "Warm, soft tone with restrained upper frequencies.",
+          "2": "Balanced tone, neither especially dark nor sparkling.",
+          "3": "Clear and bright tone with audible sparkle.",
+          "4": "Brilliant, crystalline, very sparkling tone."
+        },
+        "probabilities": {
+          "0": 0.06,
+          "1": 0.44,
+          "2": 0.11,
+          "3": 0.31,
+          "4": 0.08
+        }
+      },
+      "density": {
+        "type": "score",
+        "score": 0.67,
+        "confidence": 0.57,
+        "legend": {
+          "0": "Isolated notes separated by large spaces of silence.",
+          "1": "A sparse pattern with frequent gaps.",
+          "2": "A simple steady pattern with breathing room.",
+          "3": "A busy pattern with many notes and few gaps.",
+          "4": "A densely filled sequence with continuous note activity."
+        },
+        "probabilities": {
+          "0": 0.42,
+          "1": 0.51,
+          "2": 0.07,
+          "3": 0,
+          "4": 0
+        }
+      },
+      "tension": {
+        "type": "score",
+        "score": 1.99,
+        "confidence": 0.99,
+        "legend": {
+          "0": "Settled, reassuring and peaceful, with no suspense.",
+          "1": "Mostly comfortable, with a trace of anticipation.",
+          "2": "Ambiguous or mildly mysterious, without alarm.",
+          "3": "Suspenseful and unsettled, expecting something to happen.",
+          "4": "Strongly tense and ominous, with a persistent sense of unease."
+        },
+        "probabilities": {
+          "0": 0,
+          "1": 0,
+          "2": 1,
+          "3": 0,
+          "4": 0
+        }
+      },
+      "percussion": {
+        "type": "noul",
+        "noul": 0.13
+      },
+      "silence": {
+        "type": "noul",
+        "noul": 0.02
+      }
+    },
+    "usage": {
+      "input_tokens": 944,
+      "output_tokens": 130
+    }
+  },
+  "cost": {
+    "usd": 0.000039648000000000004
+  }
+}

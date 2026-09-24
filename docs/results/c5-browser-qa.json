@@ -1,0 +1,27 @@
+{
+  "url": "http://127.0.0.1:5174/c5",
+  "cases": [
+    "initial/manual/no-autoplay",
+    "real cached Jev presets",
+    "piano roll nonblank",
+    "play/stop and moving cursor",
+    "real WAV export",
+    "local controls without inference",
+    "explicit 124 BPM",
+    "mobile layout",
+    "service-error recovery (mocked 503)"
+  ],
+  "realUiInterpretations": 2,
+  "canvasColors": 271,
+  "mobileOverflow": false,
+  "pageErrors": [],
+  "audio": {
+    "path": "docs/examples/c5-rain.wav",
+    "sampleRate": 44100,
+    "channels": 2,
+    "durationSeconds": 17.083877551020407,
+    "peak": 0.1468505859375,
+    "rms": 0.03189409959861562,
+    "bytes": 3013640
+  }
+}

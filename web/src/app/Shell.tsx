@@ -1,12 +1,21 @@
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { CostMeter } from "../components/CostMeter";
 import { zh } from "../i18n/zh";
 import { SCENARIOS } from "./scenarios";
 
 export function Shell() {
+  const navigate = useNavigate();
+  const location = useLocation();
   return (
-    <div className="flex min-h-screen">
-      <aside className="flex w-72 shrink-0 flex-col border-r border-rule bg-panel/80 backdrop-blur">
+    <div className="flex min-h-screen flex-col lg:flex-row">
+      <div className="flex items-center gap-3 border-b border-rule bg-panel px-4 py-3 lg:hidden">
+        <NavLink to="/" className="font-display shrink-0 text-lg">Jev Lab</NavLink>
+        <select aria-label="场景" value={SCENARIOS.some(s => s.path === location.pathname) ? location.pathname : "/"} onChange={e => navigate(e.target.value)} className="min-w-0 flex-1 rounded-sm border border-rule bg-panel px-2 py-2 text-xs">
+          <option value="/">总览</option>
+          {SCENARIOS.map(s => <option key={s.id} value={s.path}>{s.title}</option>)}
+        </select>
+      </div>
+      <aside className="hidden w-72 shrink-0 flex-col border-r border-rule bg-panel/80 backdrop-blur lg:flex">
         <NavLink to="/" className="block border-b border-rule px-5 py-5">
           <div className="font-display text-2xl leading-none">{zh.app.title}</div>
           <div className="mt-1 text-xs text-ink-3">{zh.app.subtitle}</div>
@@ -36,10 +45,10 @@ export function Shell() {
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-end border-b border-rule bg-panel/70 px-6 py-2 backdrop-blur">
+        <header className="flex items-center justify-end overflow-x-auto border-b border-rule bg-panel/70 px-4 py-2 backdrop-blur sm:px-6">
           <CostMeter />
         </header>
-        <main className="flex-1 p-6">
+        <main className="min-w-0 flex-1 p-4 sm:p-6">
           <Outlet />
         </main>
       </div>
