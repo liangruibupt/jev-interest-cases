@@ -55,6 +55,7 @@ export function A4Consistency() {
   const [errors, setErrors] = useState<string[]>([]);
   const [savedTo, setSavedTo] = useState<string | null>(null);
   const closeRef = useRef<(() => void) | null>(null);
+  const startedRef = useRef(false);
   const [savedFiles, setSavedFiles] = useState<string[]>([]);
 
   useEffect(() => {
@@ -88,8 +89,10 @@ export function A4Consistency() {
     setSavedTo(null);
     setPhase("running");
     const url = `/api/a4/run?caseId=${caseId}&runs=${runs}&arms=${arms.join(",")}${nonce ? "&nonce=1" : ""}`;
+    startedRef.current = false;
     closeRef.current = openSse(url, ["start", "run", "arm_error", "done"], {
       onEvent: (event, data) => {
+        startedRef.current = true;
         if (event === "run") {
           const r = data as RunRecord;
           setRecords((prev) => [...prev, r]);
@@ -115,7 +118,16 @@ export function A4Consistency() {
         }
       },
       onError: () => {
-        setErrors((prev) => [...prev, "SSE 连接中断"]);
+        // A refused connection (e.g. 403 in public mode) never sends events: read the JSON error body for its message.
+        // Only probe when no event arrived, so a run that already started is never re-triggered.
+        if (!startedRef.current) {
+          void fetch(url)
+            .then((r) => r.json() as Promise<{ error?: { message?: string } }>)
+            .then((j) => setErrors((prev) => [...prev, j.error?.message ?? "SSE 连接中断"]))
+            .catch(() => setErrors((prev) => [...prev, "SSE 连接中断"]));
+        } else {
+          setErrors((prev) => [...prev, "SSE 连接中断"]);
+        }
         setPhase("done");
         closeRef.current?.();
       },
