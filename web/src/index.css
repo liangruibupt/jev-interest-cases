@@ -15,7 +15,7 @@
   --color-ok: #1f7a4d;
   --color-warn: #b7791f;
   --color-bad: #b42318;
-  --font-display: "Fraunces", "Songti SC", "Noto Serif SC", Georgia, serif;
+  --font-display: "Source Serif 4", "Songti SC", "Noto Serif SC", Georgia, serif;
   --font-body: "IBM Plex Sans", "PingFang SC", "Noto Sans SC", sans-serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", Menlo, monospace;
 }
@@ -59,9 +59,3 @@ body {
   animation: rise 360ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-/* Fraunces switches to its display optical size (opsz up to 144) at large font sizes, where the "J" grows a curled
-   descender. Pin the text-size glyphs and turn off the wonky alternates so "Jev" reads straight everywhere. */
-.font-display {
-  font-optical-sizing: none;
-  font-variation-settings: "opsz" 36, "WONK" 0, "SOFT" 0;
-}
