@@ -42,6 +42,16 @@ claude plugin install typesafe@typesafe-ai
 
 成本估算方法与完整实测表见 `docs/05-成本模型.md`：判断步骤实测 50–635×，含生成的端到端 29–87%。哪些行业判断能交给 Jev、哪些不能，见 `docs/06-行业场景适用性.md`。
 
+## 部署到 AWS
+
+`infra/` 是一个 CDK 栈：S3（私有桶 + OAC）放前端，API Gateway（HTTP API）+ Lambda 跑 Hono 后端，同一个 CloudFront 分发对外。公网模式下 A4 真实实验关闭、每实例花费上限 $5、直连 API Gateway 会因缺少 CloudFront 注入的校验头而 403。步骤与取舍见 `docs/07-部署.md`：
+
+```bash
+echo "ORIGIN_VERIFY_SECRET=$(openssl rand -hex 24)" >> .env
+set -a; source .env; set +a
+AWS_PROFILE=global_ruiliang npm run deploy      # vite build + cdk deploy
+```
+
 ## 截图
 
 `docs/screenshots/`：`home.png` 总览 · `a1-quickstart.png` / `a1-counting.png` · `a2-board.png` / `a2-sliders.png` · `a4-heatmap.png` · `b1-router.png` · `b2-citations.png` · `a3-find.png` / `a3-absent.png` · `b3-gatekeeper.png` / `b3-ungated.png` / `b3-false-premise.png` · `b4-home.png` · `c1-grading.png` · `c2-triage.png` · `c3-filings.png` · `c4-vpp.png`。

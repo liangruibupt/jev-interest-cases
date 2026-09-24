@@ -8,7 +8,7 @@ import { askJev as defaultAskJev } from "../lib/jev";
 import { askLlmSystemOne as defaultAskLlmSystemOne } from "../lib/llmSystemOne";
 import { usage } from "../lib/usage";
 
-const DEFAULT_RESULTS_DIR = fileURLToPath(new URL("../../../docs/results/", import.meta.url));
+const DEFAULT_RESULTS_DIR = process.env.A4_RESULTS_DIR ?? fileURLToPath(new URL("../../../docs/results/", import.meta.url));
 
 interface Deps {
   askJev: typeof defaultAskJev;

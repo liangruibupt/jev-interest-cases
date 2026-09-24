@@ -5,6 +5,7 @@ import { bodyLimit } from "hono/body-limit";
 import { logger } from "hono/logger";
 import { resolveCacheMode } from "./lib/cache";
 import { apiErrorHandler } from "./lib/errors";
+import { originVerify, publicModeBlock, spendCap } from "./lib/guards";
 import { queues } from "./lib/queue";
 import { usage } from "./lib/usage";
 import { a1Routes } from "./routes/a1";
@@ -15,6 +16,7 @@ import { b1Routes } from "./routes/b1";
 import { b2Routes } from "./routes/b2";
 import { b3Routes } from "./routes/b3";
 import { b4Routes } from "./routes/b4";
+import { c5Routes } from "./routes/c5";
 import { c1Routes } from "./routes/c1";
 import { c2Routes } from "./routes/c2";
 import { c3Routes } from "./routes/c3";
@@ -27,6 +29,10 @@ export const app = new Hono();
 app.onError(apiErrorHandler);
 // Reject oversized bodies before parsing (A1 state limit is 12k chars; 256 KB leaves room for JSON questions).
 app.use("/api/*", logger());
+// Deployment guards (all no-ops locally): CloudFront-only access, public-demo mode, per-process spend cap.
+app.use("/api/*", originVerify(process.env.ORIGIN_VERIFY_SECRET));
+app.use("/api/*", publicModeBlock(process.env.PUBLIC_MODE === "1", ["/api/a4/run"]));
+app.use("/api/*", spendCap(Number(process.env.MAX_DAILY_USD ?? "0"), () => usage.snapshot()));
 app.use("/api/*", bodyLimit({ maxSize: 256 * 1024 }));
 
 app.get("/api/health", (c) =>
@@ -63,6 +69,7 @@ app.route("/api/b1", b1Routes);
 app.route("/api/b2", b2Routes);
 app.route("/api/b3", b3Routes);
 app.route("/api/b4", b4Routes);
+app.route("/api/c5", c5Routes);
 app.route("/api/c1", c1Routes);
 app.route("/api/c2", c2Routes);
 app.route("/api/c3", c3Routes);

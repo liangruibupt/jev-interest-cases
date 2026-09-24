@@ -5,3 +5,6 @@ dist/
 .DS_Store
 docs/screenshots/*.tmp.png
 .playwright-mcp/
+
+# CDK
+infra/cdk.out/

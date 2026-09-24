@@ -1,0 +1,17 @@
+{
+  "name": "@jev/infra",
+  "private": true,
+  "type": "module",
+  "description": "CDK stack: S3 + CloudFront for the web app, API Gateway (HTTP API) + Lambda for the Hono API",
+  "scripts": {
+    "synth": "cdk synth",
+    "deploy": "cdk deploy --require-approval never",
+    "destroy": "cdk destroy",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "aws-cdk": "^2.1024.0",
+    "aws-cdk-lib": "^2.220.0",
+    "constructs": "^10.4.2"
+  }
+}

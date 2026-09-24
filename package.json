@@ -5,7 +5,8 @@
   "workspaces": [
     "shared",
     "server",
-    "web"
+    "web",
+    "infra"
   ],
   "scripts": {
     "dev": "concurrently -n server,web -c blue,green \"npm run dev -w @jev/server\" \"npm run dev -w @jev/web\"",
@@ -19,7 +20,8 @@
     "cache:clear": "rm -f server/.cache/jev/*.json",
     "latency": "tsx --env-file=.env scripts/latency-probe.ts",
     "warm-cache": "tsx --env-file=.env scripts/warm-cache.ts",
-    "a4:merge": "tsx scripts/a4-merge-results.ts"
+    "a4:merge": "tsx scripts/a4-merge-results.ts",
+    "deploy": "npm run build && npm run deploy -w @jev/infra"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
