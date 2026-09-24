@@ -44,6 +44,8 @@ claude plugin install typesafe@typesafe-ai
 
 ## 部署到 AWS
 
+在线演示：**https://dsctx8euz6le2.cloudfront.net** （公网模式，见下）。
+
 `infra/` 是一个 CDK 栈：S3（私有桶 + OAC）放前端，API Gateway（HTTP API）+ Lambda 跑 Hono 后端，同一个 CloudFront 分发对外。公网模式下 A4 真实实验关闭、每实例花费上限 $5、直连 API Gateway 会因缺少 CloudFront 注入的校验头而 403。步骤与取舍见 `docs/07-部署.md`：
 
 ```bash
