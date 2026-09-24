@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { App } from "aws-cdk-lib";
+import { App, DefaultStackSynthesizer } from "aws-cdk-lib";
 import { JevLabStack } from "../lib/jev-lab-stack";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
@@ -13,6 +13,8 @@ const need = (name: string): string => {
 const app = new App();
 new JevLabStack(app, "JevLab", {
   env: { account: process.env.CDK_DEFAULT_ACCOUNT, region: process.env.CDK_DEPLOY_REGION ?? "us-east-1" },
+  // The account's us-east-1 bootstrap stack (CDKToolkit) uses a custom qualifier; override with CDK_QUALIFIER if yours differs.
+  synthesizer: new DefaultStackSynthesizer({ qualifier: process.env.CDK_QUALIFIER ?? "mdi2024" }),
   repoRoot,
   typesafeApiKey: need("TYPESAFE_API_KEY"),
   originVerifySecret: need("ORIGIN_VERIFY_SECRET"),
