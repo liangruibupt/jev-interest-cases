@@ -20,5 +20,6 @@ new JevLabStack(app, "JevLab", {
   originVerifySecret: need("ORIGIN_VERIFY_SECRET"),
   publicMode: (process.env.PUBLIC_MODE ?? "1") === "1",
   maxDailyUsd: Number(process.env.MAX_DAILY_USD ?? "5"),
+  edgeAuthVersionArn: process.env.SITE_AUTH_EDGE_VERSION_ARN || undefined,
   description: "Jev Lab — TypeSafe Jev learning scenarios (CloudFront → S3 / API Gateway → Lambda)",
 });

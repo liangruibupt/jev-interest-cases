@@ -27,7 +27,7 @@ export function spendCap(maxUsd: number, snapshot: () => UsageSnapshot, freePath
 export function publicModeBlock(enabled: boolean, blockedPrefixes: readonly string[]): MiddlewareHandler {
   return async (c, next) => {
     if (enabled && blockedPrefixes.some((p) => c.req.path.startsWith(p))) {
-      return c.json({ error: { status: 403, code: "public_mode", message: "公网演示不运行真实的 A4 实验（单次约 $1.5）；请查看已保存的结果，或在本地运行。" } }, 403);
+      return c.json({ error: { status: 403, code: "public_mode", message: "公网演示不开放这个操作（如真实的 A4 实验，单次约 $1.5；重置花费计数）；请查看已保存的结果，或在本地运行。" } }, 403);
     }
     await next();
   };

@@ -31,7 +31,7 @@ app.onError(apiErrorHandler);
 app.use("/api/*", logger());
 // Deployment guards (all no-ops locally): CloudFront-only access, public-demo mode, per-process spend cap.
 app.use("/api/*", originVerify(process.env.ORIGIN_VERIFY_SECRET));
-app.use("/api/*", publicModeBlock(process.env.PUBLIC_MODE === "1", ["/api/a4/run"]));
+app.use("/api/*", publicModeBlock(process.env.PUBLIC_MODE === "1", ["/api/a4/run", "/api/usage/reset"]));
 app.use("/api/*", spendCap(Number(process.env.MAX_DAILY_USD ?? "0"), () => usage.snapshot()));
 app.use("/api/*", bodyLimit({ maxSize: 256 * 1024 }));
 

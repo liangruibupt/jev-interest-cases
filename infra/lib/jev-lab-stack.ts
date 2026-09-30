@@ -19,6 +19,12 @@ export interface JevLabStackProps extends StackProps {
   originVerifySecret: string;
   publicMode: boolean;
   maxDailyUsd: number;
+  /**
+   * Version ARN of a Lambda@Edge login gate (viewer-request), e.g. the site-auth one in aws-is-how/security/site-auth.
+   * When set, it guards both behaviors and also does the SPA rewrite, since a viewer-request event takes either a
+   * CloudFront Function or a Lambda@Edge function, not both. Unset: no login, the CloudFront Function rewrites.
+   */
+  edgeAuthVersionArn?: string;
 }
 
 /**
@@ -91,8 +97,12 @@ export class JevLabStack extends Stack {
     httpApi.addRoutes({ path: "/api/{proxy+}", methods: [apigwv2.HttpMethod.ANY], integration: new HttpLambdaIntegration("ApiIntegration", api) });
     const apiDomain = `${httpApi.apiId}.execute-api.${this.region}.${this.urlSuffix}`;
 
+    const edgeLambdas = props.edgeAuthVersionArn
+      ? [{ functionVersion: lambda.Version.fromVersionArn(this, "EdgeAuth", props.edgeAuthVersionArn), eventType: cloudfront.LambdaEdgeEventType.VIEWER_REQUEST }]
+      : undefined;
+
     // SPA: paths without a file extension (and outside /api) serve index.html.
-    const spaRewrite = new cloudfront.Function(this, "SpaRewrite", {
+    const spaRewrite = edgeLambdas ? undefined : new cloudfront.Function(this, "SpaRewrite", {
       runtime: cloudfront.FunctionRuntime.JS_2_0,
       code: cloudfront.FunctionCode.fromInline(
         "function handler(event) { var r = event.request; var u = r.uri; if (u.indexOf('/api/') !== 0 && u.indexOf('.') === -1) { r.uri = '/index.html'; } return r; }",
@@ -109,7 +119,8 @@ export class JevLabStack extends Stack {
         origin: origins.S3BucketOrigin.withOriginAccessControl(bucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
-        functionAssociations: [{ function: spaRewrite, eventType: cloudfront.FunctionEventType.VIEWER_REQUEST }],
+        functionAssociations: spaRewrite ? [{ function: spaRewrite, eventType: cloudfront.FunctionEventType.VIEWER_REQUEST }] : undefined,
+        edgeLambdas,
       },
       additionalBehaviors: {
         "/api/*": {
@@ -122,6 +133,7 @@ export class JevLabStack extends Stack {
           allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
           cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
           originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+          edgeLambdas,
         },
       },
     });
