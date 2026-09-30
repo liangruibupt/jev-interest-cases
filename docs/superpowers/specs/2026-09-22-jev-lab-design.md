@@ -11,7 +11,7 @@ Jev 不是聊天/生成模型：它接收一个 `state` 和一组**类型化问�
 | 决定 | 结论 |
 |---|---|
 | Jev API key | 已有，导出到 `TYPESAFE_API_KEY` |
-| Claude 通路 | **AWS Bedrock runtime 端点**（`AnthropicBedrock` + 推理配置 ID），`AWS_PROFILE=global_ruiliang`，`us-east-1`（凭证已验证，账号 710299592439） |
+| Claude 通路 | **AWS Bedrock runtime 端点**（`AnthropicBedrock` + 推理配置 ID），`AWS_PROFILE=global_ruiliang`，`us-east-1`（凭证已验证，账号 <ACCOUNT_ID>） |
 | Claude 模型 | **4.6 或 5 系列**：Sonnet 5 / Opus 5 为主力，Sonnet 4.6 / Opus 4.6 作上一代对照，Fable 5.1 可选前沿层；Haiku 4.5 默认关闭 |
 | 技术栈 | TypeScript 全栈：Vite + React 前端，Node(Hono) 后端 |
 | 数据语言 | 英文演示数据 + 中文界面与文档（Jev 英文准确率最高，CJK 偏弱） |
