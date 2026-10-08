@@ -30,6 +30,30 @@
 - **Jev 的优势是零样本质量**：开箱即用的准确率与校准、长上下文、高基数选项。本仓库所有场景都是"写好问题就上线"的零样本用法，这恰好是 Laya 最弱的用法。
 - 两者共享同一套设计模式（`04`）：speculative fan-out、置信度路由、"判断即数据"、代码先行。场景代码里的问题、门限、组合逻辑都可以原样复用。
 
+### 第三方评测：JevBench v1.3.0
+
+Hugging Face 社区文章 [Jev vs Laya: Hosted API or Open Weights? (2026 Guide)](https://huggingface.co/blog/sora-2/jev-vs-laya-hosted-api-or-open-weights-2026-guide)（2026-09-24，非官方）引用了 JevBench v1.3.0（2026-09-22 核对）：52 个系统、534 道类型化判断题（72 简单、96 标准、146 评判型、220 困难）。
+
+| 指标 | Jev 1.13.0 | Laya（未调优） |
+|---|---|---|
+| 综合分（排名） | **74.4**（#1） | 54.4（#33） |
+| 智能分 | 85.7 | 45.8 |
+| 校准分 | 82.7 | 62.5 |
+| 困难题准确率 | 74.1% | 34.1% |
+| 标准题准确率 | 99.0% | 72.9% |
+| 延迟 | 托管 p50 0.65 s | CPU 0.79 s（原始）/ 1.72 s（调整后）；T4 上是几十毫秒，与 CPU 数字不可直接比 |
+
+和本仓库的 B4 实测方向一致：Jev 20 / 20，Laya 调整请求格式后 12 / 20，这接近它"标准题 72.9%"的量级。文章的结论与本文相同：没有标注数据、要长上下文、没有 GPU 运维能力时先用 Jev；数据必须留在内网、要多语言路由、能微调时评估 Laya。它也明确说 **Laya 不是即插即用的替代品**，生产质量取决于微调与校准。
+
+文章给的评估清单可以直接当作 B4 之后的验收框架：
+
+1. 冻结 schema、标签、平局规则，以及"未知"的含义；
+2. 建留出集，覆盖常规、歧义、多语言、长上下文、高风险各类样本；
+3. 比较每类 F1、混淆对、校准、按门限的覆盖率与弃答率（弃答越多，已答部分的准确率越高，所以两者要一起报）；
+4. 测 p50 / p95 延迟、吞吐、冷启动、失败与截断；
+5. 总成本算上标注、GPU 利用率、托管、监控、维护与 API 费用；
+6. 让两个系统对照人工复核结果做影子运行，之后再开启有后果的动作。
+
 ## 对本仓库的意义：切换只要一个环境变量
 
 `@typesafe-ai/sdk` 读取 `TYPESAFE_BASE_URL`，所以理论上：
@@ -114,9 +138,10 @@ A2 是第二站：一旦 B4 证明了接入、校准与微调流程，再去碰�
 
 注意：与 Jev 一致不等于对。Jev 的答案只是参照；能当真值的只有 B4 的 20 条标注分派。
 
-## 官方资料
+## 资料
 
 - Laya 模型卡：https://huggingface.co/convaiinnovations/laya
 - 代码与基准报告：https://github.com/NandhaKishorM/laya（`BENCHMARKS.md`、微调 notebook）
 - 文档：https://nandhakishorm.github.io/laya/
 - 已知问题：Noul 跟随标签 [#156](https://github.com/NandhaKishorM/laya/issues/156)、act_probability 无信号 [#185](https://github.com/NandhaKishorM/laya/issues/185)
+- 第三方（社区文章，非官方）：[Jev vs Laya: Hosted API or Open Weights? (2026 Guide)](https://huggingface.co/blog/sora-2/jev-vs-laya-hosted-api-or-open-weights-2026-guide)，含 JevBench v1.3.0 数字与评估清单
