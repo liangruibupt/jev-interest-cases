@@ -1,0 +1,2077 @@
+{
+  "date": "2026-10-08T01:57:37.341Z",
+  "layaUrl": "http://127.0.0.1:8000",
+  "stateMode": "as-is",
+  "gate": "answer_confidence",
+  "scenarios": {
+    "b4": {
+      "requests": 22,
+      "byType": [
+        {
+          "type": "choice",
+          "n": 242,
+          "agree": 48,
+          "meanDelta": 0.7335057851239672
+        },
+        {
+          "type": "noul",
+          "n": 66,
+          "agree": 39,
+          "meanDelta": 0.46218787878787865
+        },
+        {
+          "type": "score",
+          "n": 0,
+          "agree": 0,
+          "meanDelta": 0
+        }
+      ],
+      "byQuestion": [
+        {
+          "id": "category",
+          "type": "choice",
+          "n": 22,
+          "agree": 8
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "n": 22,
+          "agree": 4
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "n": 22,
+          "agree": 1
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "n": 22,
+          "agree": 3
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "n": 22,
+          "agree": 3
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "n": 22,
+          "agree": 0
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "n": 22,
+          "agree": 10
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "n": 22,
+          "agree": 2
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "n": 22,
+          "agree": 3
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "n": 22,
+          "agree": 0
+        },
+        {
+          "id": "tv_action",
+          "type": "choice",
+          "n": 22,
+          "agree": 16
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "n": 22,
+          "agree": 2
+        },
+        {
+          "id": "mentions_number",
+          "type": "noul",
+          "n": 22,
+          "agree": 19
+        },
+        {
+          "id": "is_question_about_state",
+          "type": "noul",
+          "n": 22,
+          "agree": 16
+        }
+      ],
+      "latencyMs": {
+        "layaP50": 354,
+        "layaMax": 494,
+        "jevP50": 692
+      },
+      "truncated": {
+        "requests": 0,
+        "stateTokensDropped": 0,
+        "questions": 0
+      },
+      "outcome": [
+        {
+          "request": "turn off all the lights",
+          "expect": "commands",
+          "jev": "commands",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "dim the office lights to 30%",
+          "expect": "commands",
+          "jev": "commands",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "make the bedroom warmer",
+          "expect": "commands",
+          "jev": "commands",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "set the bedroom to 21 degrees",
+          "expect": "commands",
+          "jev": "commands",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "turn the living room lights blue",
+          "expect": "commands",
+          "jev": "commands",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "open the blinds in the kitchen",
+          "expect": "commands",
+          "jev": "commands",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "play some music in the bathroom",
+          "expect": "commands",
+          "jev": "commands",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "set the office volume to 4",
+          "expect": "commands",
+          "jev": "commands",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "turn the TV off",
+          "expect": "clarify",
+          "jev": "clarify",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": true
+        },
+        {
+          "request": "make it brighter",
+          "expect": "clarify",
+          "jev": "clarify",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": true
+        },
+        {
+          "request": "lock the front door",
+          "expect": "commands|confirm_lock",
+          "jev": "commands",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "unlock the front door",
+          "expect": "confirm_lock",
+          "jev": "confirm_lock",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "turn off the kitchen lights and close the bedroom blinds",
+          "expect": "split",
+          "jev": "split",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "good morning! open the blinds and warm up the office",
+          "expect": "split",
+          "jev": "split",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "turn everything off in the living room",
+          "expect": "split|commands|clarify",
+          "jev": "clarify",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": true
+        },
+        {
+          "request": "make the bathroom lights warm white and dim",
+          "expect": "split|commands",
+          "jev": "split",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "is the front door locked?",
+          "expect": "state_question",
+          "jev": "state_question",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "what temperature is the bedroom set to?",
+          "expect": "state_question",
+          "jev": "state_question",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "thanks, that's all",
+          "expect": "chat",
+          "jev": "chat",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        },
+        {
+          "request": "hi there",
+          "expect": "chat",
+          "jev": "chat",
+          "laya": "clarify",
+          "jevOk": true,
+          "layaOk": false
+        }
+      ],
+      "disagreements": [
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "device_command 0.98",
+          "laya": "information_question 0.29",
+          "delta": 0.6937
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.04",
+          "laya": "0.80",
+          "delta": 0.7615999999999999
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "office 1.00",
+          "laya": "whole_house 0.61",
+          "delta": 0.9525
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "speaker 0.97",
+          "laya": "not_stated 0.40",
+          "delta": 0.9046
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.95",
+          "laya": "change_brightness 0.25",
+          "delta": 0.743
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.97",
+          "laya": "medium 0.35",
+          "delta": 0.7589
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.99",
+          "laya": "warmer 0.49",
+          "delta": 0.7193
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "close 0.39",
+          "delta": 0.7282
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "set_volume 0.98",
+          "laya": "volume_up 0.31",
+          "delta": 0.7294
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.99",
+          "laya": "lock 0.39",
+          "delta": 0.6961999999999999
+        },
+        {
+          "id": "mentions_number",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.98",
+          "laya": "0.22",
+          "delta": 0.7564
+        },
+        {
+          "id": "is_question_about_state",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.02",
+          "laya": "0.52",
+          "delta": 0.4951
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.04",
+          "laya": "0.83",
+          "delta": 0.7850999999999999
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "living_room 1.00",
+          "laya": "whole_house 0.59",
+          "delta": 0.8687
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "lights 1.00",
+          "laya": "not_stated 0.39",
+          "delta": 0.8732
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "change_color 1.00",
+          "laya": "change_brightness 0.25",
+          "delta": 0.7696000000000001
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "medium 0.35",
+          "delta": 0.7715
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "agree": false,
+          "jev": "blue 1.00",
+          "laya": "not_stated 0.21",
+          "delta": 0.9317
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.49",
+          "delta": 0.7276
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "close 0.39",
+          "delta": 0.726
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.99",
+          "laya": "volume_up 0.30",
+          "delta": 0.8759
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "lock 0.38",
+          "delta": 0.6796
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "device_command 1.00",
+          "laya": "information_question 0.29",
+          "delta": 0.7166
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.03",
+          "laya": "0.81",
+          "delta": 0.7786
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.90",
+          "laya": "whole_house 0.63",
+          "delta": 0.8264
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "front_door_lock 1.00",
+          "laya": "not_stated 0.36",
+          "delta": 0.726
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.95",
+          "laya": "change_brightness 0.32",
+          "delta": 0.7495999999999999
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "medium 0.33",
+          "delta": 0.7491
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "white 0.19",
+          "delta": 0.8220000000000001
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.52",
+          "delta": 0.7422
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.87",
+          "laya": "open 0.36",
+          "delta": 0.6091
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.97",
+          "laya": "set_volume 0.37",
+          "delta": 0.873
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "unlock 1.00",
+          "laya": "lock 0.38",
+          "delta": 0.6845
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.04",
+          "laya": "0.83",
+          "delta": 0.7918
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "bathroom 1.00",
+          "laya": "whole_house 0.60",
+          "delta": 0.9546
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "speaker 1.00",
+          "laya": "not_stated 0.41",
+          "delta": 0.9296
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "change_brightness 0.26",
+          "delta": 0.7814
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "medium 0.35",
+          "delta": 0.7715
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "purple 0.20",
+          "delta": 0.7972
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.48",
+          "delta": 0.7197
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "close 0.39",
+          "delta": 0.7248
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "play 0.99",
+          "laya": "volume_up 0.29",
+          "delta": 0.9593
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.99",
+          "laya": "lock 0.38",
+          "delta": 0.6926
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "information_question 1.00",
+          "laya": "chit_chat 0.26",
+          "delta": 0.7638
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.04",
+          "laya": "0.87",
+          "delta": 0.8269
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "bedroom 1.00",
+          "laya": "whole_house 0.70",
+          "delta": 0.9805
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "thermostat 1.00",
+          "laya": "not_stated 0.46",
+          "delta": 0.8429
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "change_brightness 0.34",
+          "delta": 0.7797000000000001
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "medium 0.34",
+          "delta": 0.7417
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "set_specific 0.50",
+          "laya": "warmer 0.49",
+          "delta": 0.5087
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "close 0.38",
+          "delta": 0.7168
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.95",
+          "laya": "volume_up 0.28",
+          "delta": 0.821
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.88",
+          "laya": "lock 0.41",
+          "delta": 0.6527000000000001
+        },
+        {
+          "id": "is_question_about_state",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.98",
+          "laya": "0.49",
+          "delta": 0.4906
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "device_command 1.00",
+          "laya": "information_question 0.29",
+          "delta": 0.7178
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.04",
+          "laya": "0.83",
+          "delta": 0.7852
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "bedroom 1.00",
+          "laya": "whole_house 0.60",
+          "delta": 0.9752
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "blinds 1.00",
+          "laya": "not_stated 0.37",
+          "delta": 0.9369
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "change_brightness 0.33",
+          "delta": 0.7701
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.94",
+          "laya": "medium 0.36",
+          "delta": 0.7279
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "white 0.20",
+          "delta": 0.8027
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.99",
+          "laya": "warmer 0.51",
+          "delta": 0.7405999999999999
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "close 1.00",
+          "laya": "open 0.36",
+          "delta": 0.6699999999999999
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.99",
+          "laya": "volume_up 0.29",
+          "delta": 0.8672
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.94",
+          "laya": "lock 0.38",
+          "delta": 0.6551
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "bathroom 1.00",
+          "laya": "whole_house 0.65",
+          "delta": 0.9528
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "lights 1.00",
+          "laya": "not_stated 0.45",
+          "delta": 0.8835
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "dim 1.00",
+          "laya": "medium 0.33",
+          "delta": 0.7491
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "agree": false,
+          "jev": "warm_white 1.00",
+          "laya": "not_stated 0.23",
+          "delta": 0.8335
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.95",
+          "laya": "warmer 0.45",
+          "delta": 0.6906
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "close 0.39",
+          "delta": 0.741
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.99",
+          "laya": "volume_up 0.28",
+          "delta": 0.8089999999999999
+        },
+        {
+          "id": "tv_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "turn_on 0.42",
+          "delta": 0.6649
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "lock 0.44",
+          "delta": 0.7477
+        },
+        {
+          "id": "is_question_about_state",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.02",
+          "laya": "0.51",
+          "delta": 0.48939999999999995
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "device_command 1.00",
+          "laya": "information_question 0.29",
+          "delta": 0.7141
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.03",
+          "laya": "0.81",
+          "delta": 0.7807999999999999
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.84",
+          "laya": "whole_house 0.62",
+          "delta": 0.7742
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "front_door_lock 1.00",
+          "laya": "not_stated 0.36",
+          "delta": 0.7263
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.97",
+          "laya": "change_brightness 0.31",
+          "delta": 0.7684
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "medium 0.33",
+          "delta": 0.7486999999999999
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "white 0.19",
+          "delta": 0.8220000000000001
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.52",
+          "delta": 0.7424
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.90",
+          "laya": "open 0.36",
+          "delta": 0.6289
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "set_volume 0.36",
+          "delta": 0.8815999999999999
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "device_command 1.00",
+          "laya": "information_question 0.30",
+          "delta": 0.7275
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.09",
+          "laya": "0.82",
+          "delta": 0.729
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "lights 1.00",
+          "laya": "not_stated 0.34",
+          "delta": 0.874
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "turn_off 1.00",
+          "laya": "change_brightness 0.33",
+          "delta": 0.9109
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.76",
+          "laya": "medium 0.36",
+          "delta": 0.6116999999999999
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.51",
+          "delta": 0.7384
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.85",
+          "laya": "open 0.36",
+          "delta": 0.5891
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.95",
+          "laya": "volume_up 0.30",
+          "delta": 0.8442
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.93",
+          "laya": "lock 0.39",
+          "delta": 0.6545
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.04",
+          "laya": "0.86",
+          "delta": 0.8152999999999999
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "office 1.00",
+          "laya": "whole_house 0.68",
+          "delta": 0.961
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "lights 1.00",
+          "laya": "not_stated 0.44",
+          "delta": 0.8749
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "dim 0.82",
+          "laya": "medium 0.33",
+          "delta": 0.6048
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.49",
+          "delta": 0.7466999999999999
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.99",
+          "laya": "close 0.38",
+          "delta": 0.7098
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "volume_up 0.28",
+          "delta": 0.861
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.99",
+          "laya": "lock 0.43",
+          "delta": 0.7493000000000001
+        },
+        {
+          "id": "mentions_number",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.99",
+          "laya": "0.21",
+          "delta": 0.7819
+        },
+        {
+          "id": "is_question_about_state",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.02",
+          "laya": "0.53",
+          "delta": 0.5071
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.04",
+          "laya": "0.82",
+          "delta": 0.7791
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.77",
+          "laya": "whole_house 0.60",
+          "delta": 0.7124
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "front_door_lock 1.00",
+          "laya": "not_stated 0.36",
+          "delta": 0.8526
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "change_brightness 0.32",
+          "delta": 0.7884
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "medium 0.36",
+          "delta": 0.7777000000000001
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "white 0.20",
+          "delta": 0.8029
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.52",
+          "delta": 0.7396
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "open 0.36",
+          "delta": 0.6693
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.92",
+          "laya": "volume_up 0.28",
+          "delta": 0.8129
+        },
+        {
+          "id": "is_question_about_state",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.98",
+          "laya": "0.43",
+          "delta": 0.5546
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.03",
+          "laya": "0.82",
+          "delta": 0.7942
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "bedroom 1.00",
+          "laya": "whole_house 0.61",
+          "delta": 0.9754
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "thermostat 1.00",
+          "laya": "not_stated 0.43",
+          "delta": 0.8542
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "change_brightness 0.26",
+          "delta": 0.7836
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "medium 0.35",
+          "delta": 0.7678
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "set_specific 1.00",
+          "laya": "warmer 0.49",
+          "delta": 0.8767
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "close 0.39",
+          "delta": 0.7244999999999999
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.99",
+          "laya": "set_volume 0.29",
+          "delta": 0.8796
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "lock 0.38",
+          "delta": 0.6817
+        },
+        {
+          "id": "mentions_number",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.99",
+          "laya": "0.22",
+          "delta": 0.7695
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "device_command 0.99",
+          "laya": "information_question 0.30",
+          "delta": 0.7117
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.11",
+          "laya": "0.59",
+          "delta": 0.4776
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.64",
+          "laya": "whole_house 0.78",
+          "delta": 0.6124999999999999
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "lights 0.99",
+          "laya": "not_stated 0.36",
+          "delta": 0.8576
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "bright 0.91",
+          "laya": "medium 0.34",
+          "delta": 0.7908000000000001
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "white 0.20",
+          "delta": 0.8230999999999999
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.84",
+          "laya": "warmer 0.43",
+          "delta": 0.5784
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.69",
+          "laya": "set_volume 0.56",
+          "delta": 0.6622
+        },
+        {
+          "id": "tv_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.28",
+          "laya": "turn_off 0.37",
+          "delta": 0.1688
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.92",
+          "laya": "lock 0.39",
+          "delta": 0.6512
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.04",
+          "laya": "0.86",
+          "delta": 0.8205
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "kitchen 1.00",
+          "laya": "whole_house 0.69",
+          "delta": 0.9567
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "blinds 1.00",
+          "laya": "not_stated 0.44",
+          "delta": 0.963
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "change_brightness 0.33",
+          "delta": 0.7652
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.98",
+          "laya": "medium 0.34",
+          "delta": 0.7196
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.48",
+          "delta": 0.7451
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "open 1.00",
+          "laya": "close 0.38",
+          "delta": 0.6608
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "volume_up 0.28",
+          "delta": 0.8565
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.96",
+          "laya": "lock 0.42",
+          "delta": 0.7253000000000001
+        },
+        {
+          "id": "is_question_about_state",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.02",
+          "laya": "0.50",
+          "delta": 0.48009999999999997
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "living_room 1.00",
+          "laya": "whole_house 0.69",
+          "delta": 0.9062
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "turn_off 0.94",
+          "laya": "change_brightness 0.32",
+          "delta": 0.832
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.97",
+          "laya": "medium 0.33",
+          "delta": 0.7244999999999999
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.88",
+          "laya": "warmer 0.48",
+          "delta": 0.6576
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "pause_or_stop 0.69",
+          "laya": "volume_up 0.29",
+          "delta": 0.6658
+        },
+        {
+          "id": "tv_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "turn_off 0.88",
+          "laya": "not_applicable 0.40",
+          "delta": 0.7038
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.72",
+          "laya": "lock 0.42",
+          "delta": 0.5517000000000001
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "device_command 1.00",
+          "laya": "information_question 0.29",
+          "delta": 0.7194
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.05",
+          "laya": "0.82",
+          "delta": 0.7698999999999999
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "bedroom 1.00",
+          "laya": "whole_house 0.60",
+          "delta": 0.9751
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "thermostat 1.00",
+          "laya": "not_stated 0.37",
+          "delta": 0.9434
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.91",
+          "laya": "change_brightness 0.34",
+          "delta": 0.7234
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.99",
+          "laya": "medium 0.34",
+          "delta": 0.7523
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.99",
+          "laya": "white 0.18",
+          "delta": 0.8187
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "close 0.58",
+          "laya": "open 0.36",
+          "delta": 0.4008
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.96",
+          "laya": "set_volume 0.37",
+          "delta": 0.8738
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.97",
+          "laya": "lock 0.37",
+          "delta": 0.6716
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "device_command 1.00",
+          "laya": "chit_chat 0.34",
+          "delta": 0.7719
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "kitchen 0.34",
+          "laya": "whole_house 0.70",
+          "delta": 0.3785
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "lights 0.90",
+          "laya": "not_stated 0.31",
+          "delta": 0.8210000000000001
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "turn_off 1.00",
+          "laya": "change_brightness 0.31",
+          "delta": 0.8709
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.98",
+          "laya": "medium 0.33",
+          "delta": 0.7287
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.50",
+          "delta": 0.8208
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.97",
+          "laya": "volume_up 0.26",
+          "delta": 0.7995
+        },
+        {
+          "id": "tv_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.99",
+          "laya": "turn_on 0.41",
+          "delta": 0.6533
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "lock 0.47",
+          "delta": 0.769
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "device_command 1.00",
+          "laya": "information_question 0.29",
+          "delta": 0.7169
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.04",
+          "laya": "0.83",
+          "delta": 0.7877
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "kitchen 1.00",
+          "laya": "whole_house 0.58",
+          "delta": 0.9403
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "lights 1.00",
+          "laya": "not_stated 0.35",
+          "delta": 0.8751
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "turn_off 1.00",
+          "laya": "change_brightness 0.32",
+          "delta": 0.9097
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.98",
+          "laya": "medium 0.36",
+          "delta": 0.7704
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.50",
+          "delta": 0.7358
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.97",
+          "laya": "open 0.36",
+          "delta": 0.6691
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.95",
+          "laya": "volume_up 0.29",
+          "delta": 0.8441
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.94",
+          "laya": "lock 0.39",
+          "delta": 0.6636
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "chit_chat 1.00",
+          "laya": "information_question 0.32",
+          "delta": 0.8397
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.02",
+          "laya": "0.59",
+          "delta": 0.5700999999999999
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "whole_house 0.53",
+          "delta": 0.8855
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "change_brightness 0.32",
+          "delta": 0.7924
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "medium 0.35",
+          "delta": 0.7782
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "white 0.19",
+          "delta": 0.8539
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.35",
+          "delta": 0.7323
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "open 0.34",
+          "delta": 0.6724
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.96",
+          "laya": "set_volume 0.50",
+          "delta": 0.8755999999999999
+        },
+        {
+          "id": "tv_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.99",
+          "laya": "turn_off 0.37",
+          "delta": 0.6464
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "lock 0.34",
+          "delta": 0.6629
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "device_command 1.00",
+          "laya": "information_question 0.29",
+          "delta": 0.7166
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.06",
+          "laya": "0.81",
+          "delta": 0.7484
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.79",
+          "laya": "whole_house 0.61",
+          "delta": 0.7251
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "tv 1.00",
+          "laya": "not_stated 0.35",
+          "delta": 0.8384
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.80",
+          "laya": "change_brightness 0.32",
+          "delta": 0.629
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.99",
+          "laya": "medium 0.33",
+          "delta": 0.7475
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "white 0.18",
+          "delta": 0.8183
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.53",
+          "delta": 0.7436
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.97",
+          "laya": "open 0.36",
+          "delta": 0.6686
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.76",
+          "laya": "set_volume 0.36",
+          "delta": 0.6910000000000001
+        },
+        {
+          "id": "tv_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "turn_off 1.00",
+          "laya": "not_applicable 0.42",
+          "delta": 0.7576
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.97",
+          "laya": "lock 0.38",
+          "delta": 0.6764
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "chit_chat 1.00",
+          "laya": "information_question 0.30",
+          "delta": 0.8096
+        },
+        {
+          "id": "is_compound",
+          "type": "noul",
+          "agree": false,
+          "jev": "0.03",
+          "laya": "0.81",
+          "delta": 0.778
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.99",
+          "laya": "whole_house 0.62",
+          "delta": 0.897
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "change_brightness 0.32",
+          "delta": 0.7786
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "medium 0.36",
+          "delta": 0.7757000000000001
+        },
+        {
+          "id": "color",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 1.00",
+          "laya": "white 0.20",
+          "delta": 0.8029999999999999
+        },
+        {
+          "id": "thermostat_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 1.00",
+          "laya": "warmer 0.52",
+          "delta": 0.7432000000000001
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "open 0.36",
+          "delta": 0.6797
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.71",
+          "laya": "volume_up 0.31",
+          "delta": 0.6357
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.95",
+          "laya": "lock 0.39",
+          "delta": 0.6556
+        },
+        {
+          "id": "category",
+          "type": "choice",
+          "agree": false,
+          "jev": "device_command 1.00",
+          "laya": "chit_chat 0.33",
+          "delta": 0.775
+        },
+        {
+          "id": "room",
+          "type": "choice",
+          "agree": false,
+          "jev": "office 1.00",
+          "laya": "whole_house 0.60",
+          "delta": 0.961
+        },
+        {
+          "id": "device",
+          "type": "choice",
+          "agree": false,
+          "jev": "blinds 0.90",
+          "laya": "not_stated 0.36",
+          "delta": 0.8863000000000001
+        },
+        {
+          "id": "light_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "change_brightness 0.31",
+          "delta": 0.7816
+        },
+        {
+          "id": "brightness_level",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_stated 0.90",
+          "laya": "medium 0.33",
+          "delta": 0.6648000000000001
+        },
+        {
+          "id": "blinds_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "open 1.00",
+          "laya": "close 0.40",
+          "delta": 0.6614
+        },
+        {
+          "id": "speaker_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "volume_up 0.40",
+          "delta": 0.7922
+        },
+        {
+          "id": "lock_action",
+          "type": "choice",
+          "agree": false,
+          "jev": "not_applicable 0.98",
+          "laya": "lock 0.48",
+          "delta": 0.7718
+        }
+      ],
+      "routing": {
+        "model": "english",
+        "repo": "convaiinnovations/laya",
+        "reason": "English Latin text",
+        "detection": {
+          "script": "latin",
+          "script_profile": {
+            "latin": 1
+          },
+          "language": "en",
+          "is_english": true,
+          "language_undecided": false,
+          "diacritic_rate": 0,
+          "non_latin_fraction": 0,
+          "mixed_segment": null
+        },
+        "workflow": null
+      }
+    }
+  }
+}

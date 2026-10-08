@@ -40,7 +40,7 @@ claude plugin install typesafe@typesafe-ai
 | 11 | **C3 公告重大性判断**（金融） ✔ | 行业判断：判断文字不判断价格；事件类型 + 重大性 Score 排成待阅列表，明示不问买卖 | 判定步骤实测 87×（98.9%）；15/15 事件类型；15/15 泳道（同批数据调门限后） |
 | 12 | **C4 VPP 调度通知与告警**（能源） ✔ | 行业判断：通知 × 站点逐对判断适用性、是否要求行动、是否测试、告警类别；kW / 百分比 / 时间窗由代码解析比较 | 判定步骤实测 79×（98.7%）；36/36 路由（9 题，含防泄漏的 addressed_to_one_site） |
 
-成本估算方法与完整实测表见 `docs/05-成本模型.md`：判断步骤实测 50–635×，含生成的端到端 29–87%。哪些行业判断能交给 Jev、哪些不能，见 `docs/06-行业场景适用性.md`。
+成本估算方法与完整实测表见 `docs/05-成本模型.md`：判断步骤实测 50–635×，含生成的端到端 29–87%。哪些行业判断能交给 Jev、哪些不能，见 `docs/06-行业场景适用性.md`。开源的同类模型 Laya 与 Jev 的对比、以及为什么先在 B4 上试，见 `docs/08-Jev与Laya对比.md`（回放脚本 `scripts/laya-replay.ts`；B4 实测零样本分派 3 / 20，调整请求格式后 12 / 20，T4 上 88 ms）。
 
 ## C5 语义音乐盒
 
@@ -70,7 +70,7 @@ AWS_PROFILE=global_ruiliang npm run deploy      # vite build + cdk deploy
 
 ## 文档
 
-- `docs/00-什么是Jev.md` · `01-三种原语.md` · `02-置信度与阈值.md` · `03-与LLM的差异与局限.md` · `04-设计模式.md` · `05-成本模型.md`
+- `docs/00-什么是Jev.md` · `01-三种原语.md` · `02-置信度与阈值.md` · `03-与LLM的差异与局限.md` · `04-设计模式.md` · `05-成本模型.md` · `08-Jev与Laya对比.md`
 - `docs/scenarios/` 每个场景的问题清单、组合逻辑、实测记录
 - `docs/superpowers/specs/2026-09-22-jev-lab-design.md` 设计稿；`docs/superpowers/plans/` 实施计划
 
