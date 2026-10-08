@@ -140,8 +140,8 @@ A2 是第二站：一旦 B4 证明了接入、校准与微调流程，再去碰�
 
 ## 资料
 
-- Laya 模型卡：https://huggingface.co/convaiinnovations/laya
-- 代码与基准报告：https://github.com/NandhaKishorM/laya（`BENCHMARKS.md`、微调 notebook）
-- 文档：https://nandhakishorm.github.io/laya/
+- Laya 模型卡：[huggingface.co/convaiinnovations/laya](https://huggingface.co/convaiinnovations/laya)
+- 代码与基准报告：[NandhaKishorM/laya](https://github.com/NandhaKishorM/laya)，其中 [`BENCHMARKS.md`](https://github.com/NandhaKishorM/laya/blob/main/BENCHMARKS.md)、[Kaggle 2×T4 微调 notebook](https://github.com/NandhaKishorM/laya/blob/main/notebooks/laya_finetune_typed_decisions_2xT4_kaggle.ipynb)
+- 文档：[nandhakishorm.github.io/laya](https://nandhakishorm.github.io/laya/)
 - 已知问题：Noul 跟随标签 [#156](https://github.com/NandhaKishorM/laya/issues/156)、act_probability 无信号 [#185](https://github.com/NandhaKishorM/laya/issues/185)
 - 第三方（社区文章，非官方）：[Jev vs Laya: Hosted API or Open Weights? (2026 Guide)](https://huggingface.co/blog/sora-2/jev-vs-laya-hosted-api-or-open-weights-2026-guide)，含 JevBench v1.3.0 数字与评估清单

@@ -29,7 +29,7 @@ Jev 不是聊天/生成模型：它接收一个 `state` 和一组**类型化问�
 - **Noul**：是/否；返回 `noul ∈ [0,1]`，无 confidence；可选 `criteria: {true, false}`。
 - `instructions`/`criteria` 可为 string | object | array（结构化字段名自定，如 `{question, focus}`、`{what, not_for, examples}`）。反引号路径引用 state：`` `ticket.messages[0].text` ``。问题 ID 不发给模型。
 - 同一 state 的所有问题**一次请求打包**（speculative fan-out），并行且互相独立；只有当后续问题依赖前一答案来构造新 state/新选项时才发第二次请求。
-- jaggedness（https://docs.typesafe.ai/model-jaggedness/jev-1.13.md）：字面理解、不会算数/计数、不会比较日期、多跳间接推理弱、无关 state 越多越差、对抗内容可影响、instructions 与 criteria 矛盾会混乱、不同问法间无结构不变量、不做生成。
+- jaggedness（<https://docs.typesafe.ai/model-jaggedness/jev-1.13.md>）：字面理解、不会算数/计数、不会比较日期、多跳间接推理弱、无关 state 越多越差、对抗内容可影响、instructions 与 criteria 矛盾会混乱、不同问法间无结构不变量、不做生成。
 - 错误码 401 / 422 / 429 / 529；SDK 默认重试 2 次带退避。
 - 官方对比数字：8 题审核请求 Jev 114ms / $0.000046 vs Claude Haiku 4.5 3.85s / $0.0035，Opus 4.8 推理 10.4s / $0.028；13 题打包 vs 13 次单发：12.2× 便宜、10× 快；BM25→Jev 重排 top-1 5%→18%、top-10 38%→62%（1200 次 $0.065）。
 
