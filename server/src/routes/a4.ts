@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { A4_ARMS, A4_CASES, A4_LIMITS, estimateRunCost, type A4CaseId, type Answers, type ArmId, type EntryType, type RunRecord } from "@jev/shared";
@@ -42,7 +43,7 @@ export function createA4Routes(deps: Deps) {
     const stateFor = (run: number): EntryType => {
       if (!nonce) return a4case.state;
       const base = a4case.state;
-      const uid = `${a4case.id}:${run}:${Math.random().toString(36).slice(2, 8)}`;
+      const uid = `${a4case.id}:${run}:${randomUUID().slice(0, 8)}`;
       return base && typeof base === "object" && !Array.isArray(base) ? { ...base, uid } : { state: base, uid };
     };
 

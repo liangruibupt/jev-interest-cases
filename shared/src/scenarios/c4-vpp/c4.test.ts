@@ -63,6 +63,24 @@ describe("C4 constraints parsed in code", () => {
     expect(parseConstraints(VPP_NOTICES[0]!.text, S1).find((c) => c.kind === "deadline")?.text).toBe("12:00 tomorrow");
     expect(parseConstraints("Nothing numeric here.", S1)).toEqual([]);
   });
+
+  it("parses 'N MW or more' exactly like the previous regex, in linear time", () => {
+    const legacy = /(\d[\d,]*(?:\.\d+)?)\s*(MW|kW)\s+(?:or larger|or more|and above|or above)\b/i;
+    const inputs = [
+      "resources 1 MW or larger", "sites of 1.5 MW or more", "2,500 kW and above only", "units 750kW or above",
+      "1.2.3 MW or more", ",5 MW or more", "3,,5 kW or more", "5, MW or more", "5.MW or more", "10 MWh or more",
+      "4 MW\t or larger", "9 kW orange", "12 MW then 3 MW or more", "x7 kw OR MORE", "0.25 MW or largerish",
+    ];
+    for (const text of inputs) {
+      const m = legacy.exec(text);
+      const got = parseConstraints(text, S1).find((c) => c.kind === "min_capacity_kw");
+      if (!m) expect(got, text).toBeUndefined();
+      else expect(got, text).toMatchObject({ text: m[0].trim(), value: (m[2]!.toLowerCase().startsWith("mw") ? 1000 : 1) * Number(m[1]!.replace(/,/g, "")) });
+    }
+    const t0 = performance.now();
+    parseConstraints(`${"1".repeat(50_000)} ${"1,".repeat(50_000)} ${"1.1.".repeat(20_000)}`, S1);
+    expect(performance.now() - t0).toBeLessThan(1000);
+  });
 });
 
 describe("C4 applyNotice", () => {
