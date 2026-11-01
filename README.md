@@ -50,33 +50,33 @@ claude plugin install typesafe@typesafe-ai
 
 ## 同类决策模型横向对比
 
-System One（决策模型）是 2026 年 9 月起冒出来的一类模型：读 state + 一组定好答案的类型化问题，返回每个选项的校准概率，不生成文字。Jev 之外还有若干同类，都用同形的 `POST /v1/systemone`。下表把本仓库关注的四款放在一起——**一句话：选 Jev / 微软要托管省心，选 Laya / Strands 要开源可控**。逐一深读见各自的对比文档。
+System One（决策模型）是 2026 年 9 月起冒出来的一类模型：读 state + 一组定好答案的类型化问题，返回每个选项的校准概率，不生成文字。Jev 之外还有若干同类，都用同形的 `POST /v1/systemone`。下表把本仓库关注的五款放在一起——**一句话：选 Jev / 微软要托管省心，选 Laya / Strands 要开源自托管，选 Clef 要开源权重 + 托管 + 多模态**。逐一深读见各自的对比文档。
 
-| 维度 | **Jev**（TypeSafe） | **Microsoft-Decision-1**（微软） | **Laya**（Convai） | **Strands Decider 2B**（AWS） |
-|---|---|---|---|---|
-| 形态 | 闭源托管 API | 闭源托管 API | 开放权重 | 开放权重 |
-| 许可 | 商用托管 | 商用托管（Direct from Azure） | Apache 2.0 | Apache 2.0 |
-| 价格（输入 / 输出） | $0.042 / Mtok · 免费 | **同价** $0.042 / Mtok · 免费 | 自托管 $0（仅算力） | 自托管 $0（仅算力） |
-| 底座 | 未公开 | Qwen3.5-9B 后训练 | ModernBERT-large 421M（英文）等 | Qwen3.5-2B-Base 1.9B + pointer 头 |
-| 上下文窗口 | 每请求 64k | 32,768 | 英文 512 / 多语言 1,024–8,192 | 3,072–4,096 |
-| 输入类型 | 文本 | 纯文本 | 文本 | 文本（`--vision` 可读图像，未训练） |
-| 运行处 | TypeSafe API / Workers AI / OpenRouter | Foundry / OpenRouter | 本机 / 自有 GPU / Docker | 本机 / Mac / CPU / GPU / Docker |
-| 零样本准确率 | 第三方 0.727；微软表 82.3% | 微软自测 **83.5%** | 基础 0.362，微调后 0.766 | JevBench **0.779**（180/231） |
-| 校准（越低越好 ECE） | 0.144 / 0.246（第三方） | 微软表 92.2（分制，越高越好） | 出厂 0.466，温度校准后 0.081 | **0.072**（出厂即校准） |
-| 延迟 | 第三方 p50 236–276 ms；本仓库本地 0.35–0.8 s | 微软自测 85 ms；OpenRouter 外部 p50 0.19–0.27 s | T4：1 题 33–40 ms；无网络往返 | RTX 3090 单题中位 115 ms |
-| 微调 | 不支持 | 不支持（无权重） | 支持 | 支持（自带技能 + 训练脚本） |
-| 第三方榜 Decision Index | 60.11（并列第二） | 尚未收录 | — | 21.75（第 84） |
-| 本仓库接入 | 全部场景的基准 | **不接**（闭源 / 付费 / 不能离线回放） | B4 实测 3→12/20（`scripts/laya-replay.ts`） | 可复用回放脚本（接口同形） |
-| 详读 | — | [`docs/09`](docs/09-Jev与Microsoft-Decision-1对比.md) | [`docs/08`](docs/08-Jev与Laya对比.md) | [`docs/10`](docs/10-Jev与Strands-Decider对比.md) |
+| 维度 | **Jev**（TypeSafe） | **Microsoft-Decision-1**（微软） | **Cloudflare Clef** | **Laya**（Convai） | **Strands Decider 2B**（AWS） |
+|---|---|---|---|---|---|
+| 形态 | 闭源托管 API | 闭源托管 API | 开放权重 + 托管 | 开放权重 | 开放权重 |
+| 许可 | 商用托管 | 商用托管（Direct from Azure） | Apache 2.0（Workers AI 托管） | Apache 2.0 | Apache 2.0 |
+| 价格（输入 / 输出） | $0.042 / Mtok · 免费 | **同价** $0.042 / Mtok · 免费 | $0.24 / Mtok · 免费（约 Jev 的 5.7×） | 自托管 $0（仅算力） | 自托管 $0（仅算力） |
+| 底座 | 未公开 | Qwen3.5-9B 后训练 | Qwen3.x-27B 后训练（另有 9B Clef-flash） | ModernBERT-large 421M（英文）等 | Qwen3.5-2B-Base 1.9B + pointer 头 |
+| 上下文窗口 | 每请求 64k | 32,768 | 65,536 | 英文 512 / 多语言 1,024–8,192 | 3,072–4,096 |
+| 输入类型 | 文本 | 纯文本 | **文本 / JSON / 图像 / 视频**（每请求 ≤ 4 图） | 文本 | 文本（`--vision` 可读图像，未训练） |
+| 运行处 | TypeSafe API / Workers AI / OpenRouter | Foundry / OpenRouter | Workers AI（权重可从 HF 下载自托管） | 本机 / 自有 GPU / Docker | 本机 / Mac / CPU / GPU / Docker |
+| 零样本准确率 | 第三方 0.727；微软表 82.3% | 微软自测 **83.5%** | 与 Jev 打平（第三方"4× 打平"，差距在噪声内；Banking77 94.3%） | 基础 0.362，微调后 0.766 | JevBench **0.779**（180/231） |
+| 校准（ECE 越低越好 / 分制越高越好） | ECE 0.144 / 0.246（第三方） | 92.2 分（微软表） | 某任务校准优于 Jev（第三方小样本） | 出厂 ECE 0.466，温度校准后 0.081 | ECE **0.072**（出厂即校准） |
+| 延迟 | 第三方 p50 236–276 ms；本仓库本地 0.35–0.8 s | 微软自测 85 ms；OpenRouter 外部 p50 0.19–0.27 s | 第三方 p50 约 Jev 的 2.6× | T4：1 题 33–40 ms；无网络往返 | RTX 3090 单题中位 115 ms |
+| 微调 | 不支持 | 不支持（无权重） | 支持（权重 Apache 2.0；Cloudflare 另有 RL 微调平台） | 支持 | 支持（自带技能 + 训练脚本） |
+| 第三方榜 Decision Index | 60.11（并列第二） | 尚未收录 | 53.08（第 19） | — | 21.75（第 84） |
+| 本仓库接入 | 全部场景的基准 | **不接**（闭源 / 付费 / 不能离线回放） | 未接（Workers AI 托管、按量计费，可自托管后复用回放脚本） | B4 实测 3→12/20（`scripts/laya-replay.ts`） | 可复用回放脚本（接口同形） |
+| 详读 | — | [`docs/09`](docs/09-Jev与Microsoft-Decision-1对比.md) | 见本节 | [`docs/08`](docs/08-Jev与Laya对比.md) | [`docs/10`](docs/10-Jev与Strands-Decider对比.md) |
 
 怎么选：
 
 - **要成熟度、最高校准、第三方榜位，不绑云厂商** → **Jev**。本仓库所有场景都用它的零样本用法。
 - **已在 Azure 上、要 SLA + 统一账单的托管决策模型** → **Microsoft-Decision-1**：和 Jev 同形同价，差别是由 Azure 卖，而非判断质量更强；详见 [`docs/09`](docs/09-Jev与Microsoft-Decision-1对比.md)。
-- **数据必须留在内网、要微调、要零边际成本** → 开源两款。**Strands Decider 2B**（[`docs/10`](docs/10-Jev与Strands-Decider对比.md)）零样本质量明显高于 **Laya**（[`docs/08`](docs/08-Jev与Laya对比.md)），窗口也更大；Laya 的强项是多语言路由与极小的英文检查点。两者都自带与 Jev 同形的 `/v1/systemone`，`scripts/laya-replay.ts` 可近乎原样复用，建议都从 B4 智能家居助手起步。
-- **要图像 / 视频输入** → 四款都不理想（Strands 可读图像但未训练）——看 Cloudflare Clef 或 OpenAI Decisions API。
+- **要图像 / 视频输入，或要"开源权重 + 托管两头占"** → **Cloudflare Clef**：唯一既开放权重（Apache 2.0、可下载自托管）又在 Workers AI 托管、且原生读图像 / 视频的一款。代价是贵约 5.7×、p50 约 Jev 的 2.6×，准确率与 Jev 打平（第三方多次测为噪声内持平）。9B 的 Clef-flash 更便宜（$0.038）。
+- **数据必须留在内网、要微调、要零边际成本** → 纯开源两款。**Strands Decider 2B**（[`docs/10`](docs/10-Jev与Strands-Decider对比.md)）零样本质量明显高于 **Laya**（[`docs/08`](docs/08-Jev与Laya对比.md)），窗口也更大；Laya 的强项是多语言路由与极小的英文检查点。两者都自带与 Jev 同形的 `/v1/systemone`，`scripts/laya-replay.ts` 可近乎原样复用，建议都从 B4 智能家居助手起步。
 
-> 表中数字除本仓库 B4 实测外均为各家自测或第三方引用，口径不一（尤其延迟不可直接横比：托管含网络往返，自托管在实例内）。详见各对比文档的来源标注。
+> 表中数字除本仓库 B4 实测外均为各家自测或第三方引用，口径不一（尤其延迟不可直接横比：托管含网络往返，自托管在实例内）。详见各对比文档的来源标注。Clef 资料：[Cloudflare Workers AI 模型页](https://developers.cloudflare.com/workers-ai/models/clef/)、[发布博客](https://blog.cloudflare.com/clef-decision-models/)、[HF 模型卡](https://huggingface.co/Cloudflare/clef)。
 
 ## 部署到 AWS
 
