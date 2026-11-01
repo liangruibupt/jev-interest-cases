@@ -100,6 +100,8 @@ docs/
   06-行业场景适用性.md      哪些行业判断能交给 Jev，五个行业的拆解
   07-部署.md                AWS 部署步骤、公网模式与取舍
   08-Jev与Laya对比.md       开源 Laya 的对比、场景筛选、B4 实测
+  09-Jev与Microsoft-Decision-1对比.md  托管闭源对位物：同形同价，差别在 Azure 分发；本仓库不接它
+  10-Jev与Strands-Decider对比.md       开源对位物（AWS，Apache 2.0）：Laya 的更强替身，可复用回放脚本
   scenarios/               每个场景（A1–C5）的问题清单、组合逻辑、实测记录；README 是索引
   results/                 A4 实验、C5 浏览器验证、Laya 回放的原始结果 JSON
   screenshots/             上面的截图
