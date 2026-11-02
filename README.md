@@ -67,14 +67,14 @@ System One（决策模型）是 2026 年 9 月起冒出来的一类模型：读 
 | 微调 | 不支持 | 不支持（无权重） | 支持（权重 Apache 2.0；Cloudflare 另有 RL 微调平台） | 支持 | 支持（自带技能 + 训练脚本） | 支持（权重 Apache 2.0，`transformers` + `trust_remote_code`） |
 | 第三方榜 Decision Index | 60.11（并列第二） | 尚未收录 | 自测领先意图榜；综合 Index 口径随版本变动（Clef 家族 v0.3.1） | — | 21.75（第 84） | 自测 64.1（v0.3.1 文本）/ 视觉 71.6，均为团队内测 |
 | 本仓库接入 | 全部场景的基准 | **不接**（闭源 / 付费 / 不能离线回放） | 未接（Workers AI 托管、按量计费，可自托管后复用回放脚本；多模态场景才体现其价值） | B4 实测 3→12/20（`scripts/laya-replay.ts`） | 可复用回放脚本（接口同形） | 未接（需自托管 + `trust_remote_code`，可复用回放脚本；小档适合边缘路由） |
-| 详读 | — | [`docs/09`](docs/09-Jev与Microsoft-Decision-1对比.md) | 见本节 | [`docs/08`](docs/08-Jev与Laya对比.md) | [`docs/10`](docs/10-Jev与Strands-Decider对比.md) | 见本节 |
+| 详读 | — | [`docs/09`](docs/09-Jev与Microsoft-Decision-1对比.md) | [`docs/11`](docs/11-Jev与Clef-omni对比.md) | [`docs/08`](docs/08-Jev与Laya对比.md) | [`docs/10`](docs/10-Jev与Strands-Decider对比.md) | [`docs/12`](docs/12-Jev与vLLM-d3对比.md) |
 
 怎么选：
 
 - **要成熟度、最高校准、第三方榜位，不绑云厂商** → **Jev**。本仓库所有场景都用它的零样本用法。
 - **已在 Azure 上、要 SLA + 统一账单的托管决策模型** → **Microsoft-Decision-1**：和 Jev 同形同价，差别是由 Azure 卖，而非判断质量更强；详见 [`docs/09`](docs/09-Jev与Microsoft-Decision-1对比.md)。
-- **要图像 / 音频 / 视频输入，或要"开源权重 + 托管两头占"** → **Cloudflare Clef-omni**：唯一既开放权重（Apache 2.0、可下载自托管）又在 Workers AI 托管、且一次调用就能读**文本 / 图像 / 音频 / 视频**的一款（30B-A3B MoE，基于 Qwen3-Omni）。它在意图分类上领先，但推理 / 工作流弱于纯文本的 Clef，代价是贵约 3.6×（$0.15）。只要文本便宜路由，9B 的 Clef-flash（$0.038）已低于 Jev。
-- **要开源、要全套尺寸从边缘到服务器一条线铺** → **vLLM d3**（Decision 3.0）：Semantic Router 开源的多模态族，5 档 0.8B→27B 全 Apache 2.0、均带视觉编码器，自测榜领先但无官方托管 API，需 `trust_remote_code` 自托管。小档（d3-lite/nano）适合边缘路由与守卫，27B d3 做高精度判断。
+- **要图像 / 音频 / 视频输入，或要"开源权重 + 托管两头占"** → **Cloudflare Clef-omni**：唯一既开放权重（Apache 2.0、可下载自托管）又在 Workers AI 托管、且一次调用就能读**文本 / 图像 / 音频 / 视频**的一款（30B-A3B MoE，基于 Qwen3-Omni）。它在意图分类上领先，但推理 / 工作流弱于纯文本的 Clef，代价是贵约 3.6×（$0.15）。只要文本便宜路由，9B 的 Clef-flash（$0.038）已低于 Jev。详见 [`docs/11`](docs/11-Jev与Clef-omni对比.md)。
+- **要开源、要全套尺寸从边缘到服务器一条线铺** → **vLLM d3**（Decision 3.0）：Semantic Router 开源的多模态族，5 档 0.8B→27B 全 Apache 2.0、均带视觉编码器，自测榜领先但无官方托管 API，需 `trust_remote_code` 自托管。小档（d3-lite/nano）适合边缘路由与守卫，27B d3 做高精度判断。详见 [`docs/12`](docs/12-Jev与vLLM-d3对比.md)。
 - **数据必须留在内网、要微调、要零边际成本** → 纯开源两款。**Strands Decider 2B**（[`docs/10`](docs/10-Jev与Strands-Decider对比.md)）零样本质量明显高于 **Laya**（[`docs/08`](docs/08-Jev与Laya对比.md)），窗口也更大；Laya 的强项是多语言路由与极小的英文检查点。两者都自带与 Jev 同形的 `/v1/systemone`，`scripts/laya-replay.ts` 可近乎原样复用，建议都从 B4 智能家居助手起步。
 
 > 表中数字除本仓库 B4 实测外均为各家自测或第三方引用，口径不一（尤其延迟不可直接横比：托管含网络往返，自托管在实例内；d3 与 Clef-omni 的榜位多为团队内测）。详见各对比文档的来源标注。Clef-omni 资料：[Cloudflare Workers AI 模型页](https://developers.cloudflare.com/workers-ai/models/clef-omni)、[发布博客](https://blog.cloudflare.com/clef-faster-cheaper-multimodal/)、[HF 模型卡](https://huggingface.co/Cloudflare/clef-omni)；vLLM d3 资料：[HF 合集](https://huggingface.co/collections/vllm-sr/decision-30)、[d3 模型卡](https://huggingface.co/vllm-sr/d3)、[Semantic Router 仓库](https://github.com/vllm-project/semantic-router)。
@@ -132,6 +132,8 @@ docs/
   08-Jev与Laya对比.md       开源 Laya 的对比、场景筛选、B4 实测
   09-Jev与Microsoft-Decision-1对比.md  托管闭源对位物：同形同价，差别在 Azure 分发；本仓库不接它
   10-Jev与Strands-Decider对比.md       开源对位物（AWS，Apache 2.0）：Laya 的更强替身，可复用回放脚本
+  11-Jev与Clef-omni对比.md     开源权重 + 托管 + 多模态（含音频/视频）：多模态是卖点，非判断升级
+  12-Jev与vLLM-d3对比.md       全尺寸开源多模态族（0.85B–27B，均带视觉）：边缘到服务器一条线铺
   scenarios/               每个场景（A1–C5）的问题清单、组合逻辑、实测记录；README 是索引
   results/                 A4 实验、C5 浏览器验证、Laya 回放的原始结果 JSON
   screenshots/             上面的截图
