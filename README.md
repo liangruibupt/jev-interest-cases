@@ -57,7 +57,7 @@ System One（决策模型）是 2026 年 9 月起冒出来的一类模型：读 
 | 形态 | 闭源托管 API | 闭源托管 API | 开放权重 + 托管 | 开放权重 | 开放权重 | 开放权重 |
 | 许可 | 商用托管 | 商用托管（Direct from Azure） | Apache 2.0（Workers AI 托管） | Apache 2.0 | Apache 2.0 | Apache 2.0 |
 | 价格（输入 / 输出） | $0.042 / Mtok · 免费 | **同价** $0.042 / Mtok · 免费 | $0.15 / Mtok · 免费（约 Jev 的 3.6×；另有 9B Clef-flash $0.038，已低于 Jev） | 自托管 $0（仅算力） | 自托管 $0（仅算力） | 自托管 $0（仅算力，无官方托管 API） |
-| 底座 | 未公开 | Qwen3.5-9B 后训练 | Qwen3-Omni-30B-A3B-Instruct 后训练（30B 总 / 3B 激活 MoE，LoRA） | ModernBERT-large 421M（英文）等 | Qwen3.5-2B-Base 1.9B + pointer 头（10-01 首发）；另有 Gemma 4 四档 E2B / E4B / 12B / 26B-A4B（同月稍后） | Qwen3.8-27B（d3）/ Qwen3.5 各档（0.8B–9B），均带视觉编码器 |
+| 底座 | 未公开 | Qwen3.5-9B 后训练 | Qwen3-Omni-30B-A3B-Instruct 后训练（30B 总 / 3B 激活 MoE，LoRA） | ModernBERT-large 421M（英文）等 | Qwen3.5-2B-Base 1.9B + pointer 头（10-01 首发）；另有 Gemma 4 四档 E2B / E4B / 12B / 26B-A4B（10 月下旬，只读文本） | Qwen3.8-27B（d3）/ Qwen3.5 各档（0.8B–9B），均带视觉编码器 |
 | 上下文窗口 | 每请求 64k | 32,768 | 托管 64,000 | 英文 512 / 多语言 1,024–8,192 | 3,072–4,096 | 未公开 |
 | 输入类型 | 文本 | 纯文本 | **文本 / 图像 / 音频 / 视频**（≤ 4 图、≤ 4 段音频各 300s、≤ 2 段视频各 60s） | 文本 | 文本（`--vision` 可读图像，未训练） | 文本 / JSON / 图像（每档均带视觉编码器，≤ 多图各 1.6MP） |
 | 运行处 | TypeSafe API / Workers AI / OpenRouter | Foundry / OpenRouter | Workers AI（`@cf/cloudflare/clef-omni`；权重可从 HF 下载自托管，单张 H200≈64GB） | 本机 / 自有 GPU / Docker | 本机 / Mac / CPU / GPU / Docker | 自托管（`vllm-sr serve`，ROCm/CUDA；无托管 API） |
@@ -75,7 +75,7 @@ System One（决策模型）是 2026 年 9 月起冒出来的一类模型：读 
 - **已在 Azure 上、要 SLA + 统一账单的托管决策模型** → **Microsoft-Decision-1**：和 Jev 同形同价，差别是由 Azure 卖，而非判断质量更强；详见 [`docs/09`](docs/09-Jev与Microsoft-Decision-1对比.md)。
 - **要图像 / 音频 / 视频输入，或要"开源权重 + 托管两头占"** → **Cloudflare Clef-omni**：唯一既开放权重（Apache 2.0、可下载自托管）又在 Workers AI 托管、且一次调用就能读**文本 / 图像 / 音频 / 视频**的一款（30B-A3B MoE，基于 Qwen3-Omni）。它在意图分类上领先，但推理 / 工作流弱于纯文本的 Clef，代价是贵约 3.6×（$0.15）。只要文本便宜路由，9B 的 Clef-flash（$0.038）已低于 Jev。详见 [`docs/11`](docs/11-Jev与Clef-omni对比.md)。
 - **要开源、要全套尺寸从边缘到服务器一条线铺** → **vLLM d3**（Decision 3.0）：Semantic Router 开源的多模态族，5 档 0.8B→27B 全 Apache 2.0、均带视觉编码器，自测榜领先但无官方托管 API，需 `trust_remote_code` 自托管。小档（d3-lite/nano）适合边缘路由与守卫，27B d3 做高精度判断。详见 [`docs/12`](docs/12-Jev与vLLM-d3对比.md)。
-- **数据必须留在内网、要微调、要零边际成本** → 纯开源两款。**Strands Decider 2B**（[`docs/10`](docs/10-Jev与Strands-Decider对比.md)）零样本质量明显高于 **Laya**（[`docs/08`](docs/08-Jev与Laya对比.md)），窗口也更大；Strands 首发 2B 之后又出了 Gemma 4 四档（E2B / E4B / 12B / 26B-A4B），要更高准确率可直接换 12B（86.6%）或 26B-A4B（89.6%），接口与问法不变。Laya 的强项是多语言路由与极小的英文检查点。两者都自带与 Jev 同形的 `/v1/systemone`，`scripts/laya-replay.ts` 可近乎原样复用，建议都从 B4 智能家居助手起步。
+- **数据必须留在内网、要微调、要零边际成本** → 纯开源两款。**Strands Decider 2B**（[`docs/10`](docs/10-Jev与Strands-Decider对比.md)）零样本质量明显高于 **Laya**（[`docs/08`](docs/08-Jev与Laya对比.md)），窗口也更大；Strands 首发 2B 之后又出了 Gemma 4 四档（E2B / E4B / 12B / 26B-A4B），要更高准确率可直接换 12B（86.6%）或 26B-A4B（89.6%），接口与问法不变。Amazon 内部工单系统已用 E4B（SageMaker `ml.g5.xlarge`）替换 Claude Sonnet 4.6，每百万工单从约 $22,200 降到约 $500、单次耗时 −78%，是目前唯一公开的生产替换案例。Laya 的强项是多语言路由与极小的英文检查点。两者都自带与 Jev 同形的 `/v1/systemone`，`scripts/laya-replay.ts` 可近乎原样复用，建议都从 B4 智能家居助手起步。
 
 > 表中数字除本仓库 B4 实测外均为各家自测或第三方引用，口径不一（尤其延迟不可直接横比：托管含网络往返，自托管在实例内；d3 与 Clef-omni 的榜位多为团队内测）。详见各对比文档的来源标注。Clef-omni 资料：[Cloudflare Workers AI 模型页](https://developers.cloudflare.com/workers-ai/models/clef-omni)、[发布博客](https://blog.cloudflare.com/clef-faster-cheaper-multimodal/)、[HF 模型卡](https://huggingface.co/Cloudflare/clef-omni)；vLLM d3 资料：[HF 合集](https://huggingface.co/collections/vllm-sr/decision-30)、[d3 模型卡](https://huggingface.co/vllm-sr/d3)、[Semantic Router 仓库](https://github.com/vllm-project/semantic-router)。
 
